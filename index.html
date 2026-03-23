@@ -459,7 +459,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.1";
+  const VERSION="1.2";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -469,6 +469,14 @@ function App(){
   const[activeThreatPreset,setActiveThreatPreset]=useState(null);
   const[assetsLocked,setAssetsLocked]=useState(false);
   const[threatsLocked,setThreatsLocked]=useState(false);
+  const defaultChargeWeights={
+    "VBIED":{kg:500,desc:"Vehicle-borne — typically 100-2000kg depending on vehicle type"},
+    "PBIED":{kg:25,desc:"Person-borne — typically 5-30kg body-worn or carried"},
+    "IED":{kg:50,desc:"Improvised device — varies widely, 1-100kg typically"},
+    "IED-Drone":{kg:5,desc:"Drone-delivered — typically 1-10kg payload limited by drone capacity"},
+    "Mail/Parcel Threat":{kg:1,desc:"Postal device — typically 0.1-2kg limited by packaging"},
+  };
+  const[chargeWeights,setChargeWeights]=useState({...defaultChargeWeights});
   const defaultDescs={
     disruption:"Level of impact on day-to-day activities and business operations",
     fatalities:"Potential for injuries, casualties or loss of life",
@@ -555,25 +563,25 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(p.scales);if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis)}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(p.scales);if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights)}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights]);
 
   // Auto-save system: prompt once at 10 mins, then auto-save every 10 mins silently
   const[autoSaveEnabled,setAutoSaveEnabled]=useState(false);
   const autoSaveRef=useRef(null);
 
   const saveFileWithTimestamp=useCallback(()=>{
-    const data=JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,_v:VERSION,_date:new Date().toISOString()},null,2);
+    const data=JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,_v:VERSION,_date:new Date().toISOString()},null,2);
     const blob=new Blob([data],{type:"application/json"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
     const ts=new Date().toISOString().replace(/[:.]/g,"-").slice(0,19);
     a.download=`SRA_v${VERSION}_${ctx.project||"Assessment"}_${ts}.json`;
     a.click();
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights]);
 
   // First prompt at 10 minutes
   useEffect(()=>{
@@ -610,7 +618,7 @@ function App(){
     input.onchange=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
     r.onload=(ev)=>{try{const p=JSON.parse(ev.target.result);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(p.scales);if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(p.scales);if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);
     showToast("Assessment loaded")}catch(err){showToast("Error loading file")}};r.readAsText(f)};input.click();
   };
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
@@ -1270,7 +1278,46 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
   // Helpers
   const ut=(id,f,v)=>setThreats(p=>p.map(t=>t.id===id?{...t,[f]:v}:t));
-  const addT=()=>setThreats(p=>[...p,{id:Math.max(0,...p.map(t=>t.id))+1,n:"",d:"",cat:"Crime",cap:null,int:null}]);
+  const[showAddThreat,setShowAddThreat]=useState(false);
+  const allThreatDefs=[
+    {n:"VBIED",d:"Vehicle Borne IED",cat:"Terrorism"},
+    {n:"PBIED",d:"Person Borne IED",cat:"Terrorism"},
+    {n:"IED",d:"Improvised Explosive Device",cat:"Terrorism"},
+    {n:"IED-Drone",d:"Drone-delivered device",cat:"Terrorism"},
+    {n:"Mail/Parcel Threat",d:"Explosive/toxic mail or parcel",cat:"Terrorism"},
+    {n:"CBR",d:"Chemical/Bio/Radiological attack",cat:"Terrorism"},
+    {n:"MTFA",d:"Marauding Terrorist Firearm Attack",cat:"Terrorism"},
+    {n:"MTA",d:"Marauding Terrorist Attack (bladed)",cat:"Terrorism"},
+    {n:"VAAW",d:"Vehicle as a Weapon",cat:"Terrorism"},
+    {n:"Cybercrime",d:"IT/OT/IoT targeting",cat:"Crime"},
+    {n:"KRE",d:"Kidnap/Ransom/Extortion",cat:"Crime"},
+    {n:"Violence & Sexual",d:"Violence and sexual offending",cat:"Crime"},
+    {n:"SOC",d:"Serious Organised Crime",cat:"Crime"},
+    {n:"Info Theft",d:"Information theft",cat:"Crime"},
+    {n:"Arson",d:"Deliberate fire",cat:"Crime"},
+    {n:"Insider Threat",d:"Staff/contractor misuse",cat:"Crime"},
+    {n:"Burglary",d:"Unlawful entry/theft",cat:"Crime"},
+    {n:"Vehicle Crime",d:"Theft of/from vehicles",cat:"Crime"},
+    {n:"Theft",d:"Asset deprivation (CRAVED)",cat:"Crime"},
+    {n:"Theft from Person",d:"Personal effects theft",cat:"Crime"},
+    {n:"Public Order",d:"Protests/direct action/civil action",cat:"Crime"},
+    {n:"ASB",d:"Anti-Social Behaviour",cat:"Crime"},
+    {n:"Criminal Damage",d:"Vandalism/criminal damage",cat:"Crime"},
+    {n:"Trespass",d:"Unauthorised access to land/property",cat:"Crime"},
+  ];
+  const addThreatFromDef=(def)=>{
+    if(threatsLocked)return;
+    const newId=Math.max(0,...threats.map(t=>t.id))+1;
+    setThreats(p=>[...p,{id:newId,n:def.n,d:def.d,cat:def.cat,cap:null,int:null}]);
+    setShowAddThreat(false);
+    showToast("Added: "+def.n);
+  };
+  const addCustomThreat=()=>{
+    if(threatsLocked)return;
+    const newId=Math.max(0,...threats.map(t=>t.id))+1;
+    setThreats(p=>[...p,{id:newId,n:"",d:"",cat:"Crime",cap:null,int:null}]);
+    setShowAddThreat(false);
+  };
   const remT=id=>setThreats(p=>p.filter(t=>t.id!==id));
   const moveT=(id,dir)=>setThreats(p=>{
     const idx=p.findIndex(t=>t.id===id);
@@ -1920,7 +1967,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("td",{className:"text-muted font-mono text-xs"},"T"+(globalIdx+1)),
                 React.createElement("td",null,React.createElement("button",{className:"badge",onClick:()=>toggleThreatCat(t.id),
                   style:{backgroundColor:"#fef2f2",color:"#dc2626",cursor:"pointer",border:"1px solid #fecaca",fontSize:9}},"Terrorism")),
-                React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full font-medium",value:t.n,onChange:e=>ut(t.id,"n",e.target.value)})),
+                React.createElement("td",null,
+                  React.createElement("input",{className:"input-ghost w-full font-medium",value:t.n,onChange:e=>ut(t.id,"n",e.target.value)}),
+                  chargeWeights[t.n]&&React.createElement("span",{style:{fontSize:8,fontWeight:700,color:"#92400e",background:"#fffbeb",border:"1px solid #fde68a",borderRadius:3,padding:"1px 4px",marginLeft:2}},chargeWeights[t.n].kg+"kg")
+                ),
                 React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full text-muted",value:t.d,onChange:e=>ut(t.id,"d",e.target.value)})),
                 React.createElement("td",null,React.createElement(ScoreBar,{value:t.cap,onChange:v=>ut(t.id,"cap",v),tips:scales.threat})),
                 React.createElement("td",null,React.createElement(ScoreBar,{value:t.int,onChange:v=>ut(t.id,"int",v),tips:scales.threat})),
@@ -1962,8 +2012,55 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               )})
             )
           ),
-          React.createElement("div",{style:{padding:"8px 12px",borderTop:"1px solid #f1f5f9"}},
-            React.createElement("button",{className:"btn-add",onClick:addT},"+ Add Threat"))
+          React.createElement("div",{style:{padding:"8px 12px",borderTop:"1px solid #f1f5f9",position:"relative"}},
+            React.createElement("button",{className:"btn-add",onClick:()=>setShowAddThreat(p=>!p)},showAddThreat?"✕ Close":"+ Add Threat"),
+            showAddThreat&&React.createElement("div",{style:{position:"absolute",bottom:"100%",left:12,right:12,background:"#fff",borderRadius:10,boxShadow:"0 -4px 24px rgba(0,0,0,0.15)",border:"1px solid #e2e8f0",padding:12,zIndex:50,maxHeight:400,overflowY:"auto",marginBottom:4}},
+              React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#1e293b",marginBottom:8}},"Add a threat to the register"),
+              // Custom option
+              React.createElement("div",{style:{marginBottom:10}},
+                React.createElement("button",{onClick:addCustomThreat,style:{width:"100%",padding:"8px 12px",background:"#f8fafc",border:"1px dashed #94a3b8",borderRadius:6,cursor:"pointer",fontSize:11,color:"#475569",textAlign:"left",fontFamily:"inherit"}},
+                  React.createElement("span",{style:{fontWeight:700}},"✏️ Custom Threat"),
+                  React.createElement("span",{style:{color:"#94a3b8",marginLeft:8}},"— add a blank threat and define it yourself")
+                )
+              ),
+              // Terrorism threats not yet added
+              (function(){
+                var unused=allThreatDefs.filter(function(def){return def.cat==="Terrorism"&&!threats.some(function(t){return t.n===def.n})});
+                if(unused.length===0)return null;
+                return React.createElement("div",{style:{marginBottom:8}},
+                  React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#dc2626",letterSpacing:1,marginBottom:4}},"TERRORISM"),
+                  React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
+                    ...unused.map(function(def){
+                      return React.createElement("button",{key:def.n,onClick:function(){addThreatFromDef(def)},
+                        style:{padding:"5px 10px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,cursor:"pointer",fontSize:10,color:"#dc2626",fontWeight:600,fontFamily:"inherit",transition:"all 0.1s"}},
+                        def.n,
+                        chargeWeights[def.n]&&React.createElement("span",{style:{fontSize:8,color:"#92400e",marginLeft:4}},chargeWeights[def.n].kg+"kg")
+                      );
+                    })
+                  )
+                );
+              })(),
+              // Crime threats not yet added
+              (function(){
+                var unused=allThreatDefs.filter(function(def){return def.cat==="Crime"&&!threats.some(function(t){return t.n===def.n})});
+                if(unused.length===0)return null;
+                return React.createElement("div",null,
+                  React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#4472C4",letterSpacing:1,marginBottom:4}},"CRIME"),
+                  React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
+                    ...unused.map(function(def){
+                      return React.createElement("button",{key:def.n,onClick:function(){addThreatFromDef(def)},
+                        style:{padding:"5px 10px",background:"#EBF1F8",border:"1px solid #D6E4F0",borderRadius:6,cursor:"pointer",fontSize:10,color:"#4472C4",fontWeight:600,fontFamily:"inherit",transition:"all 0.1s"}},
+                        def.n
+                      );
+                    })
+                  )
+                );
+              })(),
+              // All added message
+              allThreatDefs.every(function(def){return threats.some(function(t){return t.n===def.n})})&&
+                React.createElement("div",{style:{fontSize:11,color:"#94a3b8",textAlign:"center",padding:8}},"All standard threats are already in the register. Use Custom Threat to add others.")
+            )
+          )
         )
       ),
 
@@ -2248,6 +2345,180 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:11,fontWeight:600,color:c.t,opacity:0.8}},r)
             );
           })
+        ),
+        // PROJECT OVERVIEW - auto-generated narrative
+        React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
+          React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"PROJECT OVERVIEW & SECURITY NARRATIVE"),
+          React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.8}},
+
+            // 1. Project context
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4,marginTop:0}},"1. Project Context"),
+            React.createElement("p",{style:{marginBottom:12}},
+              (function(){
+                var t=[];
+                t.push("This Security Risk Assessment relates to "+(ctx.project||"[project name not set]"));
+                if(ctx.client)t.push(" for "+ctx.client);
+                t.push(".");
+                if(ctx.address||ctx.postcode)t.push(" The site is located at "+(ctx.address||"")+(ctx.postcode?" ("+ctx.postcode+")":"")+".");
+                if(ctx.stage)t.push(" The assessment is being undertaken at "+ctx.stage+" stage.");
+                if(ctx.assessor)t.push(" The assessment has been prepared by "+ctx.assessor+" (Suitably Qualified Security Specialist).");
+                if(activeAssetPreset)t.push(" The development is classified as a "+activeAssetPreset+" project.");
+                return t.join("");
+              })()
+            ),
+
+            // 2. Asset summary
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"2. Asset Summary"),
+            React.createElement("p",{style:{marginBottom:6}},
+              (function(){
+                if(assets.length===0)return "No assets have been defined for this assessment.";
+                var critCount=assets.filter(function(a){var avg=(a.sc.opImpact+a.sc.dependencies+a.sc.impactPeople+a.sc.impactEnv)/4;return avg>=4.5}).length;
+                var highCount=assets.filter(function(a){var avg=(a.sc.opImpact+a.sc.dependencies+a.sc.impactPeople+a.sc.impactEnv)/4;return avg>=3.5&&avg<4.5}).length;
+                return assets.length+" assets have been identified and assessed for criticality. "+critCount+" are rated Critical, "+highCount+" rated High. Critical and High-rated assets require the highest level of protective security measures.";
+              })()
+            ),
+            assets.length>0&&React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}},
+              assets.filter(function(a){var avg=0;var cnt=0;if(a.sc.opImpact){avg+=a.sc.opImpact;cnt++}if(a.sc.dependencies){avg+=a.sc.dependencies;cnt++}if(a.sc.impactPeople){avg+=a.sc.impactPeople;cnt++}if(a.sc.impactEnv){avg+=a.sc.impactEnv;cnt++}return cnt>0&&avg/cnt>=3.5}).map(function(a){
+                return React.createElement("span",{key:a.id,style:{fontSize:10,padding:"2px 8px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:4,color:"#dc2626",fontWeight:600}},a.cat+": "+a.desc);
+              })
+            ),
+
+            // 3. Threat landscape
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"3. Threat Landscape"),
+            React.createElement("p",{style:{marginBottom:6}},
+              (function(){
+                var dbts=cRisks.filter(function(r){return r.dbt});
+                var terr=cRisks.filter(function(r){return r.cat==="Terrorism"&&r.sc!=null});
+                var crime=cRisks.filter(function(r){return r.cat!=="Terrorism"&&r.sc!=null});
+                var t=cRisks.filter(function(r){return r.sc!=null}).length+" threats have been assessed ("+terr.length+" Terrorism, "+crime.length+" Crime). ";
+                t+=dbts.length+" have been identified as Design Basis Threats (DBTs) with a threat score of Medium (3) or above, warranting full risk analysis. ";
+                // List DBTs
+                if(dbts.length>0)t+="The DBTs are: "+dbts.map(function(r,i){return r.n+" ("+r.cat+", score: "+r.sc+")"}).join("; ")+".";
+                return t;
+              })()
+            ),
+            // Explosive charges summary
+            (function(){
+              var explosiveDbts=cRisks.filter(function(r){return r.dbt&&chargeWeights[r.n]});
+              if(explosiveDbts.length===0)return null;
+              return React.createElement("p",{style:{marginBottom:6,fontSize:12,color:"#92400e",background:"#fffbeb",padding:8,borderRadius:6,border:"1px solid #fde68a"}},
+                React.createElement("strong",null,"Explosive DBTs: "),
+                explosiveDbts.map(function(r){return r.n+" ("+chargeWeights[r.n].kg+"kg charge)"}).join(", "),
+                ". Stand-off distances and blast mitigation measures should be designed to these charge weights."
+              );
+            })(),
+
+            // 4. High risk analysis
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"4. High & Very High Risk Analysis"),
+            (function(){
+              var highRisks=cRisks.filter(function(r){return r.rat==="Very High"||r.rat==="High"});
+              if(highRisks.length===0)return React.createElement("p",{style:{marginBottom:12,color:"#16a34a"}},"No threats are currently rated High or Very High pre-mitigation.");
+              return React.createElement("div",{style:{marginBottom:12}},
+                React.createElement("p",{style:{marginBottom:8}},highRisks.length+" threat"+(highRisks.length!==1?"s":"")+" rated High or Very High pre-mitigation, requiring priority treatment:"),
+                React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:6}},
+                  ...highRisks.map(function(r){
+                    var idx=cRisks.indexOf(r);
+                    var rPois=pois.filter(function(p){return p.threats.includes(r.id)});
+                    var ctrl=cd[r.id]||{};
+                    var hasCtrl=ctrl.desc&&ctrl.desc.length>0;
+                    return React.createElement("div",{key:r.id,style:{padding:10,borderRadius:6,background:r.rat==="Very High"?"#fef2f2":"#fff7ed",border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa")}},
+                      React.createElement("div",{className:"flex gap-2 items-center",style:{marginBottom:4}},
+                        React.createElement("span",{style:{fontWeight:700,fontSize:12}},"R"+(idx+1)+" — "+r.n),
+                        React.createElement(Badge,{rating:r.rat}),
+                        React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"L:"+r.lik+" × I:"+r.imp),
+                        r.cat&&React.createElement("span",{style:{fontSize:9,color:r.cat==="Terrorism"?"#dc2626":"#4472C4",fontWeight:600}},r.cat)
+                      ),
+                      rPois.length>0&&React.createElement("div",{style:{fontSize:11,color:"#475569",marginBottom:2}},
+                        React.createElement("strong",null,"Applies to: "),rPois.map(function(p){return p.name}).join(", ")
+                      ),
+                      React.createElement("div",{style:{fontSize:11,color:"#475569",marginBottom:2}},
+                        React.createElement("strong",null,"Existing controls: "),hasCtrl?ctrl.desc:"None documented"
+                      ),
+                      React.createElement("div",{style:{fontSize:11,color:"#475569"}},
+                        React.createElement("strong",null,"Treatment: "),r.treat||"Not assigned",
+                        r.resRat&&React.createElement("span",null," → Residual: ",React.createElement(Badge,{rating:r.resRat}))
+                      )
+                    );
+                  })
+                )
+              );
+            })(),
+
+            // 5. Controls gap analysis
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"5. Controls & Gap Analysis"),
+            (function(){
+              var insufficient=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return r.dbt;var avg=(c.eff+c.conf)/2;return avg<3&&r.dbt});
+              var partial=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return false;var avg=(c.eff+c.conf)/2;return avg>=3&&avg<4&&r.dbt});
+              var adequate=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return false;var avg=(c.eff+c.conf)/2;return avg>=4&&r.dbt});
+              return React.createElement("div",{style:{marginBottom:12}},
+                React.createElement("p",{style:{marginBottom:6}},"Of the "+cRisks.filter(function(r){return r.dbt}).length+" Design Basis Threats: "+adequate.length+" have adequate controls, "+partial.length+" have partial controls, and "+insufficient.length+" have insufficient or undocumented controls."),
+                insufficient.length>0&&React.createElement("div",{style:{padding:8,background:"#fef2f2",borderRadius:6,border:"1px solid #fecaca",marginBottom:6}},
+                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#dc2626",marginBottom:4}},"INSUFFICIENT CONTROLS — PRIORITY ACTION REQUIRED:"),
+                  React.createElement("div",{style:{fontSize:11,color:"#475569"}},
+                    insufficient.map(function(r){return"• "+r.n+": "+(cd[r.id]&&cd[r.id].desc?cd[r.id].desc:"No controls documented")}).join("\n").split("\n").map(function(line,i){return React.createElement("div",{key:i},line)})
+                  )
+                ),
+                partial.length>0&&React.createElement("div",{style:{padding:8,background:"#fffbeb",borderRadius:6,border:"1px solid #fde68a"}},
+                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:4}},"PARTIAL CONTROLS — IMPROVEMENT NEEDED:"),
+                  React.createElement("div",{style:{fontSize:11,color:"#475569"}},
+                    partial.map(function(r){return"• "+r.n+": "+(cd[r.id]&&cd[r.id].desc?cd[r.id].desc:"—")}).join("\n").split("\n").map(function(line,i){return React.createElement("div",{key:i},line)})
+                  )
+                )
+              );
+            })(),
+
+            // 6. Treatment summary
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"6. Risk Treatment & Recommendations"),
+            React.createElement("p",{style:{marginBottom:6}},
+              (function(){
+                var treated=cRisks.filter(function(r){return r.treat});
+                var reduce=treated.filter(function(r){return r.treat==="Reduce"});
+                var accept=treated.filter(function(r){return r.treat==="Accept"});
+                var transfer=treated.filter(function(r){return r.treat==="Transfer"});
+                var avoid=treated.filter(function(r){return r.treat==="Avoid"});
+                if(treated.length===0)return "No risk treatments have been assigned. All DBTs should be assigned a treatment strategy (Reduce, Transfer, Avoid, or Accept).";
+                var t=treated.length+" risks have been assigned treatments: ";
+                var parts=[];
+                if(reduce.length)parts.push(reduce.length+" Reduce");
+                if(transfer.length)parts.push(transfer.length+" Transfer");
+                if(avoid.length)parts.push(avoid.length+" Avoid");
+                if(accept.length)parts.push(accept.length+" Accept");
+                t+=parts.join(", ")+".";
+                return t;
+              })()
+            ),
+
+            // 7. Residual risk position
+            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"7. Residual Risk Position"),
+            (function(){
+              var resVH=cRisks.filter(function(r){return r.resRat==="Very High"}).length;
+              var resH=cRisks.filter(function(r){return r.resRat==="High"}).length;
+              var resM=cRisks.filter(function(r){return r.resRat==="Medium"}).length;
+              var scored=cRisks.filter(function(r){return r.resRat}).length;
+              if(scored===0)return React.createElement("p",{style:{marginBottom:12}},"Residual risk scoring has not yet been completed. Post-treatment likelihood and impact should be re-assessed for all DBTs.");
+              var t="Post-mitigation: "+resVH+" Very High, "+resH+" High, "+resM+" Medium. ";
+              if(resVH>0||resH>0)t+="Residual risks rated High or Very High require formal acceptance by the risk owner and should be escalated. ";
+              else t+="All residual risks have been reduced to Medium or below, which is considered ALARP (As Low As Reasonably Practicable). ";
+              return React.createElement("p",{style:{marginBottom:12}},t);
+            })(),
+
+            // 8. POI exposure
+            pois.length>0&&React.createElement("div",null,
+              React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"8. Points of Interest & Exposure"),
+              React.createElement("p",{style:{marginBottom:6}},pois.length+" vulnerable locations (Points of Interest) have been identified and mapped against the threat register:"),
+              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4,marginBottom:12}},
+                ...pois.map(function(p){
+                  var threatCount=p.threats.length;
+                  var highThreats=cRisks.filter(function(r){return p.threats.includes(r.id)&&(r.rat==="Very High"||r.rat==="High")});
+                  return React.createElement("div",{key:p.id,style:{fontSize:11,padding:6,background:"#f8fafc",borderRadius:4,border:"1px solid #e2e8f0"}},
+                    React.createElement("span",{style:{fontWeight:700}},p.name),
+                    React.createElement("span",{style:{color:"#64748b"}}," — "+threatCount+" threats mapped"),
+                    highThreats.length>0&&React.createElement("span",{style:{color:"#dc2626",fontWeight:600}}," ("+highThreats.length+" High/Very High: "+highThreats.map(function(r){return r.n}).join(", ")+")")
+                  );
+                })
+              )
+            )
+          )
         ),
         // Area Analysis
         React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
@@ -2554,6 +2825,50 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 )
               ))
             )
+          )
+        ),
+
+        // Explosive Charge Weights
+        React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
+          React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"EXPLOSIVE CHARGE WEIGHTS (DBT)"),
+          React.createElement("p",{style:{fontSize:12,color:"#94a3b8",marginBottom:12}},"Define the Design Basis Threat (DBT) charge weight in kilograms for each explosive threat type. These values inform blast analysis, stand-off distances, and protective design requirements."),
+          React.createElement("table",null,
+            React.createElement("thead",null,React.createElement("tr",null,
+              React.createElement("th",{className:"left",style:{width:140}},"Threat"),
+              React.createElement("th",{style:{width:100}},"Charge (kg)"),
+              React.createElement("th",{style:{width:80}},"TNT eq."),
+              React.createElement("th",{className:"left"},"Description / Notes")
+            )),
+            React.createElement("tbody",null,
+              ...Object.entries(chargeWeights).map(function(entry){
+                var name=entry[0],data=entry[1];
+                return React.createElement("tr",{key:name},
+                  React.createElement("td",{className:"text-left"},
+                    React.createElement("span",{className:"font-bold text-xs"},name),
+                    React.createElement("span",{className:"badge",style:{marginLeft:6,backgroundColor:"#fef2f2",color:"#dc2626",fontSize:8}},"Terrorism")
+                  ),
+                  React.createElement("td",null,
+                    React.createElement("input",{type:"number",className:"input",style:{width:80,textAlign:"center",fontWeight:700,fontSize:14},value:data.kg,
+                      onChange:function(e){var v=parseFloat(e.target.value)||0;setChargeWeights(function(p){var n={...p};n[name]={...n[name],kg:v};return n})}
+                    }),
+                    React.createElement("span",{style:{fontSize:10,color:"#94a3b8",marginLeft:4}},"kg")
+                  ),
+                  React.createElement("td",{className:"text-xs text-center",style:{color:"#64748b"}},Math.round(data.kg*1.0)+" kg"),
+                  React.createElement("td",null,
+                    React.createElement("input",{className:"input-ghost w-full text-xs",value:data.desc,
+                      onChange:function(e){var v=e.target.value;setChargeWeights(function(p){var n={...p};n[name]={...n[name],desc:v};return n})}
+                    })
+                  )
+                );
+              })
+            )
+          ),
+          React.createElement("div",{style:{marginTop:10,fontSize:10,color:"#94a3b8",lineHeight:1.5}},
+            React.createElement("strong",null,"Guidance: "),
+            "VBIED: saloon car 50-100kg, estate/van 100-500kg, large van 500-1000kg, lorry 1000-2000kg+. PBIED: vest/belt 5-15kg, rucksack 15-30kg. IED: varies by construction. Charges should be agreed with the CTSA/DOCO and based on the assessed threat. TNT equivalence shown assumes 1:1 for planning purposes."
+          ),
+          React.createElement("div",{style:{marginTop:8}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){setChargeWeights({...defaultChargeWeights});showToast("Charge weights reset to defaults")}},"Reset to Defaults")
           )
         ),
 
