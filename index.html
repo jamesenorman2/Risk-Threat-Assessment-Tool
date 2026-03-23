@@ -714,34 +714,6 @@ function App(){
   const[comparisonData,setComparisonData]=useState(null);
   const[compLoading,setCompLoading]=useState(false);
 
-  const fetchAreaAnalysis=async()=>{
-    if(!ctx.address&&!ctx.postcode){setAreaError("Please add address/postcode on Context tab first");return}
-    // Try Anthropic API (only works inside Claude.ai)
-    setAreaLoading(true);setAreaError(null);
-    try{
-      const location=`${ctx.address||""}, ${ctx.postcode||""}`.trim().replace(/^,\s*/,"");
-      const criteriaPrompts=areaCriteria.map(c=>`## ${c.label}\n${c.prompt}`).join("\n\n");
-      const prompt=`You are a UK security consultant. Produce an area analysis for a Security Risk Assessment at: ${location}, United Kingdom. Development type: ${activeAssetPreset||"mixed use"}. For each section, provide factual professional descriptions relevant to security planning. Use specific street names, distances, details. Third person, 2-4 sentences each.\n\n${criteriaPrompts}\n\nRespond ONLY with a JSON object with these keys: ${areaCriteria.map(c=>'"'+c.id+'"').join(", ")}. Values are the analysis text. No markdown, no backticks, just raw JSON.`;
-      const anRes=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,
-          tools:[{type:"web_search_20250305",name:"web_search"}],
-          messages:[{role:"user",content:prompt}]})
-      });
-      if(!anRes.ok)throw new Error("API "+anRes.status);
-      const anData=await anRes.json();
-      const anText=anData.content.filter(c=>c.type==="text").map(c=>c.text).join("");
-      const parsed=JSON.parse(anText.replace(/```json|```/g,"").trim());
-      setAreaAnalysis(parsed);setAreaLoading(false);
-      showToast("Area analysis generated");return;
-    }catch(e){}
-    // Fallback: create blank fields
-    setAreaLoading(false);
-    const blank={};areaCriteria.forEach(function(c){blank[c.id]=""});
-    setAreaAnalysis(blank);
-    setAreaError("Auto-generation only works inside Claude.ai. Use 'Copy Prompt' below to generate with any free AI, then paste the response back.");
-  };
-
   const copyAreaPrompt=function(){
     const location=`${ctx.address||""}, ${ctx.postcode||""}`.trim().replace(/^,\s*/,"")||"[ENTER ADDRESS]";
     const criteriaPrompts=areaCriteria.map(c=>`## ${c.label}\n${c.prompt}`).join("\n\n");
@@ -2526,15 +2498,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"AREA ANALYSIS"),
             React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
               areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setAreaAnalysis(null);setAreaError(null);showToast("Area analysis cleared")}},"✕ Clear"),
-              !areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+              !areaAnalysis&&React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
                 var blank={};areaCriteria.forEach(function(c){blank[c.id]=""});
                 setAreaAnalysis(blank);setAreaError(null);showToast("Blank fields created — type or paste your analysis");
               }},"✏️ Manual Entry"),
-              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:copyAreaPrompt},"📋 Copy Prompt"),
-              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:pasteAreaResponse},"📥 Paste AI Response"),
-              React.createElement("button",{className:"btn btn-dark btn-sm",onClick:fetchAreaAnalysis,disabled:areaLoading},
-                areaLoading?"⏳ Generating...":"🤖 Auto Generate"
-              )
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:copyAreaPrompt},"📋 Copy AI Prompt"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:pasteAreaResponse},"📥 Paste AI Response")
             )
           ),
           React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:12}},
@@ -2542,19 +2511,15 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("span",{style:{fontWeight:600}},"Assessors must verify all information.")),
             React.createElement("p",{style:{fontSize:10}},
               React.createElement("strong",null,"How to use: "),
-              "'Auto Generate' works inside Claude.ai. For standalone use: click 'Copy Prompt' → paste into ",
+              "Click 'Manual Entry' to type directly, or click 'Copy AI Prompt' → paste into ",
               React.createElement("a",{href:"https://chatgpt.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"ChatGPT"),", ",
               React.createElement("a",{href:"https://gemini.google.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Gemini"),", or ",
               React.createElement("a",{href:"https://copilot.microsoft.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Copilot"),
-              " → copy the AI response → click 'Paste AI Response'. Or use 'Manual Entry' to type directly."
+              " (all free) → copy the AI's response → click 'Paste AI Response' to auto-populate all fields."
             )
           ),
           areaError&&React.createElement("div",{style:{padding:10,background:"#fffbeb",borderRadius:6,color:"#92400e",fontSize:12,marginBottom:12}},"ℹ "+areaError),
-          areaLoading&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#64748b"}},
-            React.createElement("div",{style:{fontSize:12}},"Generating area analysis for ",React.createElement("strong",null,(ctx.address||"")+" "+(ctx.postcode||"")),"..."),
-            React.createElement("div",{style:{fontSize:11,marginTop:4,color:"#94a3b8"}},"This uses AI with web search and may take 15-30 seconds.")
-          ),
-          !areaAnalysis&&!areaLoading&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#94a3b8",fontSize:12}},
+          !areaAnalysis&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#94a3b8",fontSize:12}},
             ctx.address||ctx.postcode?
               "Click 'Manual Entry' to type directly, or 'Copy Prompt' to use a free AI.":
               "Add site address on the Context tab first, then create area analysis."
