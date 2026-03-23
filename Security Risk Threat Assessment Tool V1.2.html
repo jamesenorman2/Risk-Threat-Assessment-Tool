@@ -2512,16 +2512,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("p",{style:{fontSize:10}},
               React.createElement("strong",null,"How to use: "),
               "Click 'Manual Entry' to type directly, or click 'Copy AI Prompt' → paste into ",
-              React.createElement("a",{href:"https://chatgpt.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"ChatGPT"),", ",
-              React.createElement("a",{href:"https://gemini.google.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Gemini"),", or ",
-              React.createElement("a",{href:"https://copilot.microsoft.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Copilot"),
-              " (all free) → copy the AI's response → click 'Paste AI Response' to auto-populate all fields."
+              React.createElement("a",{href:"https://oscar.aecom.global/home/oscar",target:"_blank",style:{color:"#4472C4",textDecoration:"underline",fontWeight:600}},"Oscar"),
+              " → copy Oscar's response → click 'Paste AI Response' to auto-populate all fields."
             )
           ),
           areaError&&React.createElement("div",{style:{padding:10,background:"#fffbeb",borderRadius:6,color:"#92400e",fontSize:12,marginBottom:12}},"ℹ "+areaError),
           !areaAnalysis&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#94a3b8",fontSize:12}},
             ctx.address||ctx.postcode?
-              "Click 'Manual Entry' to type directly, or 'Copy Prompt' to use a free AI.":
+              "Click 'Manual Entry' to type directly, or 'Copy AI Prompt' to generate via Oscar.":
               "Add site address on the Context tab first, then create area analysis."
           ),
           areaAnalysis&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}},
