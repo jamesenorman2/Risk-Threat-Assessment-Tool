@@ -1,13 +1,13 @@
 <!--
-  AECOM Risk & Threat Assessment Tool
-  Copyright © 2025-2026 AECOM. All Rights Reserved.
+  Security Risk & Threat Assessment Tool
+  Copyright © 2025-2026. All Rights Reserved.
   
   Designed and developed by J. Norman
   
-  This software is the proprietary and confidential property of AECOM.
+  This software is proprietary and confidential.
   Unauthorised copying, modification, distribution, or use of this file,
   via any medium, is strictly prohibited. This tool is licensed exclusively
-  for use by AECOM employees and authorised contractors on AECOM projects.
+  for use by authorised personnel on approved projects.
   
   Any unauthorised use may result in legal action.
 -->
@@ -16,7 +16,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AECOM Risk &amp; Threat Assessment Tool</title>
+<title>Security Risk &amp; Threat Assessment Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -189,8 +189,8 @@ document.addEventListener('keydown', function(e) {
 <div id="root"></div>
 <script type="text/javascript">
 /* ========================================================================
- * AECOM Risk & Threat Assessment Tool
- * Copyright (c) 2025-2026 AECOM. All Rights Reserved.
+ * Security Risk & Threat Assessment Tool
+ * Copyright (c) 2025-2026. All Rights Reserved.
  * Designed and developed by J. Norman
  * PROPRIETARY AND CONFIDENTIAL - Unauthorised use prohibited.
  * ======================================================================== */
@@ -552,13 +552,13 @@ function App(){
 
   // Auto-save
   useEffect(()=>{
-    const d=localStorage.getItem("aecom-rta-data");
+    const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
     if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(p.scales);if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis)}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("aecom-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis}))},500);
     return()=>clearTimeout(timer);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis]);
 
@@ -571,7 +571,7 @@ function App(){
     const blob=new Blob([data],{type:"application/json"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
     const ts=new Date().toISOString().replace(/[:.]/g,"-").slice(0,19);
-    a.download=`AECOM_RTA_v${VERSION}_${ctx.project||"Assessment"}_${ts}.json`;
+    a.download=`SRA_v${VERSION}_${ctx.project||"Assessment"}_${ts}.json`;
     a.click();
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis]);
 
@@ -616,7 +616,7 @@ function App(){
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:""});
     setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);
-    localStorage.removeItem("aecom-rta-data");showToast("Data cleared")}};
+    localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -708,70 +708,69 @@ function App(){
 
   const fetchAreaAnalysis=async()=>{
     if(!ctx.address&&!ctx.postcode){setAreaError("Please add address/postcode on Context tab first");return}
+    // Try Anthropic API (only works inside Claude.ai)
     setAreaLoading(true);setAreaError(null);
     try{
       const location=`${ctx.address||""}, ${ctx.postcode||""}`.trim().replace(/^,\s*/,"");
       const criteriaPrompts=areaCriteria.map(c=>`## ${c.label}\n${c.prompt}`).join("\n\n");
-      const systemPrompt=`You are a UK security consultant. Produce an area analysis for a Security Risk Assessment at: ${location}, United Kingdom. Development type: ${activeAssetPreset||"mixed use"}. For each section, provide factual professional descriptions relevant to security planning. Use specific street names, distances, details. Third person, 2-4 sentences each. Respond ONLY with a JSON object with these keys: ${areaCriteria.map(c=>'"'+c.id+'"').join(", ")}. Values are the analysis text. No markdown, no backticks, just raw JSON.`;
-      const userMsg=`Produce the area analysis for ${location}.\n\n${criteriaPrompts}`;
-      
-      var parsed=null;
-      
-      // Attempt 1: OpenRouter free tier (Llama 3.1 8B - free, CORS-friendly)
-      try{
-        const orRes=await fetch("https://openrouter.ai/api/v1/chat/completions",{
-          method:"POST",
-          headers:{"Content-Type":"application/json","HTTP-Referer":"https://aecom.com","X-Title":"AECOM RTA"},
-          body:JSON.stringify({
-            model:"meta-llama/llama-3.1-8b-instruct:free",
-            messages:[{role:"system",content:systemPrompt},{role:"user",content:userMsg}],
-            max_tokens:3000
-          })
-        });
-        if(orRes.ok){
-          const orData=await orRes.json();
-          const orText=(orData.choices&&orData.choices[0]&&orData.choices[0].message&&orData.choices[0].message.content)||"";
-          const orClean=orText.replace(/```json|```/g,"").trim();
-          parsed=JSON.parse(orClean);
-        }
-      }catch(e1){}
-
-      // Attempt 2: Anthropic API (works inside Claude.ai artifacts)
-      if(!parsed){
-        try{
-          const anRes=await fetch("https://api.anthropic.com/v1/messages",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-              model:"claude-sonnet-4-20250514",max_tokens:4000,
-              tools:[{type:"web_search_20250305",name:"web_search"}],
-              messages:[{role:"user",content:systemPrompt+"\n\n"+userMsg}]
-            })
-          });
-          if(anRes.ok){
-            const anData=await anRes.json();
-            const anText=anData.content.filter(c=>c.type==="text").map(c=>c.text).join("");
-            const anClean=anText.replace(/```json|```/g,"").trim();
-            parsed=JSON.parse(anClean);
-          }
-        }catch(e2){}
-      }
-
-      if(parsed){
-        setAreaAnalysis(parsed);
-        setAreaLoading(false);
-        showToast("Area analysis generated");
-      }else{
-        throw new Error("none");
-      }
-    }catch(e){
-      setAreaLoading(false);
-      const blank={};
-      areaCriteria.forEach(function(c){blank[c.id]=""});
-      setAreaAnalysis(blank);
-      setAreaError("AI generation could not connect. Blank fields created for manual entry. Tip: You can also paste content from ChatGPT, Gemini, or any AI — just ask it to describe the area around your site address.");
-    }
+      const prompt=`You are a UK security consultant. Produce an area analysis for a Security Risk Assessment at: ${location}, United Kingdom. Development type: ${activeAssetPreset||"mixed use"}. For each section, provide factual professional descriptions relevant to security planning. Use specific street names, distances, details. Third person, 2-4 sentences each.\n\n${criteriaPrompts}\n\nRespond ONLY with a JSON object with these keys: ${areaCriteria.map(c=>'"'+c.id+'"').join(", ")}. Values are the analysis text. No markdown, no backticks, just raw JSON.`;
+      const anRes=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,
+          tools:[{type:"web_search_20250305",name:"web_search"}],
+          messages:[{role:"user",content:prompt}]})
+      });
+      if(!anRes.ok)throw new Error("API "+anRes.status);
+      const anData=await anRes.json();
+      const anText=anData.content.filter(c=>c.type==="text").map(c=>c.text).join("");
+      const parsed=JSON.parse(anText.replace(/```json|```/g,"").trim());
+      setAreaAnalysis(parsed);setAreaLoading(false);
+      showToast("Area analysis generated");return;
+    }catch(e){}
+    // Fallback: create blank fields
+    setAreaLoading(false);
+    const blank={};areaCriteria.forEach(function(c){blank[c.id]=""});
+    setAreaAnalysis(blank);
+    setAreaError("Auto-generation only works inside Claude.ai. Use 'Copy Prompt' below to generate with any free AI, then paste the response back.");
   };
+
+  const copyAreaPrompt=function(){
+    const location=`${ctx.address||""}, ${ctx.postcode||""}`.trim().replace(/^,\s*/,"")||"[ENTER ADDRESS]";
+    const criteriaPrompts=areaCriteria.map(c=>`## ${c.label}\n${c.prompt}`).join("\n\n");
+    const prompt=`You are a UK security consultant producing an area analysis for a Security Risk Assessment (SRA) at: ${location}, United Kingdom.
+
+The development type is: ${activeAssetPreset||"mixed use"}.
+
+For each section below, provide a factual, professional description relevant to security planning. Use specific street names, distances, and details where possible. Write in third person professional tone. Each section should be 2-4 sentences.
+
+${criteriaPrompts}
+
+IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explanation) with these exact keys: ${areaCriteria.map(c=>'"'+c.id+'"').join(", ")}. Each value should be the analysis text string.`;
+    navigator.clipboard.writeText(prompt).then(function(){showToast("Prompt copied to clipboard! Paste into ChatGPT, Gemini, Claude, or Copilot")}).catch(function(){
+      // Fallback for older browsers
+      var ta=document.createElement("textarea");ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+      showToast("Prompt copied!");
+    });
+  };
+
+  const pasteAreaResponse=function(){
+    navigator.clipboard.readText().then(function(text){
+      try{
+        var clean=text.replace(/```json|```/g,"").trim();
+        // Try to find JSON in the response
+        var jsonStart=clean.indexOf("{");var jsonEnd=clean.lastIndexOf("}");
+        if(jsonStart>=0&&jsonEnd>jsonStart)clean=clean.substring(jsonStart,jsonEnd+1);
+        var parsed=JSON.parse(clean);
+        setAreaAnalysis(parsed);setAreaError(null);
+        showToast("AI response pasted successfully!");
+      }catch(e){
+        setAreaError("Could not parse the clipboard content as JSON. Make sure you copied the AI's full response. Try asking the AI to respond with only JSON and no other text.");
+      }
+    }).catch(function(){
+      setAreaError("Clipboard access denied. Use Ctrl+V in one of the text fields instead, or try the manual entry approach.");
+    });
+  };
+
   const updateAreaField=function(id,val){setAreaAnalysis(function(p){var n={...p};n[id]=val;return n})};
 
   const fetchComparisons=async(centreLat,centreLng)=>{
@@ -885,7 +884,7 @@ function App(){
     
     // Standards section
     html+=`<h2>Methodology & Standards Compliance</h2>`;
-    html+=`<h3>AECOM SRA Methodology</h3><p>This Security Risk Assessment has been conducted using AECOM's established SRA methodology, developed in full alignment with internationally recognised risk management standards. The methodology provides a structured, evidence-based framework following a logical sequence: establishing the security context and stakeholder consultation; asset identification and criticality ranking; threat identification categorised into Terrorism and Crime; Points of Interest mapping; threat analysis based on capability and intent; target attractiveness and vulnerability assessment; likelihood and impact scoring; risk rating via the 5×5 matrix; control effectiveness evaluation; risk treatment; and residual risk assessment.</p>`;
+    html+=`<h3>SRA Methodology</h3><p>This Security Risk Assessment has been conducted using the established SRA methodology, developed in full alignment with internationally recognised risk management standards. The methodology provides a structured, evidence-based framework following a logical sequence: establishing the security context and stakeholder consultation; asset identification and criticality ranking; threat identification categorised into Terrorism and Crime; Points of Interest mapping; threat analysis based on capability and intent; target attractiveness and vulnerability assessment; likelihood and impact scoring; risk rating via the 5×5 matrix; control effectiveness evaluation; risk treatment; and residual risk assessment.</p>`;
     html+=`<h3>ISO 31000:2018 — Risk Management Guidelines</h3><p>The SRA implements ISO 31000:2018: Scope, Context and Criteria (Clause 6.3); Risk Assessment comprising identification, analysis and evaluation (Clause 6.4); Risk Treatment via the TAAR framework (Clause 6.5); Communication and Consultation (Clause 6.2); and Monitoring and Review (Clause 6.6).</p>`;
     html+=`<h3>AS/NZS HB 167:2006 — Security Risk Management</h3><p>Structured around HB167: critical asset identification and ranking; dual-axis capability/intent threat assessment and DBT filtering; target attractiveness across six criteria; vulnerability assessment; likelihood determination; consequence analysis; existing control evaluation; and residual risk post-treatment.</p>`;
     html+=`<h3>ISO/IEC 31010:2019 — Risk Assessment Techniques</h3><p>Primary technique: semi-quantitative consequence/likelihood matrix (Technique B.29), supplemented by structured threat/scenario analysis (B.2) and expert judgement (B.1). Known limitations are acknowledged and mitigated through structured scoring descriptors and iterative reassessment.</p>`;
@@ -942,7 +941,7 @@ function App(){
 
     const blob=new Blob([html],{type:"application/msword"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download=`AECOM_RTA_${ctx.project||"Assessment"}_Tables.doc`;a.click();
+    a.download=`SRA_${ctx.project||"Assessment"}_Tables.doc`;a.click();
     showToast("Word document exported");
   };
 
@@ -972,7 +971,7 @@ function App(){
       "Very High":"background:#C00000;color:#fff;font-weight:bold"})[r]||"";
     const gapc=g=>!g?"":({Adequate:"background:#E2EFDA;color:#16a34a;font-weight:bold",Partial:"background:#FFF2CC;color:#d97706;font-weight:bold",Insufficient:"background:#FFC7CE;color:#dc2626;font-weight:bold"})[g]||"";
 
-    let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>AECOM RTA — ${ctx.project||"Report"}</title>
+    let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>SRA — ${ctx.project||"Report"}</title>
     <style>
     @page{size:A4 portrait;margin:1.5cm}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -998,7 +997,7 @@ function App(){
     </style></head><body>`;
 
     // Cover
-    h+=`<h1>AECOM Risk & Threat Assessment</h1>`;
+    h+=`<h1>Security Risk & Threat Assessment</h1>`;
     h+=`<div class="meta"><b>Project:</b> ${ctx.project||"—"} &nbsp; <b>No:</b> ${ctx.projectNum||"—"} &nbsp; <b>Ref:</b> ${ctx.ref||"—"} &nbsp; <b>Date:</b> ${ctx.date||"—"} &nbsp; <b>Stage:</b> ${ctx.stage||"—"}<br/><b>Assessor:</b> ${ctx.assessor||"—"} &nbsp; <b>Client:</b> ${ctx.client||"—"}</div>`;
     if(ctx.scope)h+=`<p><b>Scope:</b> ${ctx.scope}</p>`;
     if(ctx.assumptions)h+=`<p><b>Assumptions:</b> ${ctx.assumptions}</p>`;
@@ -1099,7 +1098,7 @@ function App(){
     h+=`<p><b>Pre-Mitigation:</b> ${cRisks.filter(r=>r.rat==="Very High").length} Very High, ${cRisks.filter(r=>r.rat==="High").length} High, ${cRisks.filter(r=>r.rat==="Medium").length} Medium, ${cRisks.filter(r=>r.rat==="Low").length} Low, ${cRisks.filter(r=>r.rat==="Very Low").length} Very Low.</p>`;
     h+=`<p><b>Post-Mitigation:</b> ${cRisks.filter(r=>r.resRat==="Very High").length} Very High, ${cRisks.filter(r=>r.resRat==="High").length} High, ${cRisks.filter(r=>r.resRat==="Medium").length} Medium, ${cRisks.filter(r=>r.resRat==="Low").length} Low, ${cRisks.filter(r=>r.resRat==="Very Low").length} Very Low.</p>`;
     if(pois.length>0)h+=`<p><b>POIs:</b> ${pois.length} vulnerable locations mapped.</p>`;
-    h+=`<div class="footer">© ${new Date().getFullYear()} AECOM. All Rights Reserved. J. Norman.</div></body></html>`;
+    h+=`<div class="footer">© ${new Date().getFullYear()} All Rights Reserved. J. Norman.</div></body></html>`;
 
     const w=window.open("","_blank");w.document.write(h);w.document.close();
     setTimeout(()=>{w.print()},500);
@@ -1133,7 +1132,7 @@ function App(){
     .mx td.lbl{background:#EBF1F8;color:#1B2A4A;font-weight:bold;border:1pt solid #ddd;font-size:8pt}
     </style></head><body>`;
 
-    h+=`<h1>AECOM Risk & Threat Assessment Tool</h1>`;
+    h+=`<h1>Security Risk & Threat Assessment Tool</h1>`;
     h+=`<p><b>Project:</b> ${ctx.project||"—"} &nbsp;&nbsp; <b>Project No:</b> ${ctx.projectNum||"—"} &nbsp;&nbsp; <b>Reference:</b> ${ctx.ref||"—"} &nbsp;&nbsp; <b>Date:</b> ${ctx.date||"—"} &nbsp;&nbsp; <b>Stage:</b> ${ctx.stage||"—"}</div>`;
     h+=`<p><b>Assessor:</b> ${ctx.assessor||"—"} &nbsp;&nbsp; <b>Client:</b> ${ctx.client||"—"}</div>`;
     if(ctx.notes){h+=`<h3>Notes</h3><p>${ctx.notes.replace(/\n/g,"<br/>")}</p>`}
@@ -1243,12 +1242,12 @@ function App(){
     h+=`<p><b>Post-Mitigation:</b> ${cRisks.filter(r=>r.resRat==="Very High").length} Very High, ${cRisks.filter(r=>r.resRat==="High").length} High, ${cRisks.filter(r=>r.resRat==="Medium").length} Medium, ${cRisks.filter(r=>r.resRat==="Low").length} Low, ${cRisks.filter(r=>r.resRat==="Very Low").length} Very Low.</div>`;
     h+=`<p><b>Treatment:</b> ${cRisks.filter(r=>r.treat==="Reduce").length} Reduce, ${cRisks.filter(r=>r.treat==="Transfer").length} Transfer, ${cRisks.filter(r=>r.treat==="Avoid").length} Avoid, ${cRisks.filter(r=>r.treat==="Accept").length} Accept.</div>`;
 
-    h+=`<div class="footer">© ${new Date().getFullYear()} AECOM. All Rights Reserved. J. Norman.</div>`;
+    h+=`<div class="footer">© ${new Date().getFullYear()} All Rights Reserved. J. Norman.</div>`;
     h+=`</body></html>`;
 
     const blob=new Blob([h],{type:"application/vnd.ms-excel"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download=`AECOM_RTA_${ctx.project||"Assessment"}_Data.xls`;a.click();
+    a.download=`SRA_${ctx.project||"Assessment"}_Data.xls`;a.click();
     showToast("Excel file exported");
   };
 
@@ -1362,7 +1361,7 @@ function App(){
     // Header
     React.createElement("header",{className:"header no-print"},
       React.createElement("div",null,
-          React.createElement("h1",null,"AECOM Risk & Threat Assessment Tool"),
+          React.createElement("h1",null,"Security Risk & Threat Assessment Tool"),
           React.createElement("div",{className:"header-sub"},"ISO 31000 · HB167 · ISO 31010 · v"+VERSION)
       ),
       React.createElement("div",{className:"flex gap-2 items-center"},
@@ -1375,7 +1374,7 @@ function App(){
         React.createElement("button",{className:"btn btn-danger btn-sm",onClick:clearAll},"Clear")
       ),
       React.createElement("div",{className:"header-right"},
-        React.createElement("div",null,"AECOM Security Risk Assessment"),
+        React.createElement("div",null,"Security Risk Assessment"),
         React.createElement("div",{className:"font-mono"},ctx.project?(ctx.projectNum?ctx.project+" ("+ctx.projectNum+")":ctx.project):"No project set")
       )
     ),
@@ -2254,21 +2253,30 @@ function App(){
         React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
           React.createElement("div",{className:"flex justify-between items-center mb-3"},
             React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"AREA ANALYSIS"),
-            React.createElement("div",{className:"flex gap-2"},
-              areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setAreaAnalysis(null);setAreaError(null);showToast("Area analysis cleared")}},"Clear"),
+            React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
+              areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setAreaAnalysis(null);setAreaError(null);showToast("Area analysis cleared")}},"✕ Clear"),
               !areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
                 var blank={};areaCriteria.forEach(function(c){blank[c.id]=""});
-                setAreaAnalysis(blank);setAreaError(null);showToast("Blank fields created — enter your analysis manually");
+                setAreaAnalysis(blank);setAreaError(null);showToast("Blank fields created — type or paste your analysis");
               }},"✏️ Manual Entry"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:copyAreaPrompt},"📋 Copy Prompt"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:pasteAreaResponse},"📥 Paste AI Response"),
               React.createElement("button",{className:"btn btn-dark btn-sm",onClick:fetchAreaAnalysis,disabled:areaLoading},
-                areaLoading?"⏳ Generating...":"🤖 AI Generate"
+                areaLoading?"⏳ Generating...":"🤖 Auto Generate"
               )
             )
           ),
-          React.createElement("p",{style:{fontSize:11,color:"#94a3b8",marginBottom:12}},
-            "Area intelligence for the security assessment. Use 'AI Generate' (requires Claude.ai) or 'Manual Entry' to populate. All fields are editable. ",
-            React.createElement("span",{style:{fontWeight:600}},"Assessors must verify all information."),
-            " Customise criteria in Settings."
+          React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:12}},
+            React.createElement("p",{style:{marginBottom:4}},"Area intelligence for the security assessment. All fields are editable. ",
+              React.createElement("span",{style:{fontWeight:600}},"Assessors must verify all information.")),
+            React.createElement("p",{style:{fontSize:10}},
+              React.createElement("strong",null,"How to use: "),
+              "'Auto Generate' works inside Claude.ai. For standalone use: click 'Copy Prompt' → paste into ",
+              React.createElement("a",{href:"https://chatgpt.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"ChatGPT"),", ",
+              React.createElement("a",{href:"https://gemini.google.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Gemini"),", or ",
+              React.createElement("a",{href:"https://copilot.microsoft.com",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"Copilot"),
+              " → copy the AI response → click 'Paste AI Response'. Or use 'Manual Entry' to type directly."
+            )
           ),
           areaError&&React.createElement("div",{style:{padding:10,background:"#fffbeb",borderRadius:6,color:"#92400e",fontSize:12,marginBottom:12}},"ℹ "+areaError),
           areaLoading&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#64748b"}},
@@ -2277,7 +2285,7 @@ function App(){
           ),
           !areaAnalysis&&!areaLoading&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#94a3b8",fontSize:12}},
             ctx.address||ctx.postcode?
-              "Click 'Manual Entry' to create editable fields, or 'AI Generate' to auto-populate (requires Claude.ai).":
+              "Click 'Manual Entry' to type directly, or 'Copy Prompt' to use a free AI.":
               "Add site address on the Context tab first, then create area analysis."
           ),
           areaAnalysis&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}},
@@ -2482,8 +2490,8 @@ function App(){
         React.createElement("div",{className:"card",style:{padding:24}},
           React.createElement("h3",{className:"text-sm font-bold text-slate mb-4",style:{letterSpacing:1}},"STANDARDS COMPLIANCE"),
           React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.6}},
-            React.createElement("h4",{className:"font-bold text-dark text-xs mb-1"},"AECOM SRA METHODOLOGY"),
-            React.createElement("p",{className:"mb-3"},"This Security Risk Assessment has been conducted using AECOM's established SRA methodology, developed in full alignment with internationally recognised risk management standards. The assessment follows a logical sequence: establishing the security context and stakeholder consultation; identifying and categorising critical assets; identifying threat types categorised into Terrorism and Crime; identifying Points of Interest (vulnerable locations); analysing threats based on capability and intent to determine Design Basis Threats; evaluating target attractiveness and vulnerability to determine likelihood; assessing consequence and impact; evaluating existing controls; producing a risk rating; determining risk treatment; and assessing residual risk post-mitigation."),
+            React.createElement("h4",{className:"font-bold text-dark text-xs mb-1"},"SRA METHODOLOGY"),
+            React.createElement("p",{className:"mb-3"},"This Security Risk Assessment has been conducted using the established SRA methodology, developed in full alignment with internationally recognised risk management standards. The assessment follows a logical sequence: establishing the security context and stakeholder consultation; identifying and categorising critical assets; identifying threat types categorised into Terrorism and Crime; identifying Points of Interest (vulnerable locations); analysing threats based on capability and intent to determine Design Basis Threats; evaluating target attractiveness and vulnerability to determine likelihood; assessing consequence and impact; evaluating existing controls; producing a risk rating; determining risk treatment; and assessing residual risk post-mitigation."),
             React.createElement("h4",{className:"font-bold text-dark text-xs mb-1"},"ISO 31000:2018 — Risk Management Guidelines"),
             React.createElement("p",{className:"mb-3"},"The SRA implements ISO 31000:2018: Scope, Context and Criteria (Clause 6.3); Risk Assessment comprising identification, analysis and evaluation (Clause 6.4); Risk Treatment via the TAAR framework (Clause 6.5); Communication and Consultation (Clause 6.2); and Monitoring and Review (Clause 6.6)."),
             React.createElement("h4",{className:"font-bold text-dark text-xs mb-1"},"AS/NZS HB 167:2006 — Security Risk Management"),
@@ -2638,7 +2646,7 @@ function App(){
       ),
 
       React.createElement("footer",{className:"no-print",style:{textAlign:"center",padding:"24px 0 16px",borderTop:"1px solid #e2e8f0",marginTop:32,fontSize:11,color:"#94a3b8"}},
-        React.createElement("div",null,"© "+new Date().getFullYear()+" AECOM. All Rights Reserved."),
+        React.createElement("div",null,"© "+new Date().getFullYear()+" All Rights Reserved."),
         React.createElement("div",{style:{marginTop:4}},"J. Norman — v"+VERSION)
       )
     )
