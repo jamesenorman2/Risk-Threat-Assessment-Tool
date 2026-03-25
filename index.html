@@ -1905,10 +1905,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           areaAnalysis&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
             ...areaCriteria.map(function(crit){
               var text=areaAnalysis[crit.id]||"";
-              var icons={roads:"\U0001f6e3\ufe0f",adjacencies:"\U0001f3e2",transport:"\U0001f689",landmarks:"\U0001f3db\ufe0f",crime_history:"\U0001f6a8",developments:"\U0001f3d7\ufe0f"};
+              var icons={};
               return React.createElement("div",{key:crit.id,style:{padding:12,background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0"}},
                 React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:4}},
-                  React.createElement("span",{style:{marginRight:4}},icons[crit.id]||"\U0001f4cb"),
                   crit.label
                 ),
                 React.createElement("textarea",{style:{width:"100%",minHeight:70,fontSize:11,color:"#475569",lineHeight:1.5,border:"1px solid #e2e8f0",borderRadius:6,padding:8,fontFamily:"inherit",resize:"vertical",background:"#fff"},
