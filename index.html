@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.79";
+  const VERSION="1.80";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -977,6 +977,60 @@ function App(){
       mapEl.removeAttribute("data-init");
     }
   };
+
+  // Shared typical controls/treatments for a threat
+  const getTypicalControls=function(tn){
+    tn=(tn||"").toLowerCase();
+    var m=[];
+    // Blast/vehicle threats
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")){
+      m.push("HVM bollards/planters at perimeter","Vehicle standoff distance enforcement","Blast-resistant glazing (EN 13541)","Vehicle screening at access points","Anti-ram rated barriers (IWA 14/PAS 68)","Blast-resistant construction to vulnerable areas","Vehicle access control (ANPR/rising bollards)","Hostile vehicle mitigation masterplan","Surface-mounted vehicle barriers","Speed reduction measures at approach","Vehicle search area (VSA) with overwatch","Blast analysis / stand-off modelling");
+    }
+    if(tn.includes("pbied")||tn.includes("ied")){
+      m.push("Mail/parcel screening procedures (X-ray)","Search regime at entry points","Blast-resistant lobby/reception design","Standoff distance enforcement","Hostile reconnaissance awareness training","Blast film to internal glazing","Post room isolation from occupied spaces","Suspicious package procedures","Loading bay inspection protocols","Drone detection for IED-drone threat");
+    }
+    if(tn.includes("mtfa")||tn.includes("violence")){
+      m.push("Access control to occupied spaces","Lockdown procedures and safe havens","SIA-licensed security officers","Panic/duress alarms at key locations","CCTV with real-time monitoring","Delay-rated entrance lobby (LPS 1175)","Emergency communication system","Police liaison / CT awareness briefings","Invacuation/evacuation procedures","Weapons detection screening","First-aid trained staff on site","Hostile intruder exercise programme");
+    }
+    if(tn.includes("cyber")){
+      m.push("Network segmentation and firewalls","Multi-factor authentication (MFA)","Penetration testing programme","Cyber incident response plan","Staff awareness training (phishing)","Data encryption at rest and in transit","Endpoint detection and response (EDR)","Regular patching and vulnerability management","SOC / managed security monitoring","Backup and disaster recovery plan","Access control with least privilege","Secure Wi-Fi (WPA3 / enterprise)","Third-party risk management","Cyber insurance");
+    }
+    if(tn.includes("burglary")){
+      m.push("Intruder alarm system (Grade 3+ / EN 50131)","CCTV coverage of entry points and perimeter","Secure locks to LPS 1175 / PAS 24","Security lighting to BS 5489","Out-of-hours security patrols","Reinforced doors and frames","Anti-climb measures to roof/upper levels","Key management procedures","Vibration/glass-break detectors","Secured glazing (laminated / EN 356)","Perimeter detection system","Rapid police response (URN holder)");
+    }
+    if(tn.includes("theft")&&!tn.includes("info")){
+      m.push("CCTV in public/communal areas","Asset tagging and register","Secure storage for valuables","Access control to sensitive areas","Visitor management system","Staff vetting (BS 7858)","Clear desk policy","Laptop locks and secure docking","Parcel/bag search capability","Loading bay supervision","Theft reporting procedures");
+    }
+    if(tn.includes("arson")){
+      m.push("Fire detection to BS 5839","Bin stores and skips away from building","External lighting to rear and service areas","CCTV coverage of vulnerable facades","Combustible material management","Letterbox restriction (fire-rated)","Sprinkler/suppression system","External fire risk assessment","Perimeter lighting and detection","Fireproof roller shutters to openings","Smoke ventilation system","Fire compartmentation");
+    }
+    if(tn.includes("insider")){
+      m.push("Vetting and screening (BS 7858)","Access control zoning with audit trail","Clear desk/screen policy","Data loss prevention (DLP) tools","Endpoint monitoring","Whistleblowing policy","Least privilege access model","Joiner/mover/leaver process","USB port restriction","Behavioural analytics","Security clearance for sensitive roles","Regular access rights review");
+    }
+    if(tn.includes("trespass")){
+      m.push("Perimeter fencing/boundary treatment","Access control at all entry points","CCTV with analytics/detection","Signage (private land / no access)","Security patrols (random pattern)","Anti-climb topping/paint","Perimeter intrusion detection","Lighting to boundary and dead spots","Landscaping as natural surveillance","Challenge culture / staff training");
+    }
+    if(tn.includes("public order")||tn.includes("asb")){
+      m.push("CCTV in public and communal areas","Security presence during peak hours","Hostile reconnaissance awareness training","Designing out crime (Secured by Design)","Coordination with local police/BID","Defensible space and natural surveillance","Target hardening to ground floor","Graffiti/vandalism rapid response","Tenant/occupier liaison","Community safety partnership");
+    }
+    if(tn.includes("criminal damage")){
+      m.push("Anti-graffiti coating to ground floor","Impact-resistant glazing (EN 356)","CCTV with recording and analytics","Security lighting (BS 5489)","Rapid repair/response procedures","Target hardening to vulnerable facades","Sacrificial panels to accessible surfaces","Perimeter planting as buffer","Damage reporting and evidence capture","Insurance and reinstatement plan");
+    }
+    if(tn.includes("soc")){
+      m.push("Fraud prevention controls","Background screening for staff and contractors","Secure document disposal","IT access control audit trail","Organised crime threat briefings","Proceeds of Crime Act awareness","Supply chain due diligence","Anomaly detection in financial systems","Whistleblowing and confidential reporting","Engagement with NCA/police intelligence");
+    }
+    if(tn.includes("info")){
+      m.push("Data classification policy","Encrypted storage and transmission","Access logging and monitoring","Secure disposal of media (BSEN 15713)","Data loss prevention (DLP) tools","Information security management (ISO 27001)","Staff data handling training","Mobile device management (MDM)","Removable media controls","Incident reporting and breach plan","Third-party data processing agreements","Regular information asset audit");
+    }
+    // Universal measures if still empty
+    if(m.length===0){
+      m.push("CCTV surveillance system","Access control system","Security lighting","Manned security / patrols","Staff security awareness training","Incident response procedures","Visitor management system","Intruder detection system","Emergency communication plan","Business continuity plan");
+    }
+    // Deduplicate
+    var seen={};return m.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
+  };
+
+
 
 
   const copyAreaPrompt=function(){
@@ -2869,7 +2923,31 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{className:"grid grid-3",style:{gap:16}},
                 React.createElement("div",null,
                   React.createElement("div",{className:"sr-label",style:{textAlign:"left"}},"Controls Description"),
-                  React.createElement("input",{className:"input",value:c.desc||"",onChange:e=>scd(t.id,"desc",e.target.value),placeholder:"Describe existing controls..."})
+                  React.createElement("textarea",{className:"input",style:{minHeight:60,resize:"vertical",fontSize:11,lineHeight:1.4},value:c.desc||"",onChange:e=>scd(t.id,"desc",e.target.value),placeholder:"Describe existing controls..."}),
+                  React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginTop:6}},
+                    getTypicalControls(t.n).slice(0,12).map(function(typ){
+                      var alreadyIn=(c.desc||"").toLowerCase().includes(typ.toLowerCase().substring(0,20));
+                      return React.createElement("button",{key:typ,
+                        style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px solid "+(alreadyIn?"#bbf7d0":"#e2e8f0"),
+                          background:alreadyIn?"#f0fdf4":"#f8fafc",color:alreadyIn?"#16a34a":"#64748b",
+                          cursor:alreadyIn?"default":"pointer",fontFamily:"inherit"},
+                        title:alreadyIn?"Already in description":"Click to append to description",
+                        onClick:function(){
+                          if(alreadyIn)return;
+                          var existing=(c.desc||"").trim();
+                          var sep=existing?"; ":"";
+                          scd(t.id,"desc",existing+sep+typ);
+                        }
+                      },alreadyIn?"\u2713 "+typ:"+ "+typ);
+                    }),
+                    React.createElement("button",{
+                      style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600},
+                      onClick:function(){
+                        var custom=prompt("Enter custom control:");
+                        if(custom){var existing=(c.desc||"").trim();var sep=existing?"; ":"";scd(t.id,"desc",existing+sep+custom)}
+                      }
+                    },"\u270f Custom...")
+                  )
                 ),
                 React.createElement("div",{className:"gap-col"},
                   React.createElement("div",{className:"crit-label"},"Effectiveness"),
@@ -2989,26 +3067,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
               targetedAssets.map(function(asset){
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
-                // Typical treatments based on threat type and asset type
-                var typicals=[];
-                var tn=r.n.toLowerCase();var ac=asset.cat.toLowerCase();
-                // Physical security measures
-                if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta"))typicals.push("Install HVM bollards/planters at perimeter","Implement vehicle standoff distance","Blast-resistant glazing to vulnerable facades","Vehicle screening at access points","Anti-ram barriers at entrances");
-                if(tn.includes("pbied")||tn.includes("ied"))typicals.push("Mail/parcel screening procedures","Search regime at entry points","Blast-resistant construction to high-risk areas","Standoff distance enforcement");
-                if(tn.includes("mtfa")||tn.includes("violence"))typicals.push("Access control to occupied spaces","Lockdown procedures and safe rooms","Security staff with SIA licence","Panic alarms at reception and key locations","CCTV with monitoring capability");
-                if(tn.includes("cyber"))typicals.push("Network segmentation and firewalls","Multi-factor authentication","Penetration testing programme","Cyber incident response plan","Staff awareness training","Data encryption at rest and in transit");
-                if(tn.includes("burglary")||tn.includes("theft"))typicals.push("Intruder alarm system (Grade 3+)","CCTV coverage of entry points and perimeter","Secure locks to LPS 1175 standard","Security lighting to BS 5489","Out-of-hours security patrols");
-                if(tn.includes("arson"))typicals.push("Fire detection to BS 5839","Bin stores and skips away from building","External lighting to rear and service areas","CCTV coverage of vulnerable facades","Combustible material management");
-                if(tn.includes("insider"))typicals.push("Vetting and screening (BS 7858)","Access control zoning with audit trail","Clear desk/screen policy","DLP and endpoint monitoring","Whistleblowing policy");
-                if(tn.includes("trespass"))typicals.push("Perimeter fencing/boundary treatment","Access control at all entry points","CCTV with analytics","Signage and deterrence","Security patrols");
-                if(tn.includes("public order")||tn.includes("asb"))typicals.push("CCTV in public areas","Security presence during peak hours","Hostile reconnaissance awareness training","Design out crime (SBD principles)","Coordination with local police");
-                if(tn.includes("criminal damage"))typicals.push("Anti-graffiti coating to ground floor","Impact-resistant glazing","CCTV with recording","Security lighting","Rapid repair/response procedures");
-                if(tn.includes("soc"))typicals.push("Fraud prevention controls","Background screening for contractors","Secure document disposal","IT access control audit trail","Organised crime threat briefings");
-                if(tn.includes("info"))typicals.push("Data classification policy","Encrypted storage and transmission","Access logging and monitoring","Secure disposal of media","DLP solution deployment");
-                // General measures if nothing specific
-                if(typicals.length===0)typicals.push("CCTV coverage","Access control","Security lighting","Security patrols","Staff awareness training","Incident response procedures");
-                // Deduplicate
-                var seen={};typicals=typicals.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
+                var typicals=getTypicalControls(r.n);
 
                 return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
                   React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:4}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
@@ -3046,7 +3105,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   // Current measures list
                   assetMeasures.filter(function(m){return m}).length>0&&React.createElement("div",{style:{marginTop:4}},
                     assetMeasures.map(function(measure,mi){
-                      if(!measure&&assetMeasures.filter(function(m){return m}).length>0)return null;
+                      /* show all including empty custom fields */
                       return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
                         React.createElement("span",{style:{fontSize:10,color:"#16a34a",width:16,flexShrink:0,fontWeight:700}},(mi+1)+"."),
                         React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:measure?"#bbf7d0":"#e2e8f0",background:measure?"#fafffe":"#fff"},
