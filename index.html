@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.84";
+  const VERSION="1.85";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -979,71 +979,114 @@ function App(){
   };
 
   // Shared typical controls/treatments for a threat
-  const getTypicalControls=function(tn){
+  const getTypicalControls=function(tn,context){
     tn=(tn||"").toLowerCase();
+    context=(context||"").toLowerCase();
     var m=[];
+    var isExisting=context==="existing";
+    var isTreatment=context==="treatment";
 
     // ── PUBLIC REALM & CPTED ──
-    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("public order")||tn.includes("asb")||tn.includes("trespass")||tn.includes("criminal damage")){
-      m.push("CPTED principles applied to public realm design","Natural surveillance \u2014 open spaces with clear lines of sight","Natural access control \u2014 defined entrances with low-level features and lighting","Territorial demarcation \u2014 landscaping and paving to define ownership","Maintenance and management regime for external areas");
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("public order")||tn.includes("asb")||tn.includes("trespass")||tn.includes("criminal damage")||tn.includes("violence")){
+      m.push("CPTED principles applied to public realm design","Natural surveillance \u2014 maximise visibility with clear sight lines and well-designed lighting","Natural access control \u2014 clear entrances/exits with signage, lighting and natural features","Territorial demarcation \u2014 landscaping and paving to define ownership and deter intruders","Maintenance and management regime for external areas","Internal public spaces designed with CPTED principles and natural surveillance");
     }
 
     // ── EXTERNAL LIGHTING ──
-    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("burglary")||tn.includes("theft")||tn.includes("arson")||tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("public order")){
-      m.push("External security lighting scheme designed to safety standards","Dusk-to-dawn LED lighting with photocell control","Uniform lighting achieving minimum uniformity ratio","Low-level wayfinding lighting to avoid CCTV bloom","Colour-rendering lamps to support identification");
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("burglary")||tn.includes("theft")||tn.includes("arson")||tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("public order")||tn.includes("violence")){
+      m.push("Uniform external lighting working with CCTV and natural surveillance","Dusk-to-dawn lighting at building shell and all entry/exit points","Well-lit pedestrian routes, car parks and building facade","Vandal-resistant light fittings mounted at height","Colour-rendering lamps to support identification","Lighting design not obstructed by landscaping features","No PIR/sensor lighting \u2014 permanent illumination to prevent disabling");
     }
 
-    // ── CCTV ──
-    m.push("CCTV system compliant with video surveillance standards","External CCTV at all entry/exit points and recessed areas","External CCTV covering cycle parking and perimeter","Internal CCTV at entrances, reception, deliveries, lift lobbies","Internal CCTV at cycle stores, circulation areas and back-of-house","Facial recognition capability at external access points","Vandal-resistant, weatherproof camera housings");
+    // ── LANDSCAPING ──
+    if(tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("burglary")||tn.includes("public order")){
+      m.push("Landscape management regime to discourage crime","Landscaping maintained to preserve CCTV and natural surveillance","Tree canopies pruned to minimum 2.2m height","Evergreen shrubbery for year-round perimeter demarcation","Robust, securely fixed street furniture and hard landscaping","Mature trees managed to avoid masking lighting or creating climbing aids");
+    }
+
+    // ── CCTV EXTERNAL ──
+    m.push("CCTV coverage of building perimeter and all entry/exit points","CCTV at vehicle entrance barriers and pedestrian access points","CCTV covering recessed areas, cycle parking and service areas","Vandal-resistant weatherproof camera housings");
+
+    // ── CCTV INTERNAL ──
+    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("theft")||tn.includes("burglary")||tn.includes("insider")||tn.includes("trespass")||tn.includes("pbied")){
+      m.push("Internal CCTV at reception, main entrances and lift lobbies","CCTV in stair cores at each level","CCTV at back-of-house corridors, deliveries and plant room entrances","CCTV at money storage/counting areas and sensitive locations","Facial recognition capability at external access points","CCTV images recorded and retained for minimum 31 days","Remote CCTV access from workstations and mobile devices");
+    }
 
     // ── ACCESS CONTROL ──
-    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")||tn.includes("insider")||tn.includes("pbied")){
-      m.push("Automated Access Control System (AACS) at all external points","Access control zoned by user groups and time profiles","Video intercom for out-of-hours remote access control","Door contacts on all perimeter doors linked to monitoring","AACS integrated with fire/life safety egress requirements","AACS linked to security control room","Privacy zoning exercise for access rights");
+    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")||tn.includes("insider")||tn.includes("pbied")||tn.includes("ied")){
+      m.push("Electronic Access Control System (EACS) at all external entry points","Access control defined by user groups and zone permissions","Door contacts on all perimeter doors with unauthorised-use alarms","EACS integrated with fire alarm for automatic door release","EACS compatible with mobile/Bluetooth/NFC/QR credentials","EACS linked to security monitoring location with full audit trail","Access control to stair core lobbies at ground floor","Access control at each level served by stair cores","Access control to offices, plant rooms and back-of-house areas");
+    }
+
+    // ── VISITOR MANAGEMENT ──
+    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("theft")||tn.includes("trespass")||tn.includes("pbied")||tn.includes("insider")){
+      m.push("Visitor management \u2014 all visitors report to reception, sign in and issued passes","Contractor sign-in with legitimate purpose verification","Visitor audit trail with sign-in/out times and visit purpose");
+    }
+
+    // ── INTERCOM ──
+    if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("theft")||tn.includes("mtfa")){
+      m.push("Video intercom at vehicle barriers, reception and main entrances","IP-based intercom with remote access from workstations and mobile devices","Anti-vandal external intercom panels");
     }
 
     // ── INTRUDER DETECTION ──
     if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")||tn.includes("arson")||tn.includes("criminal damage")){
-      m.push("Intruder alarm system with Grade 3 hardware","Panic buttons at reception desk(s)","Panic button with local sounder at delivery/cycle entrance","Panic buttons in security control room","System designed to achieve police response capability");
+      m.push("Intruder alarm system with Grade 3 hardware","Panic buttons at reception desk and security monitoring location","Panic button with local sounder at delivery entrance","System designed to achieve police response capability","Fire escape doors alarmed to prevent misuse with position monitoring");
     }
 
-    // ── BUILDING FACADE ──
-    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("burglary")||tn.includes("criminal damage")||tn.includes("trespass")||tn.includes("arson")){
-      m.push("Building facade designed for forced-entry protection","Minimal main ingress/egress doors","Green walls/art features assessed to prevent climbing aids","External stairs to plant areas fitted with detection","Equipment and waste bins stored away from facade","Vehicle impact protection to vulnerable frontages");
+    // ── EXTERNAL DOORS ──
+    if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("arson")||tn.includes("mtfa")||tn.includes("theft")){
+      m.push("Security-rated external doorsets with access control","Door position monitoring with forced/left-open/tamper alarms","Emergency escape doors without visible external ironmongery","Non-recessed external doorways","Glazing within or adjacent to doorsets to enhanced security rating");
     }
 
-    // ── GLAZING ──
-    if(tn.includes("vbied")||tn.includes("ied")||tn.includes("pbied")||tn.includes("burglary")||tn.includes("criminal damage")){
-      m.push("Ground floor glazing to enhanced security rating","Window opening restrictors fitted","Angled sills to prevent climbing, seating or litter","Security-rated glazing to sensitive/storage areas","Curtain walling system tested to security rating");
-    }
-
-    // ── BLAST / HVM ──
-    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")){
-      m.push("HVM bollards/planters at perimeter","Vehicle standoff distance enforcement","Blast-resistant construction to vulnerable areas","Anti-ram rated barriers at vehicle entry points","Speed reduction measures on approach","Vehicle search area with overwatch position","Blast analysis and standoff modelling","Hostile vehicle mitigation masterplan");
-    }
-
-    // ── SEARCH / SCREENING ──
-    if(tn.includes("pbied")||tn.includes("ied")||tn.includes("mtfa")){
-      m.push("Mail and parcel screening procedures","Search regime at building entry points","Post room isolated from occupied spaces","Suspicious package response procedures","Loading bay inspection protocols","Weapons detection screening at entry");
-    }
-
-    // ── DOORS (EXTERNAL) ──
-    if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("arson")||tn.includes("mtfa")){
-      m.push("Security-rated external doorsets","Door position monitoring with forced/left-open alarms","Emergency escape doors in steel without external ironmongery","Automated doors with manual override and security rating","Non-recessed external doorways");
+    // ── INTERNAL SECURE DOORS ──
+    if(tn.includes("insider")||tn.includes("theft")||tn.includes("info")||tn.includes("cyber")||tn.includes("burglary")){
+      m.push("Security-rated doorsets to MER, comms rooms, post room, SCR","Security-rated doorsets to cycle storage and plant rooms","Offices equipped with internal thumb-turn locks for lockdown","Plant room access secured with electronic access control","Key management \u2014 mechanical keys stored in secure electronic cabinet");
     }
 
     // ── RECEPTION / LOBBY ──
     if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("pbied")||tn.includes("theft")||tn.includes("trespass")){
-      m.push("Security-rated barrel/portal lobby doors","Lockdown facility activated from reception desk","Speedlanes controlling access to lift lobbies","Tailgating detection and deterrence","QR reader integration for visitor management","Visitor management and pre-registration system");
+      m.push("Main entrance managed with access control and intercom","Speedlanes or turnstiles controlling access to lift lobbies","Lockdown facility activated from reception desk","Tailgating detection and deterrence measures");
     }
 
-    // ── INTERNAL SECURE AREAS ──
-    if(tn.includes("insider")||tn.includes("theft")||tn.includes("info")||tn.includes("cyber")||tn.includes("burglary")){
-      m.push("Security-rated doorsets to sensitive rooms (comms, plant, SCR)","Access control to all tenant floors via lift integration","Stairwell access control between floors and user spaces","Fire escape doors alarmed to prevent misuse","Door position monitoring on fire escapes");
+    // ── GLAZING ──
+    if(tn.includes("vbied")||tn.includes("ied")||tn.includes("pbied")||tn.includes("burglary")||tn.includes("criminal damage")){
+      m.push("Enhanced security glazing to ground floor and accessible windows","Laminated construction glazing to minimise blast fragmentation","Window opening restrictors fitted","Angled window sills to prevent climbing, seating or litter","Curtain walling system tested to security rating");
+    }
+
+    // ── BLAST / HVM ──
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")){
+      m.push("HVM bollards/planters at perimeter","Vehicle standoff distance enforcement","Blast-resistant construction to vulnerable areas","Anti-ram rated barriers at vehicle entry points","Speed reduction measures on approach","Vehicle search area with overwatch position","Blast analysis and standoff modelling","Hostile vehicle mitigation masterplan","Reinforced collision/blast jackets to accessible structural columns","Vehicle barrier integrated with access control at delivery entrance","ANPR to reduce operational reliance on security staff");
+    }
+
+    // ── VEHICLE ACCESS ──
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("theft")||tn.includes("burglary")){
+      m.push("Vehicle entrance barriers integrated with access control","Vehicle barriers with intercom linked to security monitoring","CCTV monitoring at all vehicle entrances","ANPR for vehicle identification and access management","Restricted vehicle access with secondary barrier for delivery bays");
+    }
+
+    // ── PERIMETER ──
+    if(tn.includes("trespass")||tn.includes("burglary")||tn.includes("criminal damage")||tn.includes("arson")||tn.includes("asb")){
+      m.push("Perimeter walls/fencing monitored by CCTV","Consistent height perimeter fencing to limit vulnerabilities","Clear 2m demarcation zone either side of perimeter for sight lines","Maintenance regime to remove climbing aids from perimeter","Security-rated pedestrian boundary gates","Overgrown plants pruned regularly around perimeter");
+    }
+
+    // ── SEARCH / SCREENING / MAIL ──
+    if(tn.includes("pbied")||tn.includes("ied")||tn.includes("mtfa")){
+      m.push("Mail and parcel screening procedures","Dedicated delivery receiving/mail handling room","Receiving room physically separated from business operations","Staff trained on suspicious mail identification and response","Loading bay inspection protocols","Weapons detection screening at entry");
+    }
+
+    // ── DELIVERIES / REFUSE ──
+    if(tn.includes("arson")||tn.includes("theft")||tn.includes("trespass")||tn.includes("ied")){
+      m.push("Deliveries subject to pre-arranged time profiles","External bin stores positioned away from buildings","Internal bin stores secured with electronic access control","Bin stores monitored by CCTV","Dedicated delivery receiving room secured and monitored");
+    }
+
+    // ── STAIR CORES / LIFTS ──
+    if(tn.includes("mtfa")||tn.includes("trespass")||tn.includes("burglary")||tn.includes("theft")){
+      m.push("Stairwell access control between floors and user spaces","CCTV in stair cores at each level","Lift access integrated with EACS to prevent unauthorised floor access");
+    }
+
+    // ── OFFICES / INTERNAL ──
+    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("insider")||tn.includes("theft")){
+      m.push("Offices with thumb-turn locks for rapid internal lockdown","Stricter access control and CCTV for areas holding critical information","Toilets and changing facilities with high visibility entrances","Staff lockers fitted with locks","Changing facilities secured with access control and CCTV");
     }
 
     // ── CYBER / INFORMATION ──
     if(tn.includes("cyber")){
-      m.push("Network segmentation and firewalls","Multi-factor authentication","Penetration testing programme","Cyber incident response plan","Staff phishing awareness training","Data encryption at rest and in transit","Endpoint detection and response","Patch management and vulnerability scanning","SOC or managed security monitoring","Backup and disaster recovery plan","Least-privilege access model","Secure Wi-Fi configuration","Third-party cyber risk management","Cyber insurance");
+      m.push("Network segmentation and firewalls","Multi-factor authentication","Penetration testing programme","Cyber incident response plan","Staff phishing awareness training","Data encryption at rest and in transit","Endpoint detection and response","Patch management and vulnerability scanning","SOC or managed security monitoring","Backup and disaster recovery plan","Least-privilege access model","Secure Wi-Fi configuration","Third-party cyber risk management","Cyber insurance","Security systems on dedicated VLAN","Cyber security risk management strategy for IoT and digital assets","PII stored securely to prevent theft in cyber attack");
     }
     if(tn.includes("info")){
       m.push("Data classification policy","Encrypted storage and transmission","Access logging and monitoring","Secure media disposal","Data loss prevention tools","Information security management system","Staff data handling training","Mobile device management","Removable media controls","Breach notification and incident plan","Third-party data processing agreements","Regular information asset audit");
@@ -1061,17 +1104,27 @@ function App(){
 
     // ── ARSON ──
     if(tn.includes("arson")){
-      m.push("Fire detection system","Refuse storage lockable and away from building","External lighting to rear and service areas","Letterbox fire protection measures","Sprinkler or suppression system","Fire compartmentation","Smoke ventilation system","Combustible material management procedures");
+      m.push("Fire detection system to all areas","Refuse storage lockable and away from building","External lighting to rear and service areas","Letterbox fire protection measures","Sprinkler or suppression system","Fire compartmentation","Smoke ventilation system","Combustible material management procedures");
     }
 
-    // ── SECURITY CONTROL ROOM ──
+    // ── SECURITY CONTROL ROOM / MONITORING ──
     if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("vbied")||tn.includes("pbied")){
-      m.push("Security control room with ergonomic layout","Video wall not viewable from main SCR door","SIA-licensed security officers","Hostile reconnaissance awareness training","Emergency communication system","Invacuation routes and safe havens within building core","Lockdown procedures and rehearsal programme");
+      m.push("Dedicated security monitoring location in secure area","Security monitoring away from publicly visible areas","Security monitoring location secured with access control and CCTV","Electronic key cabinet in security monitoring location","SIA-licensed security operatives","Hostile reconnaissance awareness training","Emergency communication system","Invacuation routes and safe havens within building core","Lockdown procedures and rehearsal programme","UPS backup for all security systems and monitoring positions");
+    }
+
+    // ── POWER / NETWORK ──
+    if(tn.includes("cyber")||tn.includes("insider")){
+      m.push("UPS for security systems, servers and monitoring positions","Security systems on dedicated VLAN on converged network","Fail-secure electronic locks reverting to safe mode after battery depletion");
     }
 
     // ── BICYCLE SECURITY ──
     if(tn.includes("theft")||tn.includes("burglary")||tn.includes("criminal damage")){
-      m.push("External cycle stands approved by Secured by Design","Internal cycle storage with security-rated access doors","CCTV coverage of all cycle storage areas","E-bike storage with fire/smoke rated doorset");
+      m.push("Cycle stands approved by Secured by Design","Internal cycle storage with security-rated access doors","CCTV coverage of all cycle storage areas","E-bike storage with fire and smoke rated doorset","External cycle stands securely fixed with no exposed fixings");
+    }
+
+    // ── OPERATIONAL SECURITY ──
+    if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("insider")||tn.includes("theft")||tn.includes("public order")){
+      m.push("Regular review of security systems and procedures","Staff training on security policies and evacuation procedures","Training on installed security equipment","Ongoing security operative training","Incident recording and reporting procedures");
     }
 
     // ── CONSTRUCTION PHASE ──
@@ -1081,7 +1134,7 @@ function App(){
 
     // ── GENERAL / FALLBACK ──
     if(m.length<5){
-      m.push("CCTV surveillance system","Access control system","Security lighting","Manned security patrols","Staff security awareness training","Incident response procedures","Visitor management system","Intruder detection system","Emergency communication plan","Building maintenance and management regime");
+      m.push("CCTV surveillance system","Electronic access control system","Security lighting","Manned security patrols","Staff security awareness training","Incident response procedures","Visitor management system","Intruder detection system","Emergency communication plan","Building maintenance and management regime");
     }
 
     var seen={};return m.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
@@ -2982,7 +3035,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("div",{className:"sr-label",style:{textAlign:"left"}},"Controls Description"),
                   React.createElement("textarea",{className:"input",style:{minHeight:60,resize:"vertical",fontSize:11,lineHeight:1.4},value:c.desc||"",onChange:e=>scd(t.id,"desc",e.target.value),placeholder:"Describe existing controls..."}),
                   React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginTop:6}},
-                    getTypicalControls(t.n).slice(0,12).map(function(typ){
+                    getTypicalControls(t.n,"existing").map(function(typ){
                       var alreadyIn=(c.desc||"").toLowerCase().includes(typ.toLowerCase().substring(0,20));
                       return React.createElement("button",{key:typ,
                         style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px solid "+(alreadyIn?"#bbf7d0":"#e2e8f0"),
@@ -3080,7 +3133,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // RESIDUAL RISK
       tab==="residual"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Residual Risk"),
+        React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
         React.createElement("p",{className:"section-sub"},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry."),
         React.createElement(HelpBox,{title:"Residual Risk Scoring",
           description:"Re-score Likelihood and Impact post-treatment to demonstrate ALARP. Risks rated High or Very High expand to show each targeted asset with space to record planned treatment measures \u2014 specific security controls, design features, or operational procedures.",
@@ -3124,7 +3177,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
               targetedAssets.map(function(asset){
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
-                var typicals=getTypicalControls(r.n);
+                var typicals=getTypicalControls(r.n,"treatment");
 
                 return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
                   React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:4}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
@@ -3196,7 +3249,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   threatPois.map(function(poi){
                     var poiKey="poi_"+poi.id;
                     var poiMeasures=(measures[poiKey]&&measures[poiKey].length>0)?measures[poiKey]:[""];
-                    var typicals=getTypicalControls(r.n);
+                    var typicals=getTypicalControls(r.n,"treatment");
                     return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
                       React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:2}},poi.name||"Unnamed POI"),
                       poi.desc&&React.createElement("div",{style:{fontSize:10,color:"#64748b",marginBottom:4}},poi.desc),
