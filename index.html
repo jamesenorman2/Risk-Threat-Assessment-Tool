@@ -494,7 +494,7 @@ function HelpBox({title,description,scaleItems}){
 const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n:"2"},{id:"assets",l:"Assets",n:"3"},{id:"threats",l:"Threats",n:"4"},
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Vulnerability",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
-  {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk",n:"10"},
+  {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk & Treatments",n:"10"},
   {id:"dashboard",l:"Summary",n:"11"},
   {id:"methodology",l:"Methodology",n:"13"},{id:"settings",l:"Settings",n:"14"}];
 
@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.78";
+  const VERSION="1.79";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2989,37 +2989,86 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
               targetedAssets.map(function(asset){
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
-                return React.createElement("div",{key:asset.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
-                  React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
-                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
-                    React.createElement("button",{className:"btn-add",style:{fontSize:10,padding:"2px 8px"},onClick:function(){
-                      setTreatmentMeasures(function(prev){
-                        var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
-                        t[asset.id]=[...(t[asset.id]||[""]),""]; p[r.id]=t;return p;
-                      });
-                    }},"+ Add Measure")
-                  ),
-                  assetMeasures.map(function(measure,mi){
-                    return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:4,alignItems:"center"}},
-                      React.createElement("span",{style:{fontSize:10,color:"#94a3b8",width:16,flexShrink:0}},(mi+1)+"."),
-                      React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px"},
-                        value:measure,placeholder:"Describe planned treatment measure for this asset...",
-                        onChange:function(e){
-                          var val=e.target.value;
+                // Typical treatments based on threat type and asset type
+                var typicals=[];
+                var tn=r.n.toLowerCase();var ac=asset.cat.toLowerCase();
+                // Physical security measures
+                if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta"))typicals.push("Install HVM bollards/planters at perimeter","Implement vehicle standoff distance","Blast-resistant glazing to vulnerable facades","Vehicle screening at access points","Anti-ram barriers at entrances");
+                if(tn.includes("pbied")||tn.includes("ied"))typicals.push("Mail/parcel screening procedures","Search regime at entry points","Blast-resistant construction to high-risk areas","Standoff distance enforcement");
+                if(tn.includes("mtfa")||tn.includes("violence"))typicals.push("Access control to occupied spaces","Lockdown procedures and safe rooms","Security staff with SIA licence","Panic alarms at reception and key locations","CCTV with monitoring capability");
+                if(tn.includes("cyber"))typicals.push("Network segmentation and firewalls","Multi-factor authentication","Penetration testing programme","Cyber incident response plan","Staff awareness training","Data encryption at rest and in transit");
+                if(tn.includes("burglary")||tn.includes("theft"))typicals.push("Intruder alarm system (Grade 3+)","CCTV coverage of entry points and perimeter","Secure locks to LPS 1175 standard","Security lighting to BS 5489","Out-of-hours security patrols");
+                if(tn.includes("arson"))typicals.push("Fire detection to BS 5839","Bin stores and skips away from building","External lighting to rear and service areas","CCTV coverage of vulnerable facades","Combustible material management");
+                if(tn.includes("insider"))typicals.push("Vetting and screening (BS 7858)","Access control zoning with audit trail","Clear desk/screen policy","DLP and endpoint monitoring","Whistleblowing policy");
+                if(tn.includes("trespass"))typicals.push("Perimeter fencing/boundary treatment","Access control at all entry points","CCTV with analytics","Signage and deterrence","Security patrols");
+                if(tn.includes("public order")||tn.includes("asb"))typicals.push("CCTV in public areas","Security presence during peak hours","Hostile reconnaissance awareness training","Design out crime (SBD principles)","Coordination with local police");
+                if(tn.includes("criminal damage"))typicals.push("Anti-graffiti coating to ground floor","Impact-resistant glazing","CCTV with recording","Security lighting","Rapid repair/response procedures");
+                if(tn.includes("soc"))typicals.push("Fraud prevention controls","Background screening for contractors","Secure document disposal","IT access control audit trail","Organised crime threat briefings");
+                if(tn.includes("info"))typicals.push("Data classification policy","Encrypted storage and transmission","Access logging and monitoring","Secure disposal of media","DLP solution deployment");
+                // General measures if nothing specific
+                if(typicals.length===0)typicals.push("CCTV coverage","Access control","Security lighting","Security patrols","Staff awareness training","Incident response procedures");
+                // Deduplicate
+                var seen={};typicals=typicals.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
+
+                return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
+                  React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:4}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
+                  // Typical treatment buttons
+                  React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
+                    typicals.map(function(typ){
+                      var alreadyAdded=assetMeasures.some(function(m){return m===typ});
+                      return React.createElement("button",{key:typ,
+                        style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
+                          background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
+                          cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                        title:alreadyAdded?"Already added":"Click to add this measure",
+                        onClick:function(){
+                          if(alreadyAdded)return;
                           setTreatmentMeasures(function(prev){
-                            var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
-                            var arr=[...(t[asset.id]||[""])];arr[mi]=val;t[asset.id]=arr;p[r.id]=t;return p;
+                            var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                            var arr=[...(t2[asset.id]||[])].filter(function(v){return v});
+                            arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p;
                           });
                         }
-                      }),
-                      assetMeasures.length>1&&React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
+                      },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                    }),
+                    React.createElement("button",{
+                      style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px dashed #94a3b8",
+                        background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600},
+                      onClick:function(){
                         setTreatmentMeasures(function(prev){
-                          var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
-                          var arr=[...(t[asset.id]||[])];arr.splice(mi,1);t[asset.id]=arr;p[r.id]=t;return p;
+                          var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                          var arr=[...(t2[asset.id]||[])].filter(function(v){return v});
+                          arr.push("");t2[asset.id]=arr;p[r.id]=t2;return p;
                         });
-                      }},"\u00d7")
-                    );
-                  })
+                      }
+                    },"\u270f Custom...")
+                  ),
+                  // Current measures list
+                  assetMeasures.filter(function(m){return m}).length>0&&React.createElement("div",{style:{marginTop:4}},
+                    assetMeasures.map(function(measure,mi){
+                      if(!measure&&assetMeasures.filter(function(m){return m}).length>0)return null;
+                      return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
+                        React.createElement("span",{style:{fontSize:10,color:"#16a34a",width:16,flexShrink:0,fontWeight:700}},(mi+1)+"."),
+                        React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:measure?"#bbf7d0":"#e2e8f0",background:measure?"#fafffe":"#fff"},
+                          value:measure,placeholder:"Type custom treatment measure...",
+                          onChange:function(e){
+                            var val=e.target.value;
+                            setTreatmentMeasures(function(prev){
+                              var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                              var arr=[...(t2[asset.id]||[""])];arr[mi]=val;t2[asset.id]=arr;p[r.id]=t2;return p;
+                            });
+                          }
+                        }),
+                        React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
+                          setTreatmentMeasures(function(prev){
+                            var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                            var arr=[...(t2[asset.id]||[])];arr.splice(mi,1);if(arr.length===0)arr=[""];t2[asset.id]=arr;p[r.id]=t2;return p;
+                          });
+                        }},"\u00d7")
+                      );
+                    })
+                  ),
+                  assetMeasures.filter(function(m){return m}).length===0&&React.createElement("div",{style:{fontSize:10,color:"#d4d4d4",fontStyle:"italic",marginTop:4}},"Click a typical measure above or add a custom one")
                 );
               })
             ),
