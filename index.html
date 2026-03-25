@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.74";
+  const VERSION="1.76";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -581,6 +581,7 @@ function App(){
   const[tx,setTx]=useState({});
   const[rs,setRs]=useState({});
   const[acc,setAcc]=useState({});
+  const[treatmentMeasures,setTreatmentMeasures]=useState({});
   const[toast,setToast]=useState(null);
   const[crimeData,setCrimeData]=useState(null);
   const[crimeRaw,setCrimeRaw]=useState(null);
@@ -647,12 +648,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig)}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures)}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures]);
 
   // ── SAVE SYSTEM ──
 
@@ -683,7 +684,7 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,_v:VERSION,_date:new Date().toISOString()},null,2);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,_v:VERSION,_date:new Date().toISOString()},null,2);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights]);
 
   const buildFilename=useCallback(()=>{
@@ -752,7 +753,7 @@ function App(){
   const applyLoadedData=(p)=>{
     if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);
   };
 
 
@@ -965,9 +966,16 @@ function App(){
     var count=parseInt(period)||6;
     var recent=crimeRaw.results.slice(-count);
     setCrimeData(processCrimeData(recent,count,crimeRaw.lat,crimeRaw.lng));
-    // Clear map init flag so it redraws
+    // Destroy existing Leaflet map so it can reinitialise with new data
     var mapEl=document.getElementById("crime-map");
-    if(mapEl)mapEl.dataset.init="";
+    if(mapEl){
+      // Remove Leaflet instance if attached
+      if(mapEl._leaflet_id){
+        try{mapEl._leaflet=null;delete mapEl._leaflet_id}catch(e){}
+        mapEl.innerHTML="";
+      }
+      mapEl.removeAttribute("data-init");
+    }
   };
 
 
@@ -2029,7 +2037,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{style:{padding:12,borderRight:"1px solid #e2e8f0"}},
               React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"CRIME DENSITY MAP"),
               React.createElement("div",{id:"crime-map-container",style:{background:"#fff"}},
-                React.createElement("div",{id:"crime-map",ref:function(el){
+                React.createElement("div",{key:"map-"+crimePeriod,id:"crime-map",ref:function(el){
                   if(!el||el.dataset.init)return;el.dataset.init="1";
                   setTimeout(function(){try{
                     var map=L.map(el).setView([crimeData.lat,crimeData.lng],15);
@@ -2938,41 +2946,88 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       // RESIDUAL RISK
       tab==="residual"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Residual Risk"),
-        React.createElement("p",{className:"section-sub"},"Click post-treatment Likelihood and Impact scores."),
+        React.createElement("p",{className:"section-sub"},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry."),
         React.createElement(HelpBox,{title:"Residual Risk Scoring",
-          description:"Re-score Likelihood and Impact post-treatment. Reduce to ALARP. High/Very High residual risks require formal acceptance.",
+          description:"Re-score Likelihood and Impact post-treatment to demonstrate ALARP. Risks rated High or Very High expand to show each targeted asset with space to record planned treatment measures \u2014 specific security controls, design features, or operational procedures.",
           scaleItems:[(scales.residual||{})[1]||"",(scales.residual||{})[2]||"",(scales.residual||{})[3]||"",(scales.residual||{})[4]||"",(scales.residual||{})[5]||""]}),
-        React.createElement("div",{className:"card"},
-          React.createElement("table",null,
-            React.createElement("thead",null,React.createElement("tr",null,
-              React.createElement("th",null,"R#"),React.createElement("th",{className:"left"},"Threat"),
-              React.createElement("th",null,"Pre-L"),React.createElement("th",null,"Pre-I"),React.createElement("th",null,"Pre-Rating"),
-              React.createElement("th",null,"Treat"),React.createElement("th",null,"Post Likelihood"),React.createElement("th",null,"Post Impact"),
-              React.createElement("th",null,"Residual"),React.createElement("th",null,"Accept?")
-            )),
-            React.createElement("tbody",null,
-              cRisks.filter(r=>r.n).map((r,i)=>{
-                const rsc=rs[r.id]||{};
-                return React.createElement("tr",{key:r.id},
+        cRisks.filter(r=>r.n).map((r,i)=>{
+          const rsc=rs[r.id]||{};
+          const isHigh=r.rat==="High"||r.rat==="Very High";
+          const targetedAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+          const measures=treatmentMeasures[r.id]||{};
+          return React.createElement("div",{key:r.id,className:"card",style:{marginBottom:isHigh&&targetedAssets.length>0?12:4}},
+            React.createElement("table",{style:{marginBottom:0}},
+              i===0&&React.createElement("thead",null,React.createElement("tr",null,
+                React.createElement("th",{style:{width:40}},"R#"),React.createElement("th",{className:"left"},"Threat"),
+                React.createElement("th",{style:{width:50}},"Pre-L"),React.createElement("th",{style:{width:50}},"Pre-I"),React.createElement("th",{style:{width:80}},"Pre-Rating"),
+                React.createElement("th",{style:{width:60}},"Treat"),React.createElement("th",{style:{width:145}},"Post Likelihood"),React.createElement("th",{style:{width:145}},"Post Impact"),
+                React.createElement("th",{style:{width:80}},"Residual"),React.createElement("th",{style:{width:80}},"Accept?")
+              )),
+              React.createElement("tbody",null,
+                React.createElement("tr",{style:{background:isHigh?"#fef2f2":""}},
                   React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
-                  React.createElement("td",{className:"text-left font-medium"},r.n),
+                  React.createElement("td",{className:"text-left"},
+                    React.createElement("span",{className:"font-medium"},r.n),
+                    isHigh&&React.createElement("span",{style:{fontSize:9,color:"#dc2626",marginLeft:6,fontWeight:700}},"\u26a0 "+r.rat)
+                  ),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.lik})),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                  React.createElement("td",{className:"text-xs"},r.treat||"—"),
+                  React.createElement("td",{className:"text-xs"},r.treat||"\u2014"),
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.l,onChange:v=>srs(r.id,"l",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.i,onChange:v=>srs(r.id,"i",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
                   React.createElement("td",null,React.createElement("select",{className:"input",style:{fontSize:11,padding:"2px 4px"},
                     value:acc[r.id]||"",onChange:e=>setAcc(p=>({...p,[r.id]:e.target.value||null}))},
-                    React.createElement("option",{value:""},"—"),
+                    React.createElement("option",{value:""},"\u2014"),
                     ["Yes","No","Tolerate","Review"].map(o=>React.createElement("option",{key:o,value:o},o))
                   ))
+                )
+              )
+            ),
+            isHigh&&targetedAssets.length>0&&React.createElement("div",{style:{padding:"10px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb"}},
+              React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
+              targetedAssets.map(function(asset){
+                var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
+                return React.createElement("div",{key:asset.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
+                  React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
+                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
+                    React.createElement("button",{className:"btn-add",style:{fontSize:10,padding:"2px 8px"},onClick:function(){
+                      setTreatmentMeasures(function(prev){
+                        var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
+                        t[asset.id]=[...(t[asset.id]||[""]),""]; p[r.id]=t;return p;
+                      });
+                    }},"+ Add Measure")
+                  ),
+                  assetMeasures.map(function(measure,mi){
+                    return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:4,alignItems:"center"}},
+                      React.createElement("span",{style:{fontSize:10,color:"#94a3b8",width:16,flexShrink:0}},(mi+1)+"."),
+                      React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px"},
+                        value:measure,placeholder:"Describe planned treatment measure for this asset...",
+                        onChange:function(e){
+                          var val=e.target.value;
+                          setTreatmentMeasures(function(prev){
+                            var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
+                            var arr=[...(t[asset.id]||[""])];arr[mi]=val;t[asset.id]=arr;p[r.id]=t;return p;
+                          });
+                        }
+                      }),
+                      assetMeasures.length>1&&React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
+                        setTreatmentMeasures(function(prev){
+                          var p={...prev};var t=p[r.id]?{...p[r.id]}:{};
+                          var arr=[...(t[asset.id]||[])];arr.splice(mi,1);t[asset.id]=arr;p[r.id]=t;return p;
+                        });
+                      }},"\u00d7")
+                    );
+                  })
                 );
               })
+            ),
+            isHigh&&targetedAssets.length===0&&React.createElement("div",{style:{padding:"8px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb",fontSize:11,color:"#92400e",fontStyle:"italic"}},
+              "No assets assigned. Go to Threats tab \u2192 Threat\u2013Asset Mapping to assign assets, then treatment measures can be entered here."
             )
-          )
-        )
+          );
+        })
       ),
 
       // MATRICES
