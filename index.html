@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.80";
+  const VERSION="1.83";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3096,14 +3096,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       onClick:function(){
                         setTreatmentMeasures(function(prev){
                           var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
-                          var arr=[...(t2[asset.id]||[])].filter(function(v){return v});
+                          var arr=[...(t2[asset.id]||[])];
                           arr.push("");t2[asset.id]=arr;p[r.id]=t2;return p;
                         });
                       }
                     },"\u270f Custom...")
                   ),
                   // Current measures list
-                  assetMeasures.filter(function(m){return m}).length>0&&React.createElement("div",{style:{marginTop:4}},
+                  React.createElement("div",{style:{marginTop:4}},
                     assetMeasures.map(function(measure,mi){
                       /* show all including empty custom fields */
                       return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
@@ -3127,9 +3127,76 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       );
                     })
                   ),
-                  assetMeasures.filter(function(m){return m}).length===0&&React.createElement("div",{style:{fontSize:10,color:"#d4d4d4",fontStyle:"italic",marginTop:4}},"Click a typical measure above or add a custom one")
+                  assetMeasures.length<=1&&!assetMeasures[0]&&React.createElement("div",{style:{fontSize:10,color:"#d4d4d4",fontStyle:"italic",marginTop:4}},"Click a typical measure above or add a custom one")
                 );
-              })
+              }),
+              // POI treatments for this threat
+              (function(){
+                var threatPois=pois.filter(function(p){return p.threats.includes(r.id)});
+                if(threatPois.length===0)return null;
+                return React.createElement("div",{style:{marginTop:8,paddingTop:8,borderTop:"1px dashed #e2e8f0"}},
+                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#7f1d1d",marginBottom:6}},"POINT OF INTEREST TREATMENTS"),
+                  threatPois.map(function(poi){
+                    var poiKey="poi_"+poi.id;
+                    var poiMeasures=(measures[poiKey]&&measures[poiKey].length>0)?measures[poiKey]:[""];
+                    var typicals=getTypicalControls(r.n);
+                    return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
+                      React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:2}},poi.name||"Unnamed POI"),
+                      poi.desc&&React.createElement("div",{style:{fontSize:10,color:"#64748b",marginBottom:4}},poi.desc),
+                      React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
+                        typicals.map(function(typ){
+                          var alreadyAdded=poiMeasures.some(function(m){return m===typ});
+                          return React.createElement("button",{key:typ,
+                            style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
+                              background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
+                              cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                            onClick:function(){
+                              if(alreadyAdded)return;
+                              setTreatmentMeasures(function(prev){
+                                var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                                var arr=[...(t2[poiKey]||[])].filter(function(v){return v});
+                                arr.push(typ);t2[poiKey]=arr;p[r.id]=t2;return p;
+                              });
+                            }
+                          },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                        }),
+                        React.createElement("button",{
+                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600},
+                          onClick:function(){
+                            setTreatmentMeasures(function(prev){
+                              var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                              var arr=[...(t2[poiKey]||[])];arr.push("");t2[poiKey]=arr;p[r.id]=t2;return p;
+                            });
+                          }
+                        },"\u270f Custom...")
+                      ),
+                      React.createElement("div",{style:{marginTop:4}},
+                        poiMeasures.map(function(measure,mi){
+                          return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
+                            React.createElement("span",{style:{fontSize:10,color:"#7f1d1d",width:16,flexShrink:0,fontWeight:700}},(mi+1)+"."),
+                            React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:measure?"#fecaca":"#e2e8f0",background:measure?"#fffbfb":"#fff"},
+                              value:measure,placeholder:"Treatment measure for this POI...",
+                              onChange:function(e){
+                                var val=e.target.value;
+                                setTreatmentMeasures(function(prev){
+                                  var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                                  var arr=[...(t2[poiKey]||[""])];arr[mi]=val;t2[poiKey]=arr;p[r.id]=t2;return p;
+                                });
+                              }
+                            }),
+                            poiMeasures.length>1&&React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
+                              setTreatmentMeasures(function(prev){
+                                var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                                var arr=[...(t2[poiKey]||[])];arr.splice(mi,1);if(arr.length===0)arr=[""];t2[poiKey]=arr;p[r.id]=t2;return p;
+                              });
+                            }},"\u00d7")
+                          );
+                        })
+                      )
+                    );
+                  })
+                );
+              })()
             ),
             isHigh&&targetedAssets.length===0&&React.createElement("div",{style:{padding:"8px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb",fontSize:11,color:"#92400e",fontStyle:"italic"}},
               "No assets assigned. Go to Threats tab \u2192 Threat\u2013Asset Mapping to assign assets, then treatment measures can be entered here."
@@ -3272,39 +3339,60 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
             React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#C00000",marginBottom:10}},"HEADLINE RISKS ("+headline.length+")"),
             React.createElement("div",{style:{fontSize:12,color:"#475569",marginBottom:10}},"Risks rated High or Very High requiring priority treatment and formal risk acceptance."),
-            React.createElement("table",{style:{fontSize:12}},
-              React.createElement("thead",null,React.createElement("tr",null,
-                React.createElement("th",{style:{width:35,fontSize:12}},"R#"),
-                React.createElement("th",{className:"left",style:{fontSize:12}},"Threat"),
-                React.createElement("th",{style:{width:70,fontSize:12}},"Type"),
-                React.createElement("th",{style:{width:80,fontSize:12}},"Rating"),
-                React.createElement("th",{style:{width:70,fontSize:12}},"Treatment"),
-                React.createElement("th",{className:"left",style:{fontSize:12}},"Targeted Assets"),
-                React.createElement("th",{className:"left",style:{fontSize:12}},"Planned Measures")
-              )),
-              React.createElement("tbody",null,
-                headline.map(function(r){
-                  var idx=cRisks.indexOf(r)+1;
-                  var tgts=(r.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?a.cat:null}).filter(Boolean);
-                  var measures=treatmentMeasures[r.id]||{};
-                  var allM=[];
-                  (r.targets||[]).forEach(function(tid){
-                    var a=assets.find(function(a){return a.id===tid});
-                    var arr=(measures[tid]||[]).filter(function(v){return v});
-                    if(a&&arr.length>0)arr.forEach(function(m){allM.push(a.cat+": "+m)});
-                  });
-                  return React.createElement("tr",{key:r.id,style:{background:r.rat==="Very High"?"#fef2f2":"#fff7ed"}},
-                    React.createElement("td",{style:{fontWeight:700}},"R"+idx),
-                    React.createElement("td",{className:"text-left",style:{fontWeight:600}},r.n),
-                    React.createElement("td",{style:{fontSize:11}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"2px 6px",borderRadius:3,fontWeight:600,fontSize:10}},r.cat)),
-                    React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                    React.createElement("td",{style:{fontSize:11}},r.treat||"\u2014"),
-                    React.createElement("td",{className:"text-left",style:{fontSize:11}},tgts.length>0?tgts.join(", "):"\u2014"),
-                    React.createElement("td",{className:"text-left",style:{fontSize:11,color:"#475569"}},allM.length>0?allM.join("; "):"No measures recorded")
-                  );
-                })
-              )
-            )
+            headline.map(function(r){
+              var idx=cRisks.indexOf(r)+1;
+              var tgts=(r.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?a.cat:null}).filter(Boolean);
+              var measures=treatmentMeasures[r.id]||{};
+              var allM=[];
+              (r.targets||[]).forEach(function(tid){
+                var a=assets.find(function(a){return a.id===tid});
+                var arr=(measures[tid]||[]).filter(function(v){return v});
+                if(a&&arr.length>0)allM.push({asset:a.cat,items:arr});
+              });
+              // POI measures too
+              var poiM=[];
+              pois.filter(function(p){return p.threats.includes(r.id)}).forEach(function(poi){
+                var arr=(measures["poi_"+poi.id]||[]).filter(function(v){return v});
+                if(arr.length>0)poiM.push({poi:poi.name||"POI",items:arr});
+              });
+              return React.createElement("div",{key:r.id,style:{marginBottom:10,border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa"),borderRadius:8,overflow:"hidden"}},
+                React.createElement("div",{style:{display:"flex",gap:12,alignItems:"center",padding:"10px 14px",background:r.rat==="Very High"?"#fef2f2":"#fff7ed"}},
+                  React.createElement("span",{style:{fontWeight:700,fontSize:13}},"R"+idx),
+                  React.createElement("span",{style:{fontWeight:700,fontSize:13,flex:1}},r.n),
+                  React.createElement("span",{style:{fontSize:10,fontWeight:600,background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"2px 8px",borderRadius:4}},r.cat),
+                  React.createElement(Badge,{rating:r.rat}),
+                  React.createElement("span",{style:{fontSize:11,color:"#475569"}},r.treat||"\u2014")
+                ),
+                React.createElement("div",{style:{padding:"10px 14px",fontSize:12}},
+                  tgts.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                    React.createElement("span",{style:{fontWeight:700,color:"#1e293b",fontSize:11}},"Targeted Assets: "),
+                    React.createElement("span",{style:{color:"#475569",fontSize:11}},tgts.join(", "))
+                  ),
+                  allM.length>0?React.createElement("div",null,
+                    React.createElement("div",{style:{fontWeight:700,color:"#1e293b",fontSize:11,marginBottom:4}},"Planned Treatment Measures:"),
+                    allM.map(function(g,gi){
+                      return React.createElement("div",{key:gi,style:{marginBottom:4,paddingLeft:8}},
+                        React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#1B2A4A"}},g.asset),
+                        g.items.map(function(m,mi){
+                          return React.createElement("div",{key:mi,style:{fontSize:11,color:"#475569",paddingLeft:12}},(mi+1)+". "+m);
+                        })
+                      );
+                    }),
+                    poiM.length>0&&React.createElement("div",{style:{marginTop:4}},
+                      React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d",marginBottom:2}},"POI Measures:"),
+                      poiM.map(function(g,gi){
+                        return React.createElement("div",{key:gi,style:{marginBottom:4,paddingLeft:8}},
+                          React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d"}},g.poi),
+                          g.items.map(function(m,mi){
+                            return React.createElement("div",{key:mi,style:{fontSize:11,color:"#475569",paddingLeft:12}},(mi+1)+". "+m);
+                          })
+                        );
+                      })
+                    )
+                  ):React.createElement("div",{style:{fontSize:11,color:"#94a3b8",fontStyle:"italic"}},"No treatment measures recorded")
+                )
+              );
+            })
           );
         })(),
 
