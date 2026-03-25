@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.68";
+  const VERSION="1.71";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2283,35 +2283,64 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("th",{style:{width:120,fontSize:12}},"Relevance")
               )),
               React.createElement("tbody",null,
-              ...[
-                {date:"Nov 2024",type:"Bladed",inc:"Southport Attack Trial",det:"Stabbing attack at a children's dance class in Southport. Three children killed, multiple injured. Led to widespread public order incidents across the UK.",rel:["Residential","Commercial","Masterplan"]},
-                {date:"Oct 2023",type:"Bladed/IED",inc:"Counter-terrorism arrests",det:"Multiple arrests across the UK linked to planned terrorist attacks on public spaces and transport infrastructure. Ongoing operations by CT policing.",rel:["Transport","Commercial","Government","Masterplan"]},
-                {date:"2023",type:"Threat",inc:"Elevated threat to elected officials",det:"JTAC assessed increased threat to MPs, local councillors and government buildings following multiple targeted threats and security incidents at constituency offices.",rel:["Government"]},
-                {date:"Sep 2023",type:"VAAW",inc:"School attack attempt — Essex",det:"Vehicle driven at school gates during drop-off time. Driver arrested on terrorism-related charges. Highlighted vulnerability of education and community facilities.",rel:["Residential","Masterplan"]},
-                {date:"2022-2023",type:"Drone",inc:"Drone incursions at critical infrastructure",det:"Multiple reports of unauthorised drone flights over airports, military installations, power stations and government buildings. Led to enhanced counter-UAS measures.",rel:["Transport","Datacentre","Government"]},
-                {date:"Oct 2022",type:"IED/Fire",inc:"Dover immigration centre attack",det:"Incendiary devices thrown at immigration centre. Attacker died at scene. Highlighted vulnerability of government facilities to lone-actor attacks.",rel:["Government","Commercial"]},
-                {date:"Oct 2021",type:"Bladed",inc:"Murder of Sir David Amess MP",det:"Fatal stabbing of MP during constituency surgery in Leigh-on-Sea. Attacker convicted of murder with terrorist connection. Led to review of security for elected officials.",rel:["Government","Commercial"]},
-                {date:"Sep 2021",type:"PBIED",inc:"Liverpool Women's Hospital bombing",det:"IED detonated in taxi outside hospital. Attacker killed, taxi driver injured. Device partially detonated. Highlighted hospital vulnerability.",rel:["Hospital","Transport"]},
-                {date:"2021",type:"Cyber",inc:"NHS ransomware and supply chain attacks",det:"Continuation of cyber threats targeting healthcare and critical national infrastructure. Multiple NHS trusts affected by ransomware. SolarWinds and Exchange vulnerabilities exploited.",rel:["Hospital","Datacentre","Government"]},
-                {date:"2020-2025",type:"XRW/LAWI",inc:"Extreme right-wing threat",det:"MI5 and CT policing report sustained growth in extreme right-wing terrorism (XRW), particularly online radicalisation. Multiple plots disrupted. 25% of late-stage plots now XRW-linked.",rel:["Residential","Commercial","Government","Masterplan","Transport"]},
-                {date:"2020-2025",type:"Lone Actor",inc:"Lone actor and self-initiated threat",det:"JTAC assesses that lone actors using low-sophistication methods (bladed weapons, vehicles) remain the most likely form of attack. Difficult to detect and prevent.",rel:["Residential","Commercial","Transport","Hotel","Masterplan"]},
-                {date:"Nov 2020",type:"Bladed",inc:"Reading Park stabbing (trial)",det:"Attacker killed three people in a park in Reading. Convicted of murder with terrorist motivation. Highlighted vulnerability of public open spaces.",rel:["Masterplan","Residential"]},
-              ].map((inc,i)=>{
-                const relevant=activeAssetPreset?inc.rel.includes(activeAssetPreset):true;
-                return React.createElement("tr",{key:i,style:{opacity:relevant?1:0.35}},
-                  React.createElement("td",{className:"text-xs"},inc.date),
-                  React.createElement("td",null,React.createElement("span",{className:"badge",style:{backgroundColor:"#fef2f2",color:"#dc2626",fontSize:9}},inc.type)),
-                  React.createElement("td",{className:"text-left text-xs font-medium"},inc.inc),
-                  React.createElement("td",{className:"text-left text-xs",style:{color:"#475569"}},inc.det),
-                  React.createElement("td",null,React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:2}},
-                    inc.rel.map(r=>React.createElement("span",{key:r,style:{fontSize:8,background:activeAssetPreset===r?"#1B2A4A":"#f1f5f9",color:activeAssetPreset===r?"#fff":"#64748b",padding:"1px 4px",borderRadius:3,fontWeight:600}},r))
-                  ))
-                );
-              })
+              ...(function(){
+                var incidents=[
+                  {date:"Nov 2024",type:"Bladed",inc:"Southport Attack",det:"Stabbing attack at a children's dance class in Southport. Three children killed, multiple injured. Led to widespread public order incidents.",rel:["Residential","Commercial","Masterplan"],lat:53.6475,lng:-3.0053,loc:"Southport"},
+                  {date:"Oct 2023",type:"Bladed/IED",inc:"Counter-terrorism arrests",det:"Multiple arrests across the UK linked to planned terrorist attacks on public spaces and transport infrastructure.",rel:["Transport","Commercial","Government","Masterplan"],lat:51.5074,lng:-0.1278,loc:"Nationwide"},
+                  {date:"2023",type:"Threat",inc:"Elevated threat to elected officials",det:"JTAC assessed increased threat to MPs, councillors and government buildings following targeted threats at constituency offices.",rel:["Government"],lat:51.5,lng:-0.12,loc:"Nationwide"},
+                  {date:"Sep 2023",type:"VAAW",inc:"School attack attempt",det:"Vehicle driven at school gates during drop-off. Driver arrested on terrorism charges. Highlighted vulnerability of education facilities.",rel:["Residential","Masterplan"],lat:51.5833,lng:0.55,loc:"Essex"},
+                  {date:"2022-23",type:"Drone",inc:"Drone incursions at CNI",det:"Unauthorised drone flights over airports, military sites, power stations and government buildings. Led to enhanced counter-UAS measures.",rel:["Transport","Datacentre","Government"],lat:51.47,lng:-0.46,loc:"Multiple"},
+                  {date:"Oct 2022",type:"IED/Fire",inc:"Dover immigration centre attack",det:"Incendiary devices thrown at immigration centre. Attacker died at scene. Lone-actor attack on government facility.",rel:["Government","Commercial"],lat:51.1295,lng:1.3089,loc:"Dover"},
+                  {date:"Oct 2021",type:"Bladed",inc:"Murder of Sir David Amess MP",det:"Fatal stabbing of MP during constituency surgery in Leigh-on-Sea. Attacker convicted. Led to security review for elected officials.",rel:["Government","Commercial"],lat:51.5425,lng:0.6554,loc:"Leigh-on-Sea"},
+                  {date:"Sep 2021",type:"PBIED",inc:"Liverpool Women's Hospital bombing",det:"IED detonated in taxi outside hospital. Attacker killed, driver injured. Device partially detonated.",rel:["Hospital","Transport"],lat:53.4012,lng:-2.9685,loc:"Liverpool"},
+                  {date:"2021",type:"Cyber",inc:"NHS ransomware attacks",det:"Cyber threats targeting healthcare and CNI. Multiple NHS trusts hit by ransomware. SolarWinds and Exchange vulnerabilities exploited.",rel:["Hospital","Datacentre","Government"],lat:51.5,lng:-0.12,loc:"Nationwide"},
+                  {date:"2020-25",type:"XRW",inc:"Extreme right-wing threat",det:"Sustained growth in XRW terrorism, particularly online radicalisation. Multiple plots disrupted. 25% of late-stage plots now XRW-linked.",rel:["Residential","Commercial","Government","Masterplan","Transport"],lat:51.5,lng:-0.12,loc:"Nationwide"},
+                  {date:"2020-25",type:"Lone Actor",inc:"Lone actor / self-initiated threat",det:"Lone actors using low-sophistication methods (bladed weapons, vehicles) remain the most likely attack form. Difficult to detect.",rel:["Residential","Commercial","Transport","Hotel","Masterplan"],lat:51.5,lng:-0.12,loc:"Nationwide"},
+                  {date:"Jun 2020",type:"Bladed",inc:"Reading park stabbing",det:"Three killed in a park in Reading. Convicted of murder with terrorist motivation. Highlighted public space vulnerability.",rel:["Masterplan","Residential"],lat:51.4543,lng:-0.9781,loc:"Reading"}
+                ];
+                // Calculate distance from site if we have coords
+                var siteLat=crimeData?crimeData.lat:null;
+                var siteLng=crimeData?crimeData.lng:null;
+                if(!siteLat&&ctx.postcode){/* no coords available, skip distance */}
+                incidents.forEach(function(inc){
+                  if(siteLat&&inc.lat){
+                    var R=3959;var dLat=(inc.lat-siteLat)*Math.PI/180;var dLon=(inc.lng-siteLng)*Math.PI/180;
+                    var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(siteLat*Math.PI/180)*Math.cos(inc.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+                    inc.dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+                  }else{inc.dist=9999}
+                });
+                var nearSite=incidents.filter(function(inc){return inc.dist<=25});
+                var national=incidents.filter(function(inc){return inc.dist>25});
+                var renderRow=function(inc,i,label){
+                  var relevant=activeAssetPreset?inc.rel.includes(activeAssetPreset):true;
+                  return React.createElement("tr",{key:label+i,style:{opacity:relevant?1:0.35}},
+                    React.createElement("td",{style:{fontSize:12}},inc.date),
+                    React.createElement("td",null,React.createElement("span",{className:"badge",style:{backgroundColor:"#fef2f2",color:"#dc2626",fontSize:10}},inc.type)),
+                    React.createElement("td",{className:"text-left",style:{fontSize:12,fontWeight:600}},inc.inc),
+                    React.createElement("td",{className:"text-left",style:{fontSize:12,color:"#475569"}},inc.det),
+                    React.createElement("td",null,
+                      React.createElement("div",{style:{fontSize:10,fontWeight:600,color:"#64748b",marginBottom:2}},inc.loc+(inc.dist<9999?" ("+Math.round(inc.dist)+"mi)":"")),
+                      React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:2}},
+                        inc.rel.map(function(r){return React.createElement("span",{key:r,style:{fontSize:9,background:activeAssetPreset===r?"#1B2A4A":"#f1f5f9",color:activeAssetPreset===r?"#fff":"#64748b",padding:"1px 4px",borderRadius:3,fontWeight:600}},r)})
+                      )
+                    )
+                  );
+                };
+                var rows=[];
+                if(nearSite.length>0&&siteLat){
+                  rows.push(React.createElement("tr",{key:"hdr-near"},React.createElement("td",{colSpan:5,style:{background:"#fef2f2",fontWeight:700,fontSize:12,color:"#7f1d1d",padding:"8px 12px"}},"INCIDENTS WITHIN 25 MILES OF SITE ("+nearSite.length+")")));
+                  nearSite.forEach(function(inc,i){rows.push(renderRow(inc,i,"near"))});
+                  rows.push(React.createElement("tr",{key:"hdr-nat"},React.createElement("td",{colSpan:5,style:{background:"#f8fafc",fontWeight:700,fontSize:12,color:"#475569",padding:"8px 12px"}},"NATIONAL CONTEXT ("+national.length+")")));
+                  national.forEach(function(inc,i){rows.push(renderRow(inc,i,"nat"))});
+                }else{
+                  incidents.forEach(function(inc,i){rows.push(renderRow(inc,i,"all"))});
+                }
+                return rows;
+              })()
             )
           ),
-            React.createElement("div",{style:{fontSize:12,color:"#94a3b8",padding:"10px 16px"}},"Sources: MI5, Counter Terrorism Policing, JTAC, open source reporting. Not exhaustive.")
-          )
+          React.createElement("div",{style:{fontSize:12,color:"#94a3b8",padding:"10px 16px"}},"Sources: MI5, Counter Terrorism Policing, JTAC, open source reporting. Not exhaustive.")
+        )
         )
       ),
 
@@ -2325,7 +2354,27 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("button",{key:type,className:"preset-btn"+((activeAssetPreset||ctx.devType)===type?" active":""),onClick:()=>fillPreset(type)},type)
           ),
           React.createElement("button",{className:"preset-btn",style:{borderColor:"#fecaca",color:"#dc2626",marginLeft:8},onClick:clearAssets},"✕ Clear All"),
-          React.createElement("button",{className:"lock-btn"+(assetsLocked?" locked":""),onClick:()=>setAssetsLocked(p=>!p)},assetsLocked?"🔒 Locked":"🔓 Lock")
+          React.createElement("button",{className:"lock-btn"+(assetsLocked?" locked":""),onClick:()=>setAssetsLocked(p=>!p)},assetsLocked?"🔒 Locked":"🔓 Lock"),
+          React.createElement("button",{className:"preset-btn",style:{marginLeft:8},onClick:function(){
+            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt'>";
+            html+="<tr style='background:#1B2A4A;color:#fff'><th>#</th><th>Category</th><th>Description</th><th>Criticality</th></tr>";
+            assets.forEach(function(a,i){
+              var sc=avg(AC.map(function(c){return a.sc[c]||null}));
+              var rk=sc>=4.5?"Critical":sc>=3.5?"High":sc>=2.5?"Medium":sc>=1.5?"Low":sc?"Negligible":"—";
+              html+="<tr><td>"+(i+1)+"</td><td>"+(a.cat||"—")+"</td><td>"+(a.desc||"—")+"</td><td>"+rk+"</td></tr>";
+            });
+            html+="</table>";
+            var blob=new Blob([html],{type:"text/html"});
+            navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Assets table copied — paste into Word")}).catch(function(){
+              var text="# | Category | Description | Criticality\n";
+              assets.forEach(function(a,i){
+                var sc=avg(AC.map(function(c){return a.sc[c]||null}));
+                var rk=sc>=4.5?"Critical":sc>=3.5?"High":sc>=2.5?"Medium":sc>=1.5?"Low":sc?"Negligible":"—";
+                text+=(i+1)+" | "+(a.cat||"—")+" | "+(a.desc||"—")+" | "+rk+"\n";
+              });
+              navigator.clipboard.writeText(text).then(function(){showToast("Assets copied as text")});
+            });
+          }},"📋 Copy for Word")
         ),
         React.createElement(HelpBox,{title:"Asset Criticality Scoring",
           description:"Rate each asset across four criteria. Assets scoring 4.5+ are Critical, 3.5+ High, 2.5+ Medium, 1.5+ Low, below 1.5 Negligible.",
@@ -2514,6 +2563,59 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("div",{style:{fontSize:11,color:"#94a3b8",textAlign:"center",padding:8}},"All standard threats are already in the register. Use Custom Threat to add others.")
             )
           )
+        )
+      ),
+
+      // THREAT-ASSET MAPPING (part of threats tab)
+      tab==="threats"&&assets.length>0&&cThreats.length>0&&React.createElement("div",{className:"card",style:{marginTop:16}},
+        React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement("div",null,
+            React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b",margin:0}},"Threat–Asset Mapping"),
+            React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},"Select which assets each threat could target. Click asset chips to toggle.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:9pt'>";
+            html+="<tr style='background:#1B2A4A;color:#fff'><th>Threat</th><th>Type</th><th>Targeted Assets</th></tr>";
+            cThreats.forEach(function(t){
+              var tgts=(t.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?(a.cat||a.desc):"?"}).join(", ");
+              if(tgts)html+="<tr><td style='font-weight:bold'>"+t.n+"</td><td>"+t.cat+"</td><td>"+tgts+"</td></tr>";
+            });
+            html+="</table>";
+            var blob=new Blob([html],{type:"text/html"});
+            navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Threat-asset mapping copied for Word")}).catch(function(){showToast("Copy failed")});
+          }},"📋 Copy for Word")
+        ),
+        React.createElement("div",{style:{padding:16}},
+          cThreats.map(function(t,i){
+            var targetIds=t.targets||[];
+            var hasTargets=targetIds.length>0;
+            return React.createElement("div",{key:t.id,style:{display:"flex",alignItems:"flex-start",gap:12,padding:"8px 0",borderBottom:i<cThreats.length-1?"1px solid #f1f5f9":"none"}},
+              React.createElement("div",{style:{width:36,flexShrink:0}},
+                React.createElement("span",{style:{fontSize:10,fontWeight:600,color:"#94a3b8"}},"T"+(i+1))
+              ),
+              React.createElement("div",{style:{width:120,flexShrink:0}},
+                React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},t.n),
+                React.createElement("span",{className:"badge",style:{backgroundColor:t.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:t.cat==="Terrorism"?"#dc2626":"#4472C4",fontSize:9,marginTop:2}},t.cat)
+              ),
+              React.createElement("div",{style:{flex:1,display:"flex",flexWrap:"wrap",gap:4}},
+                assets.map(function(a){
+                  var sel=targetIds.includes(a.id);
+                  return React.createElement("button",{key:a.id,
+                    style:{fontSize:10,padding:"4px 8px",borderRadius:4,
+                      border:"1px solid "+(sel?"#1B2A4A":"#e2e8f0"),
+                      background:sel?"#1B2A4A":"#fff",color:sel?"#fff":"#64748b",
+                      cursor:"pointer",fontFamily:"inherit",fontWeight:sel?600:400,
+                      transition:"all 0.15s"},
+                    onClick:function(){
+                      ut(t.id,"targets",sel?targetIds.filter(function(x){return x!==a.id}):[...targetIds,a.id]);
+                    }
+                  },a.cat||a.desc||"Asset "+(assets.indexOf(a)+1));
+                }),
+                !hasTargets&&React.createElement("span",{style:{fontSize:10,color:"#d4d4d4",fontStyle:"italic"}},"No assets selected")
+              ),
+              React.createElement("div",{style:{width:30,flexShrink:0,textAlign:"right",fontSize:10,fontWeight:700,color:hasTargets?"#1B2A4A":"#d4d4d4"}},targetIds.length)
+            );
+          })
         )
       ),
 
