@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.73";
+  const VERSION="1.74";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -838,24 +838,30 @@ function App(){
     }catch(e){setCrimeError(e.message||"Failed to fetch crime data");setCrimeLoading(false)}
   };
 
-  const captureReport=function(el){
-    // Temporarily hide interactive elements for clean export
-    var headerBar=el.querySelector("[data-capture-hide]");
-    if(headerBar)headerBar.style.display="none";
-    html2canvas(el,{useCORS:true,scale:2,backgroundColor:"#fff",logging:false,width:1120}).then(function(canvas){
-      if(headerBar)headerBar.style.display="";
+  const captureReport=function(el,toastMsg){
+    var hdr=el.querySelector("[data-capture-hide]");
+    if(hdr)hdr.style.display="none";
+    var els=el.querySelectorAll("*");var saved=[];
+    for(var i=0;i<els.length;i++){
+      var st=els[i].style;
+      saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight});
+      if(st.textOverflow==="ellipsis"||st.overflow==="hidden"||st.whiteSpace==="nowrap"){
+        st.overflow="visible";st.textOverflow="clip";st.whiteSpace="normal";
+      }
+      if(st.maxHeight&&st.maxHeight!=="none")st.maxHeight="none";
+    }
+    var restore=function(){
+      if(hdr)hdr.style.display="";
+      for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh}
+    };
+    var w=Math.max(el.scrollWidth||0,1100);
+    html2canvas(el,{useCORS:true,scale:2,backgroundColor:"#fff",logging:false,width:w,height:el.scrollHeight+30,windowWidth:w+40,scrollX:0,scrollY:0}).then(function(canvas){
+      restore();
       canvas.toBlob(function(blob){
-        try{
-          navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){
-            showToast("Crime report captured — paste into Word (Ctrl+V). Sized for A4 landscape.");
-          });
-        }catch(e){
-          var url=canvas.toDataURL("image/png");
-          var w=window.open("");
-          w.document.write("<p style='font-family:sans-serif;font-size:13px'>Right-click the image and 'Save Image As', then insert into Word (A4 landscape).</p><img src='"+url+"' style='max-width:100%'/>");
-        }
+        try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
+        catch(e2){var url=canvas.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
       },"image/png");
-    }).catch(function(){if(headerBar)headerBar.style.display=""});
+    }).catch(function(){restore();showToast("Capture failed")});
   };
 
   const processCrimeData=(rawResults,monthCount,lat,lng)=>{
@@ -1994,8 +2000,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   var el=document.getElementById("crime-report-section");if(!el){showToast("Not ready");return}
                   if(typeof html2canvas==="undefined"){
                     var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                    s.onload=function(){captureReport(el)};s.onerror=function(){showToast("Could not load screenshot library")};document.head.appendChild(s);
-                  }else{captureReport(el)}
+                    s.onload=function(){captureReport(el,"Crime analysis captured \u2014 paste into Word")};s.onerror=function(){showToast("Could not load capture library")};document.head.appendChild(s);
+                  }else{captureReport(el,"Crime analysis captured \u2014 paste into Word")}
                 }},"📷 Capture for Report")
             )
           ),
@@ -2085,7 +2091,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var col=colors[cat]||"#64748b";
                 return React.createElement("div",{key:cat,style:{display:"flex",alignItems:"center",gap:4,marginBottom:3}},
                   React.createElement("div",{style:{width:6,height:6,borderRadius:"50%",background:col,flexShrink:0}}),
-                  React.createElement("div",{style:{width:100,fontSize:12,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0},title:cat.replace(/-/g," ")},cat.replace(/-/g," ")),
+                  React.createElement("div",{style:{width:110,fontSize:12,color:"#475569",flexShrink:0,wordBreak:"break-word"}},cat.replace(/-/g," ")),
                   React.createElement("div",{style:{flex:1,height:16,background:"#f1f5f9",borderRadius:2,overflow:"hidden"}},
                     React.createElement("div",{style:{width:pct+"%",height:"100%",background:col,borderRadius:2}})
                   ),
@@ -2202,7 +2208,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var pct=Math.round(data.total/(maxS||1)*100);
                 return React.createElement("div",{key:street,style:{display:"flex",alignItems:"center",gap:4,marginBottom:3}},
                   React.createElement("div",{style:{width:14,height:16,borderRadius:3,background:i<3?"#C00000":"#1B2A4A",color:"#fff",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},i+1),
-                  React.createElement("div",{style:{width:90,fontSize:12,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0},title:street},street),
+                  React.createElement("div",{style:{width:100,fontSize:12,color:"#475569",flexShrink:0,wordBreak:"break-word"}},street),
                   React.createElement("div",{style:{flex:1,height:14,background:"#f1f5f9",borderRadius:2,overflow:"hidden"}},
                     React.createElement("div",{style:{width:pct+"%",height:"100%",background:i<3?"#C00000":"#1B2A4A",borderRadius:2}})
                   ),
@@ -2223,7 +2229,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var out=arr[0],count=arr[1],maxO=(crimeData.byOutcome[0]||[null,1])[1]||1;
                 var pct=Math.round(count/(maxO||1)*100);var tPct=Math.round(count/(crimeData.total||1)*100);
                 return React.createElement("div",{key:out,style:{display:"flex",alignItems:"center",gap:4,marginBottom:3}},
-                  React.createElement("div",{style:{width:110,fontSize:12,color:"#475569",textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0},title:out},out),
+                  React.createElement("div",{style:{width:130,fontSize:12,color:"#475569",textAlign:"right",flexShrink:0,wordBreak:"break-word"}},out),
                   React.createElement("div",{style:{flex:1,height:8,background:"#f1f5f9",borderRadius:2,overflow:"hidden"}},
                     React.createElement("div",{style:{width:pct+"%",height:"100%",background:"#64748b",borderRadius:2}})
                   ),
@@ -2285,14 +2291,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("button",{style:{padding:"4px 10px",borderRadius:4,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit"},
                 onClick:function(){
                   var el=document.getElementById("terrorism-report-section");if(!el)return;
-                  var hdr=el.querySelector("[data-capture-hide]");
-                  if(hdr)hdr.style.display="none";
                   if(typeof html2canvas==="undefined"){
                     var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                    s.onload=function(){html2canvas(el,{useCORS:true,scale:2,backgroundColor:"#fff",width:1050}).then(function(c){if(hdr)hdr.style.display="";c.toBlob(function(b){try{navigator.clipboard.write([new ClipboardItem({"image/png":b})]).then(function(){showToast("Terrorism context captured \u2014 paste into Word (A4 portrait)")})}catch(e){var u=c.toDataURL();var w=window.open("");w.document.write("<img src=\x27"+u+"\x27 style=\x27max-width:100%\x27/>")}})})};
-                    s.onerror=function(){if(hdr)hdr.style.display="";showToast("Could not load capture library")};
+                    s.onload=function(){captureReport(el,"Terrorism context captured \u2014 paste into Word")};
+                    s.onerror=function(){showToast("Could not load capture library")};
                     document.head.appendChild(s);
-                  }else{html2canvas(el,{useCORS:true,scale:2,backgroundColor:"#fff",width:1050}).then(function(c){if(hdr)hdr.style.display="";c.toBlob(function(b){try{navigator.clipboard.write([new ClipboardItem({"image/png":b})]).then(function(){showToast("Terrorism context captured \u2014 paste into Word")})}catch(e){var u=c.toDataURL();var w=window.open("");w.document.write("<img src=\x27"+u+"\x27 style=\x27max-width:100%\x27/>")}})}).catch(function(){if(hdr)hdr.style.display=""})}
+                  }else{captureReport(el,"Terrorism context captured \u2014 paste into Word")}
                 }},"\ud83d\udcf7 Export for Word")
             )
           ),
@@ -2401,7 +2405,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("div",{style:{fontSize:12,color:"#94a3b8",padding:"10px 16px"}},"Sources: MI5, Counter Terrorism Policing, JTAC, open source reporting. Not exhaustive.")
         )
-        )
+      )
       ),
 
       // ASSETS
