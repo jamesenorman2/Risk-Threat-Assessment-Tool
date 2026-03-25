@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.71";
+  const VERSION="1.72";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2821,7 +2821,25 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Risk Register"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Auto-populated. Select treatment.")
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Auto-populated from threat, vulnerability and impact assessments. Select a treatment strategy for each risk.")
+          )
+        ),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:16}},
+          React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #bbf7d0",background:"#f0fdf4"}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#16a34a",marginBottom:4}},"Reduce"),
+            React.createElement("div",{style:{fontSize:11,color:"#475569"}},"Implement additional security measures to lower the likelihood and/or impact. E.g. install CCTV, access control, barriers, lighting, security patrols, hardened glazing.")
+          ),
+          React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #bfdbfe",background:"#eff6ff"}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#2563eb",marginBottom:4}},"Transfer"),
+            React.createElement("div",{style:{fontSize:11,color:"#475569"}},"Transfer the financial or operational consequence to a third party. E.g. insurance, outsourcing security operations, contractual obligations, indemnities.")
+          ),
+          React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #fde68a",background:"#fffbeb"}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#d97706",marginBottom:4}},"Avoid"),
+            React.createElement("div",{style:{fontSize:11,color:"#475569"}},"Eliminate the risk entirely by removing the activity or asset. E.g. relocate a vulnerable function, remove public access, change the building use or design to avoid exposure.")
+          ),
+          React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #e2e8f0",background:"#f8fafc"}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#475569",marginBottom:4}},"Accept"),
+            React.createElement("div",{style:{fontSize:11,color:"#475569"}},"Acknowledge the risk and accept it without further action. Appropriate when the cost of mitigation exceeds the potential impact, or the residual risk is within tolerance.")
           )
         ),
         React.createElement("div",{className:"card"},
