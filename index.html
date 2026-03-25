@@ -495,7 +495,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Vulnerability",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
   {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk",n:"10"},
-  {id:"matrices",l:"Matrices",n:"11"},{id:"dashboard",l:"Summary",n:"12"},
+  {id:"dashboard",l:"Summary",n:"11"},
   {id:"methodology",l:"Methodology",n:"13"},{id:"settings",l:"Settings",n:"14"}];
 
 // ============================================================
@@ -503,7 +503,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.76";
+  const VERSION="1.78";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3030,246 +3030,284 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         })
       ),
 
-      // MATRICES
-      tab==="matrices"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Risk Matrices"),
-        React.createElement("p",{className:"section-sub"},"Threat references auto-populate when all tabs are scored. Compare pre and post-mitigation."),
-        (function(){
-          var complete=cRisks.filter(function(r){return r.lik&&r.imp}).length;
-          var total=cRisks.filter(function(r){return r.sc!=null}).length;
-          var needVuln=cRisks.filter(function(r){return r.sc!=null&&!r.lik}).length;
-          var needImp=cRisks.filter(function(r){return r.sc!=null&&r.lik&&!r.imp}).length;
-          if(complete===0&&total>0)return React.createElement("div",{style:{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:"#92400e"}},
-            React.createElement("strong",null,"Matrix is empty. "),"To populate, each threat needs: ",
-            React.createElement("strong",null,"Capability + Intent")," (Threats tab) → ",
-            React.createElement("strong",null,"TA + Vulnerability")," (Vulnerability tab) → ",
-            React.createElement("strong",null,"Impact")," (Impact tab). ",
-            needVuln>0?needVuln+" threat"+(needVuln>1?"s":"")+" need vulnerability scoring. ":"",
-            needImp>0?needImp+" threat"+(needImp>1?"s":"")+" need impact scoring. ":"",
-            complete+"/"+total+" threats fully scored."
-          );
-          if(complete>0&&complete<total)return React.createElement("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:"#16a34a"}},
-            React.createElement("strong",null,complete+"/"+total+" threats on matrix. "),
-            needVuln>0?needVuln+" need vulnerability scoring. ":"",
-            needImp>0?needImp+" need impact scoring.":""
-          );
-          return null;
-        })(),
-        React.createElement("div",{className:"grid grid-2",style:{gap:32}},
-          React.createElement(MatrixView,{data:preM,title:"PRE-MITIGATION"}),
-          React.createElement(MatrixView,{data:postM,title:"POST-MITIGATION"})
-        )
-      ),
-
       // DASHBOARD
-      tab==="dashboard"&&React.createElement("div",null,
+      tab==="dashboard"&&React.createElement("div",{id:"exec-summary-section"},
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Executive Summary"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Standards compliance, findings and full risk summary")
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Comprehensive risk summary for report insertion")
+          ),
+          React.createElement("div",{className:"flex gap-2"},
+            React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
+              var el=document.getElementById("exec-summary-section");if(!el)return;
+              if(typeof html2canvas==="undefined"){
+                var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+                s.onload=function(){captureReport(el,"Executive summary captured \u2014 paste into Word")};
+                s.onerror=function(){showToast("Could not load capture library")};
+                document.head.appendChild(s);
+              }else{captureReport(el,"Executive summary captured \u2014 paste into Word")}
+            }},"\ud83d\udcf7 Capture for Report"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+              var h="<html><head><style>body{font-family:Calibri,Arial;font-size:11pt;color:#333;max-width:700px;margin:auto}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:10pt}td{border:1px solid #ddd;padding:5px 10px;font-size:10pt}.vh{background:#C00000;color:#fff;font-weight:bold;text-align:center}.hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.me{background:#FFC000;color:#000;font-weight:bold;text-align:center}.lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style></head><body>";
+              h+="<h1>Security Risk Assessment \u2014 Executive Summary</h1>";
+              h+="<p><b>Project:</b> "+(ctx.project||"\u2014")+" | <b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+"</p>";
+              h+="<p><b>Site:</b> "+(ctx.address||"")+" "+(ctx.postcode||"")+" | <b>Type:</b> "+(ctx.devType||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
+              // Risk overview
+              var vhC=cRisks.filter(function(r){return r.rat==="Very High"}).length;
+              var hiC=cRisks.filter(function(r){return r.rat==="High"}).length;
+              var meC=cRisks.filter(function(r){return r.rat==="Medium"}).length;
+              var loC=cRisks.filter(function(r){return r.rat==="Low"}).length;
+              var vlC=cRisks.filter(function(r){return r.rat==="Very Low"}).length;
+              h+="<h2>Risk Profile</h2>";
+              h+="<table><tr><th>Very High</th><th>High</th><th>Medium</th><th>Low</th><th>Very Low</th></tr>";
+              h+="<tr><td class=\'vh\'>"+vhC+"</td><td class=\'hi\'>"+hiC+"</td><td class=\'me\'>"+meC+"</td><td class=\'lo\'>"+loC+"</td><td class=\'vl\'>"+vlC+"</td></tr></table>";
+              // Headline risks
+              var headline=cRisks.filter(function(r){return r.rat==="Very High"||r.rat==="High"});
+              if(headline.length>0){
+                h+="<h2>Headline Risks</h2>";
+                h+="<table><tr><th>R#</th><th>Threat</th><th>Type</th><th>Rating</th><th>Treatment</th><th>Targeted Assets</th></tr>";
+                headline.forEach(function(r,i){
+                  var rc=r.rat==="Very High"?"vh":"hi";
+                  var tgts=(r.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?a.cat:""}).filter(Boolean).join(", ");
+                  h+="<tr><td>R"+(cRisks.indexOf(r)+1)+"</td><td><b>"+r.n+"</b></td><td>"+r.cat+"</td><td class=\'"+rc+"\'>"+r.rat+"</td><td>"+(r.treat||"\u2014")+"</td><td>"+tgts+"</td></tr>";
+                });
+                h+="</table>";
+              }
+              // Treatment measures
+              var hasM=false;
+              headline.forEach(function(r){var m=treatmentMeasures[r.id];if(m)Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasM=true})});
+              if(hasM){
+                h+="<h2>Planned Treatment Measures</h2>";
+                headline.forEach(function(r){
+                  var m=treatmentMeasures[r.id]||{};
+                  var hasMeasures=false;Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasMeasures=true});
+                  if(!hasMeasures)return;
+                  h+="<h3>"+r.n+" ("+r.rat+")</h3><table><tr><th>Asset</th><th>Treatment Measures</th></tr>";
+                  (r.targets||[]).forEach(function(tid){
+                    var a=assets.find(function(a){return a.id===tid});
+                    var arr=(m[tid]||[]).filter(function(v){return v});
+                    if(a&&arr.length>0)h+="<tr><td><b>"+a.cat+"</b><br/>"+a.desc+"</td><td>"+arr.map(function(v,i){return(i+1)+". "+v}).join("<br/>")+"</td></tr>";
+                  });
+                  h+="</table>";
+                });
+              }
+              // Residual risk
+              var resScored=cRisks.filter(function(r){return r.resRat});
+              if(resScored.length>0){
+                h+="<h2>Residual Risk (Post-Treatment)</h2>";
+                var rvh=resScored.filter(function(r){return r.resRat==="Very High"}).length;
+                var rhi=resScored.filter(function(r){return r.resRat==="High"}).length;
+                var rme=resScored.filter(function(r){return r.resRat==="Medium"}).length;
+                var rlo=resScored.filter(function(r){return r.resRat==="Low"}).length;
+                var rvl=resScored.filter(function(r){return r.resRat==="Very Low"}).length;
+                h+="<table><tr><th>Very High</th><th>High</th><th>Medium</th><th>Low</th><th>Very Low</th></tr>";
+                h+="<tr><td class=\'vh\'>"+rvh+"</td><td class=\'hi\'>"+rhi+"</td><td class=\'me\'>"+rme+"</td><td class=\'lo\'>"+rlo+"</td><td class=\'vl\'>"+rvl+"</td></tr></table>";
+                h+="<table><tr><th>R#</th><th>Threat</th><th>Pre-Rating</th><th>Treatment</th><th>Residual</th><th>Accepted</th></tr>";
+                resScored.forEach(function(r){
+                  var preC={"Very High":"vh","High":"hi","Medium":"me","Low":"lo","Very Low":"vl"}[r.rat]||"";
+                  var resC={"Very High":"vh","High":"hi","Medium":"me","Low":"lo","Very Low":"vl"}[r.resRat]||"";
+                  h+="<tr><td>R"+(cRisks.indexOf(r)+1)+"</td><td>"+r.n+"</td><td class=\'"+preC+"\'>"+r.rat+"</td><td>"+(r.treat||"\u2014")+"</td><td class=\'"+resC+"\'>"+r.resRat+"</td><td>"+(r.acc||"\u2014")+"</td></tr>";
+                });
+                h+="</table>";
+              }
+              h+="<p style=\'font-size:9pt;color:#999;margin-top:20px\'>Generated by Security Risk & Threat Assessment Tool v"+VERSION+" on "+new Date().toLocaleDateString()+"</p></body></html>";
+              var blob=new Blob([h],{type:"application/msword"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+              a.download=(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")+"_Executive_Summary.doc";
+              a.style.display="none";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a)},200);
+              showToast("Executive summary exported to Word");
+            }},"\ud83d\udcc4 Export Word")
           )
         ),
-        // Metrics
-        React.createElement("div",{className:"grid grid-5",style:{gap:12,marginTop:16,marginBottom:16}},
-          ...["Very High","High","Medium","Low","Very Low"].map(r=>{
-            const cnt=cRisks.filter(x=>x.rat===r).length;const c=RC[r];
-            return React.createElement("div",{key:r,style:{backgroundColor:c.bg,borderRadius:12,padding:16,textAlign:"center"}},
-              React.createElement("div",{style:{fontSize:28,fontWeight:700,color:c.t}},cnt),
-              React.createElement("div",{style:{fontSize:11,fontWeight:600,color:c.t,opacity:0.8}},r)
-            );
-          })
+
+        // ── PROJECT HEADER ──
+        React.createElement("div",{style:{background:"#1B2A4A",borderRadius:"10px 10px 0 0",padding:20,color:"#fff"}},
+          React.createElement("div",{style:{fontSize:18,fontWeight:700}},"Security Risk Assessment"),
+          React.createElement("div",{style:{fontSize:14,opacity:0.9,marginTop:4}},ctx.project||"Untitled Project"),
+          React.createElement("div",{style:{display:"flex",gap:20,marginTop:8,fontSize:12,opacity:0.7,flexWrap:"wrap"}},
+            React.createElement("span",null,"Client: "+(ctx.client||"\u2014")),
+            React.createElement("span",null,"Date: "+(ctx.date||"\u2014")),
+            React.createElement("span",null,"Type: "+(ctx.devType||"\u2014")),
+            React.createElement("span",null,"Assessor: "+(ctx.assessor||"\u2014")),
+            React.createElement("span",null,"Site: "+(ctx.address||"")+" "+(ctx.postcode||""))
+          )
         ),
-        // PROJECT OVERVIEW - auto-generated narrative
-        React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
-          React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"PROJECT OVERVIEW & SECURITY NARRATIVE"),
-          React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.8}},
 
-            // 1. Project context
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4,marginTop:0}},"1. Project Context"),
-            React.createElement("p",{style:{marginBottom:12}},
-              (function(){
-                var t=[];
-                t.push("This Security Risk Assessment relates to "+(ctx.project||"[project name not set]"));
-                if(ctx.client)t.push(" for "+ctx.client);
-                t.push(".");
-                if(ctx.address||ctx.postcode)t.push(" The site is located at "+(ctx.address||"")+(ctx.postcode?" ("+ctx.postcode+")":"")+".");
-                if(ctx.stage)t.push(" The assessment is being undertaken at "+ctx.stage+" stage.");
-                if(ctx.assessor)t.push(" The assessment has been prepared by "+ctx.assessor+" (Suitably Qualified Security Specialist).");
-                if(activeAssetPreset)t.push(" The development is classified as a "+activeAssetPreset+" project.");
-                return t.join("");
-              })()
-            ),
-
-            // 2. Asset summary
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"2. Asset Summary"),
-            React.createElement("p",{style:{marginBottom:6}},
-              (function(){
-                if(assets.length===0)return "No assets have been defined for this assessment.";
-                var critCount=assets.filter(function(a){var avg=(a.sc.opImpact+a.sc.dependencies+a.sc.impactPeople+a.sc.impactEnv)/4;return avg>=4.5}).length;
-                var highCount=assets.filter(function(a){var avg=(a.sc.opImpact+a.sc.dependencies+a.sc.impactPeople+a.sc.impactEnv)/4;return avg>=3.5&&avg<4.5}).length;
-                return assets.length+" assets have been identified and assessed for criticality. "+critCount+" are rated Critical, "+highCount+" rated High. Critical and High-rated assets require the highest level of protective security measures.";
-              })()
-            ),
-            assets.length>0&&React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}},
-              assets.filter(function(a){var avg=0;var cnt=0;if(a.sc.opImpact){avg+=a.sc.opImpact;cnt++}if(a.sc.dependencies){avg+=a.sc.dependencies;cnt++}if(a.sc.impactPeople){avg+=a.sc.impactPeople;cnt++}if(a.sc.impactEnv){avg+=a.sc.impactEnv;cnt++}return cnt>0&&avg/cnt>=3.5}).map(function(a){
-                return React.createElement("span",{key:a.id,style:{fontSize:10,padding:"2px 8px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:4,color:"#dc2626",fontWeight:600}},a.cat+": "+a.desc);
-              })
-            ),
-
-            // 3. Threat landscape
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"3. Threat Landscape"),
-            React.createElement("p",{style:{marginBottom:6}},
-              (function(){
-                var dbts=cRisks.filter(function(r){return r.dbt});
-                var terr=cRisks.filter(function(r){return r.cat==="Terrorism"&&r.sc!=null});
-                var crime=cRisks.filter(function(r){return r.cat!=="Terrorism"&&r.sc!=null});
-                var t=cRisks.filter(function(r){return r.sc!=null}).length+" threats have been assessed ("+terr.length+" Terrorism, "+crime.length+" Crime). ";
-                t+=dbts.length+" have been identified as Design Basis Threats (DBTs) with a threat score of Medium (3) or above, warranting full risk analysis. ";
-                // List DBTs
-                if(dbts.length>0)t+="The DBTs are: "+dbts.map(function(r,i){return r.n+" ("+r.cat+", score: "+r.sc+")"}).join("; ")+".";
-                return t;
-              })()
-            ),
-            // Explosive charges summary
-            (function(){
-              var explosiveDbts=cRisks.filter(function(r){return r.dbt&&chargeWeights[r.n]});
-              if(explosiveDbts.length===0)return null;
-              return React.createElement("p",{style:{marginBottom:6,fontSize:12,color:"#92400e",background:"#fffbeb",padding:8,borderRadius:6,border:"1px solid #fde68a"}},
-                React.createElement("strong",null,"Explosive DBTs: "),
-                explosiveDbts.map(function(r){return r.n+" ("+chargeWeights[r.n].kg+"kg charge)"}).join(", "),
-                ". Stand-off distances and blast mitigation measures should be designed to these charge weights."
+        // ── PRE-MITIGATION RISK PROFILE ──
+        React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A",marginBottom:10}},"PRE-MITIGATION RISK PROFILE"),
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:12}},
+            ...["Very High","High","Medium","Low","Very Low"].map(function(r){
+              var cnt=cRisks.filter(function(x){return x.rat===r}).length;var c=RC[r];
+              return React.createElement("div",{key:r,style:{backgroundColor:c.bg,borderRadius:8,padding:12,textAlign:"center"}},
+                React.createElement("div",{style:{fontSize:28,fontWeight:800,color:c.t}},cnt),
+                React.createElement("div",{style:{fontSize:11,fontWeight:600,color:c.t,opacity:0.85}},r)
               );
-            })(),
-
-            // 4. High risk analysis
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"4. High & Very High Risk Analysis"),
+            })
+          ),
+          React.createElement("div",{style:{fontSize:12,color:"#475569",lineHeight:1.6}},
             (function(){
-              var highRisks=cRisks.filter(function(r){return r.rat==="Very High"||r.rat==="High"});
-              if(highRisks.length===0)return React.createElement("p",{style:{marginBottom:12,color:"#16a34a"}},"No threats are currently rated High or Very High pre-mitigation.");
-              return React.createElement("div",{style:{marginBottom:12}},
-                React.createElement("p",{style:{marginBottom:8}},highRisks.length+" threat"+(highRisks.length!==1?"s":"")+" rated High or Very High pre-mitigation, requiring priority treatment:"),
-                React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:6}},
-                  ...highRisks.map(function(r){
-                    var idx=cRisks.indexOf(r);
-                    var rPois=pois.filter(function(p){return p.threats.includes(r.id)});
-                    var ctrl=cd[r.id]||{};
-                    var hasCtrl=ctrl.desc&&ctrl.desc.length>0;
-                    return React.createElement("div",{key:r.id,style:{padding:10,borderRadius:6,background:r.rat==="Very High"?"#fef2f2":"#fff7ed",border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa")}},
-                      React.createElement("div",{className:"flex gap-2 items-center",style:{marginBottom:4}},
-                        React.createElement("span",{style:{fontWeight:700,fontSize:12}},"R"+(idx+1)+" — "+r.n),
-                        React.createElement(Badge,{rating:r.rat}),
-                        React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"L:"+r.lik+" × I:"+r.imp),
-                        r.cat&&React.createElement("span",{style:{fontSize:9,color:r.cat==="Terrorism"?"#dc2626":"#4472C4",fontWeight:600}},r.cat)
-                      ),
-                      rPois.length>0&&React.createElement("div",{style:{fontSize:11,color:"#475569",marginBottom:2}},
-                        React.createElement("strong",null,"Applies to: "),rPois.map(function(p){return p.name}).join(", ")
-                      ),
-                      React.createElement("div",{style:{fontSize:11,color:"#475569",marginBottom:2}},
-                        React.createElement("strong",null,"Existing controls: "),hasCtrl?ctrl.desc:"None documented"
-                      ),
-                      React.createElement("div",{style:{fontSize:11,color:"#475569"}},
-                        React.createElement("strong",null,"Treatment: "),r.treat||"Not assigned",
-                        r.resRat&&React.createElement("span",null," → Residual: ",React.createElement(Badge,{rating:r.resRat}))
-                      )
-                    );
-                  })
-                )
-              );
-            })(),
+              var total=cRisks.filter(function(r){return r.rat}).length;
+              var terr=cRisks.filter(function(r){return r.cat==="Terrorism"&&r.rat}).length;
+              var crime=cRisks.filter(function(r){return r.cat!=="Terrorism"&&r.rat}).length;
+              var dbts=cRisks.filter(function(r){return r.dbt}).length;
+              return total+" risks assessed ("+terr+" terrorism, "+crime+" crime). "+dbts+" classified as Design Basis Threats.";
+            })()
+          )
+        ),
 
-            // 5. Controls gap analysis
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"5. Controls & Gap Analysis"),
-            (function(){
-              var insufficient=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return r.dbt;var avg=(c.eff+c.conf)/2;return avg<3&&r.dbt});
-              var partial=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return false;var avg=(c.eff+c.conf)/2;return avg>=3&&avg<4&&r.dbt});
-              var adequate=cRisks.filter(function(r){var c=cd[r.id];if(!c||!c.eff||!c.conf)return false;var avg=(c.eff+c.conf)/2;return avg>=4&&r.dbt});
-              return React.createElement("div",{style:{marginBottom:12}},
-                React.createElement("p",{style:{marginBottom:6}},"Of the "+cRisks.filter(function(r){return r.dbt}).length+" Design Basis Threats: "+adequate.length+" have adequate controls, "+partial.length+" have partial controls, and "+insufficient.length+" have insufficient or undocumented controls."),
-                insufficient.length>0&&React.createElement("div",{style:{padding:8,background:"#fef2f2",borderRadius:6,border:"1px solid #fecaca",marginBottom:6}},
-                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#dc2626",marginBottom:4}},"INSUFFICIENT CONTROLS — PRIORITY ACTION REQUIRED:"),
-                  React.createElement("div",{style:{fontSize:11,color:"#475569"}},
-                    insufficient.map(function(r){return"• "+r.n+": "+(cd[r.id]&&cd[r.id].desc?cd[r.id].desc:"No controls documented")}).join("\n").split("\n").map(function(line,i){return React.createElement("div",{key:i},line)})
-                  )
-                ),
-                partial.length>0&&React.createElement("div",{style:{padding:8,background:"#fffbeb",borderRadius:6,border:"1px solid #fde68a"}},
-                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:4}},"PARTIAL CONTROLS — IMPROVEMENT NEEDED:"),
-                  React.createElement("div",{style:{fontSize:11,color:"#475569"}},
-                    partial.map(function(r){return"• "+r.n+": "+(cd[r.id]&&cd[r.id].desc?cd[r.id].desc:"—")}).join("\n").split("\n").map(function(line,i){return React.createElement("div",{key:i},line)})
-                  )
-                )
-              );
-            })(),
-
-            // 6. Treatment summary
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"6. Risk Treatment & Recommendations"),
-            React.createElement("p",{style:{marginBottom:6}},
-              (function(){
-                var treated=cRisks.filter(function(r){return r.treat});
-                var reduce=treated.filter(function(r){return r.treat==="Reduce"});
-                var accept=treated.filter(function(r){return r.treat==="Accept"});
-                var transfer=treated.filter(function(r){return r.treat==="Transfer"});
-                var avoid=treated.filter(function(r){return r.treat==="Avoid"});
-                if(treated.length===0)return "No risk treatments have been assigned. All DBTs should be assigned a treatment strategy (Reduce, Transfer, Avoid, or Accept).";
-                var t=treated.length+" risks have been assigned treatments: ";
-                var parts=[];
-                if(reduce.length)parts.push(reduce.length+" Reduce");
-                if(transfer.length)parts.push(transfer.length+" Transfer");
-                if(avoid.length)parts.push(avoid.length+" Avoid");
-                if(accept.length)parts.push(accept.length+" Accept");
-                t+=parts.join(", ")+".";
-                return t;
-              })()
-            ),
-
-            // 7. Residual risk position
-            React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"7. Residual Risk Position"),
-            (function(){
-              var resVH=cRisks.filter(function(r){return r.resRat==="Very High"}).length;
-              var resH=cRisks.filter(function(r){return r.resRat==="High"}).length;
-              var resM=cRisks.filter(function(r){return r.resRat==="Medium"}).length;
-              var scored=cRisks.filter(function(r){return r.resRat}).length;
-              if(scored===0)return React.createElement("p",{style:{marginBottom:12}},"Residual risk scoring has not yet been completed. Post-treatment likelihood and impact should be re-assessed for all DBTs.");
-              var t="Post-mitigation: "+resVH+" Very High, "+resH+" High, "+resM+" Medium. ";
-              if(resVH>0||resH>0)t+="Residual risks rated High or Very High require formal acceptance by the risk owner and should be escalated. ";
-              else t+="All residual risks have been reduced to Medium or below, which is considered ALARP (As Low As Reasonably Practicable). ";
-              return React.createElement("p",{style:{marginBottom:12}},t);
-            })(),
-
-            // 8. POI exposure
-            pois.length>0&&React.createElement("div",null,
-              React.createElement("h4",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"8. Points of Interest & Exposure"),
-              React.createElement("p",{style:{marginBottom:6}},pois.length+" vulnerable locations (Points of Interest) have been identified and mapped against the threat register:"),
-              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4,marginBottom:12}},
-                ...pois.map(function(p){
-                  var threatCount=p.threats.length;
-                  var highThreats=cRisks.filter(function(r){return p.threats.includes(r.id)&&(r.rat==="Very High"||r.rat==="High")});
-                  return React.createElement("div",{key:p.id,style:{fontSize:11,padding:6,background:"#f8fafc",borderRadius:4,border:"1px solid #e2e8f0"}},
-                    React.createElement("span",{style:{fontWeight:700}},p.name),
-                    React.createElement("span",{style:{color:"#64748b"}}," — "+threatCount+" threats mapped"),
-                    highThreats.length>0&&React.createElement("span",{style:{color:"#dc2626",fontWeight:600}}," ("+highThreats.length+" High/Very High: "+highThreats.map(function(r){return r.n}).join(", ")+")")
+        // ── HEADLINE RISKS ──
+        (function(){
+          var headline=cRisks.filter(function(r){return r.rat==="Very High"||r.rat==="High"});
+          if(headline.length===0)return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#16a34a"}},"No High or Very High risks identified")
+          );
+          return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#C00000",marginBottom:10}},"HEADLINE RISKS ("+headline.length+")"),
+            React.createElement("div",{style:{fontSize:12,color:"#475569",marginBottom:10}},"Risks rated High or Very High requiring priority treatment and formal risk acceptance."),
+            React.createElement("table",{style:{fontSize:12}},
+              React.createElement("thead",null,React.createElement("tr",null,
+                React.createElement("th",{style:{width:35,fontSize:12}},"R#"),
+                React.createElement("th",{className:"left",style:{fontSize:12}},"Threat"),
+                React.createElement("th",{style:{width:70,fontSize:12}},"Type"),
+                React.createElement("th",{style:{width:80,fontSize:12}},"Rating"),
+                React.createElement("th",{style:{width:70,fontSize:12}},"Treatment"),
+                React.createElement("th",{className:"left",style:{fontSize:12}},"Targeted Assets"),
+                React.createElement("th",{className:"left",style:{fontSize:12}},"Planned Measures")
+              )),
+              React.createElement("tbody",null,
+                headline.map(function(r){
+                  var idx=cRisks.indexOf(r)+1;
+                  var tgts=(r.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?a.cat:null}).filter(Boolean);
+                  var measures=treatmentMeasures[r.id]||{};
+                  var allM=[];
+                  (r.targets||[]).forEach(function(tid){
+                    var a=assets.find(function(a){return a.id===tid});
+                    var arr=(measures[tid]||[]).filter(function(v){return v});
+                    if(a&&arr.length>0)arr.forEach(function(m){allM.push(a.cat+": "+m)});
+                  });
+                  return React.createElement("tr",{key:r.id,style:{background:r.rat==="Very High"?"#fef2f2":"#fff7ed"}},
+                    React.createElement("td",{style:{fontWeight:700}},"R"+idx),
+                    React.createElement("td",{className:"text-left",style:{fontWeight:600}},r.n),
+                    React.createElement("td",{style:{fontSize:11}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"2px 6px",borderRadius:3,fontWeight:600,fontSize:10}},r.cat)),
+                    React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
+                    React.createElement("td",{style:{fontSize:11}},r.treat||"\u2014"),
+                    React.createElement("td",{className:"text-left",style:{fontSize:11}},tgts.length>0?tgts.join(", "):"\u2014"),
+                    React.createElement("td",{className:"text-left",style:{fontSize:11,color:"#475569"}},allM.length>0?allM.join("; "):"No measures recorded")
                   );
                 })
               )
             )
+          );
+        })(),
+
+        // ── RESIDUAL RISK ──
+        (function(){
+          var scored=cRisks.filter(function(r){return r.resRat});
+          if(scored.length===0)return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#94a3b8"}},"RESIDUAL RISK \u2014 Not yet scored")
+          );
+          return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A",marginBottom:10}},"POST-TREATMENT RESIDUAL RISK"),
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:12}},
+              ...["Very High","High","Medium","Low","Very Low"].map(function(r){
+                var cnt=scored.filter(function(x){return x.resRat===r}).length;var c=RC[r];
+                return React.createElement("div",{key:r,style:{backgroundColor:c.bg,borderRadius:8,padding:10,textAlign:"center"}},
+                  React.createElement("div",{style:{fontSize:22,fontWeight:800,color:c.t}},cnt),
+                  React.createElement("div",{style:{fontSize:10,fontWeight:600,color:c.t,opacity:0.85}},r)
+                );
+              })
+            ),
+            React.createElement("table",{style:{fontSize:12}},
+              React.createElement("thead",null,React.createElement("tr",null,
+                React.createElement("th",{style:{width:35,fontSize:12}},"R#"),
+                React.createElement("th",{className:"left",style:{fontSize:12}},"Threat"),
+                React.createElement("th",{style:{width:80,fontSize:12}},"Pre-Rating"),
+                React.createElement("th",{style:{width:70,fontSize:12}},"Treatment"),
+                React.createElement("th",{style:{width:80,fontSize:12}},"Residual"),
+                React.createElement("th",{style:{width:70,fontSize:12}},"Accepted")
+              )),
+              React.createElement("tbody",null,
+                scored.map(function(r){
+                  return React.createElement("tr",{key:r.id},
+                    React.createElement("td",{style:{fontWeight:700}},"R"+(cRisks.indexOf(r)+1)),
+                    React.createElement("td",{className:"text-left",style:{fontWeight:600}},r.n),
+                    React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
+                    React.createElement("td",{style:{fontSize:11}},r.treat||"\u2014"),
+                    React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
+                    React.createElement("td",{style:{fontSize:11,fontWeight:600}},r.acc||"\u2014")
+                  );
+                })
+              )
+            )
+          );
+        })(),
+
+        // ── RISK MATRICES SIDE BY SIDE ──
+        React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A",marginBottom:10}},"RISK MATRICES"),
+          React.createElement("div",{className:"grid grid-2",style:{gap:24}},
+            React.createElement(MatrixView,{data:preM,title:"PRE-MITIGATION"}),
+            React.createElement(MatrixView,{data:postM,title:"POST-MITIGATION"})
           )
         ),
-        // Stakeholder Meetings (editable + copyable)
-        React.createElement("div",{className:"card",style:{marginBottom:16}},
+
+        // ── FULL RISK REGISTER ──
+        React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",borderRadius:"0 0 10px 10px",padding:16}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A",marginBottom:10}},"FULL RISK REGISTER"),
+          React.createElement("table",{style:{fontSize:11}},
+            React.createElement("thead",null,React.createElement("tr",null,
+              React.createElement("th",{style:{width:30,fontSize:11}},"R#"),
+              React.createElement("th",{className:"left",style:{fontSize:11}},"Threat"),
+              React.createElement("th",{style:{width:55,fontSize:11}},"Type"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"T"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"TA"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"V"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"L"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"I"),
+              React.createElement("th",{style:{width:65,fontSize:11}},"Rating"),
+              React.createElement("th",{style:{width:50,fontSize:11}},"Treat"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"R-L"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"R-I"),
+              React.createElement("th",{style:{width:65,fontSize:11}},"Residual"),
+              React.createElement("th",{style:{width:45,fontSize:11}},"Accept")
+            )),
+            React.createElement("tbody",null,
+              cRisks.filter(function(r){return r.n}).map(function(r,i){
+                var rsc=rs[r.id]||{};
+                return React.createElement("tr",{key:r.id},
+                  React.createElement("td",{style:{fontWeight:600,fontSize:11}},"R"+(i+1)),
+                  React.createElement("td",{className:"text-left",style:{fontWeight:600,fontSize:11}},r.n),
+                  React.createElement("td",{style:{fontSize:10}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"1px 4px",borderRadius:3,fontWeight:600,fontSize:9}},r.cat)),
+                  React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
+                  React.createElement("td",null,React.createElement(SBadge,{value:r.ta})),
+                  React.createElement("td",null,React.createElement(SBadge,{value:r.vu})),
+                  React.createElement("td",null,React.createElement(SBadge,{value:r.lik})),
+                  React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
+                  React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
+                  React.createElement("td",{style:{fontSize:10}},r.treat||"\u2014"),
+                  React.createElement("td",null,React.createElement(SBadge,{value:rsc.l})),
+                  React.createElement("td",null,React.createElement(SBadge,{value:rsc.i})),
+                  React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
+                  React.createElement("td",{style:{fontSize:10}},r.acc||"\u2014")
+                );
+              })
+            )
+          )
+        ),
+
+        // Stakeholder Meetings
+        React.createElement("div",{className:"card",style:{marginTop:16,marginBottom:16}},
           React.createElement("div",{className:"flex justify-between items-center",style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
             React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"STAKEHOLDER MEETINGS & CONSULTATIONS"),
             React.createElement("div",{className:"flex gap-2"},
               React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-                var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt'>";
-                html+="<tr style='background:#1B2A4A;color:#fff'><th>Date</th><th>Description</th><th>Attendees</th></tr>";
-                meetings.forEach(function(m){html+="<tr><td>"+((m.date)||"—")+"</td><td>"+((m.desc)||"—")+"</td><td>"+((m.attendees)||"—")+"</td></tr>"});
-                html+="</table>";
-                var blob=new Blob([html],{type:"text/html"});
-                navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Table copied — paste into Word with Ctrl+V")}).catch(function(){
-                  var ta=document.createElement("textarea");ta.value=meetings.map(function(m){return(m.date||"")+"\t"+(m.desc||"")+"\t"+(m.attendees||"")}).join("\n");
-                  document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
-                  showToast("Table copied as tab-separated text — paste into Word");
-                });
-              }},"📋 Copy Table for Word"),
+                var h2="<table border=\'1\' cellpadding=\'4\' cellspacing=\'0\' style=\'border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt\'>";
+                h2+="<tr style=\'background:#1B2A4A;color:#fff\'><th>Date</th><th>Description</th><th>Attendees</th></tr>";
+                meetings.forEach(function(m){h2+="<tr><td>"+((m.date)||"\u2014")+"</td><td>"+((m.desc)||"\u2014")+"</td><td>"+((m.attendees)||"\u2014")+"</td></tr>"});
+                h2+="</table>";
+                var blob=new Blob([h2],{type:"text/html"});
+                navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Table copied for Word")}).catch(function(){showToast("Copy failed")});
+              }},"\ud83d\udccb Copy Table for Word"),
               React.createElement("button",{className:"btn-add",onClick:addMeeting},"+ Add Meeting")
             )
           ),
@@ -3286,161 +3324,18 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("td",null,React.createElement("input",{type:"date",className:"input",style:{fontSize:11},value:m.date,onChange:function(e){updateMeeting(m.id,"date",e.target.value)}})),
                   React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full text-xs",value:m.desc,onChange:function(e){updateMeeting(m.id,"desc",e.target.value)},placeholder:"Meeting description..."})),
                   React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full text-xs",value:m.attendees,onChange:function(e){updateMeeting(m.id,"attendees",e.target.value)},placeholder:"Attendees..."})),
-                  React.createElement("td",null,React.createElement("button",{className:"btn-x",onClick:function(){removeMeeting(m.id)}},"×"))
+                  React.createElement("td",null,React.createElement("button",{className:"btn-x",onClick:function(){removeMeeting(m.id)}},"\u00d7"))
                 );
               }),
               meetings.length===0&&React.createElement("tr",null,
-                React.createElement("td",{colSpan:4,style:{textAlign:"center",padding:16,color:"#94a3b8",fontSize:12}},"No meetings recorded. Click '+ Add Meeting' above.")
+                React.createElement("td",{colSpan:4,style:{textAlign:"center",padding:16,color:"#94a3b8",fontSize:12}},"No meetings recorded.")
               )
             )
           )
         ),
-        // Findings
-        React.createElement("div",{className:"card findings",style:{padding:24}},
-          React.createElement("h3",{className:"text-sm font-bold text-slate mb-4",style:{letterSpacing:1}},"FINDINGS SUMMARY"),
-          React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.6}},
-            React.createElement("p",null,React.createElement("strong",null,"Threat Assessment: "),`${cRisks.filter(r=>r.sc!=null).length} threats assessed (${cRisks.filter(r=>r.cat==="Terrorism").length} Terrorism, ${cRisks.filter(r=>r.cat!=="Terrorism").length} Crime). ${cRisks.filter(r=>r.dbt).length} identified as Design Basis Threats (DBTs) with a threat score of Medium (3) or above.`),
-            React.createElement("p",null,React.createElement("strong",null,"Pre-Mitigation: "),`${cRisks.filter(r=>r.rat==="Very High").length} Very High, ${cRisks.filter(r=>r.rat==="High").length} High, ${cRisks.filter(r=>r.rat==="Medium").length} Medium, ${cRisks.filter(r=>r.rat==="Low").length} Low, ${cRisks.filter(r=>r.rat==="Very Low").length} Very Low.`),
-            React.createElement("p",null,React.createElement("strong",null,"Post-Mitigation: "),`${cRisks.filter(r=>r.resRat==="Very High").length} Very High, ${cRisks.filter(r=>r.resRat==="High").length} High, ${cRisks.filter(r=>r.resRat==="Medium").length} Medium, ${cRisks.filter(r=>r.resRat==="Low").length} Low, ${cRisks.filter(r=>r.resRat==="Very Low").length} Very Low.`),
-            React.createElement("p",null,React.createElement("strong",null,"Treatment: "),`${cRisks.filter(r=>r.treat==="Reduce").length} Reduce, ${cRisks.filter(r=>r.treat==="Transfer").length} Transfer, ${cRisks.filter(r=>r.treat==="Avoid").length} Avoid, ${cRisks.filter(r=>r.treat==="Accept").length} Accept.`),
 
-            // Auto-generated high risk narrative
-            cRisks.filter(r=>r.rat==="Very High"||r.rat==="High").length>0&&React.createElement("div",{style:{marginTop:12,padding:12,background:"#fff7ed",borderRadius:8,border:"1px solid #fed7aa"}},
-              React.createElement("p",{style:{fontWeight:700,color:"#1e293b",marginBottom:4}},"High & Very High Risk Summary:"),
-              React.createElement("p",null,
-                (()=>{
-                  const highRisks=cRisks.filter(r=>r.rat==="Very High"||r.rat==="High");
-                  const vhCount=highRisks.filter(r=>r.rat==="Very High").length;
-                  const hCount=highRisks.filter(r=>r.rat==="High").length;
-                  let text=`The pre-mitigation assessment has identified ${highRisks.length} threat${highRisks.length!==1?"s":""} rated at High or above`;
-                  if(vhCount>0&&hCount>0)text+=` (${vhCount} Very High, ${hCount} High)`;
-                  text+=`. `;
-                  
-                  // Group by POI
-                  const threatPois={};
-                  highRisks.forEach(r=>{
-                    const idx=cRisks.indexOf(r);
-                    const rPois=pois.filter(p=>p.threats.includes(r.id));
-                    threatPois["R"+(idx+1)+" "+r.n]={rating:r.rat,cat:r.cat,pois:rPois.map(p=>p.name)};
-                  });
-                  
-                  // Build narrative per threat
-                  const parts=[];
-                  Object.entries(threatPois).forEach(([name,info])=>{
-                    let part=`${name} (${info.rating}, ${info.cat})`;
-                    if(info.pois.length>0){
-                      part+=` affects ${info.pois.join(", ")}`;
-                    }else{
-                      part+=` — no specific POIs mapped`;
-                    }
-                    parts.push(part);
-                  });
-                  text+=parts.join("; ")+". ";
-                  
-                  // POI exposure summary
-                  if(pois.length>0){
-                    const poiExposure=pois.map(p=>{
-                      const highCount=highRisks.filter(r=>p.threats.includes(r.id)).length;
-                      return{name:p.name,count:highCount};
-                    }).filter(p=>p.count>0).sort((a,b)=>b.count-a.count);
-                    
-                    if(poiExposure.length>0){
-                      text+=`The most exposed locations are: `;
-                      text+=poiExposure.map(p=>`${p.name} (${p.count} high risk threat${p.count!==1?"s":""})`).join(", ");
-                      text+=`. These locations require priority mitigation.`;
-                    }
-                  }
-                  
-                  return text;
-                })()
-              )
-            ),
-
-            pois.length>0&&cRisks.filter(r=>r.rat==="Very High"||r.rat==="High").length===0&&
-              React.createElement("p",{style:{marginTop:8,fontStyle:"italic",color:"#94a3b8"}},"No threats currently rated High or Very High.")
-          )
-        ),
-        // Summary table
-        React.createElement("div",{className:"card mt-4"},
-          React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
-            React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"FULL RISK SUMMARY")
-          ),
-          React.createElement("table",null,
-            React.createElement("thead",null,React.createElement("tr",null,
-              React.createElement("th",null,"R#"),React.createElement("th",{className:"left"},"Threat"),
-              React.createElement("th",null,"L"),React.createElement("th",null,"I"),React.createElement("th",null,"Pre-Rating"),
-              React.createElement("th",null,"Treatment"),React.createElement("th",null,"Post-L"),React.createElement("th",null,"Post-I"),
-              React.createElement("th",null,"Residual"),React.createElement("th",null,"Accept?")
-            )),
-            React.createElement("tbody",null,
-              cRisks.filter(r=>r.n).map((r,i)=>React.createElement("tr",{key:r.id},
-                React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
-                React.createElement("td",{className:"text-left text-xs font-medium"},r.n),
-                React.createElement("td",null,React.createElement(SBadge,{value:r.lik})),
-                React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
-                React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                React.createElement("td",{className:"text-xs"},r.treat||"—"),
-                React.createElement("td",null,React.createElement(SBadge,{value:r.resL})),
-                React.createElement("td",null,React.createElement(SBadge,{value:r.resI})),
-                React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
-                React.createElement("td",{className:"text-xs"},r.acc||"—")
-              ))
-            )
-          )
-        ),
-
-        // High Risk Summary
-        cRisks.filter(r=>r.rat==="Very High"||r.rat==="High").length>0&&React.createElement("div",{className:"card",style:{padding:24,marginTop:16}},
-          React.createElement("h3",{className:"text-sm font-bold text-slate mb-4",style:{letterSpacing:1}},"HIGH RISK THREATS"),
-          React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.6}},
-            cRisks.filter(r=>r.rat==="Very High"||r.rat==="High").map((r,i)=>{
-              const idx=cRisks.indexOf(r);
-              const rPois=pois.filter(p=>p.threats.includes(r.id));
-              return React.createElement("div",{key:r.id,style:{marginBottom:10,padding:10,background:r.rat==="Very High"?"#fef2f2":"#fff7ed",borderRadius:8,border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa")}},
-                React.createElement("div",{className:"flex justify-between items-center"},
-                  React.createElement("div",null,
-                    React.createElement("span",{className:"font-bold",style:{marginRight:8}},"R"+(idx+1)+" — "+r.n),
-                    React.createElement(Badge,{rating:r.rat}),
-                    React.createElement("span",{className:"text-xs text-muted",style:{marginLeft:8}},"(L:"+r.lik+" × I:"+r.imp+")")
-                  ),
-                  React.createElement("span",{style:{fontSize:10,color:"#64748b"}},r.cat||"")
-                ),
-                rPois.length>0&&React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:4}},
-                  React.createElement("span",{style:{fontWeight:600}},"Applicable POIs: "),
-                  rPois.map(p=>p.name).join(", ")
-                ),
-                rPois.length===0&&React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginTop:4,fontStyle:"italic"}},"No POIs mapped to this threat")
-              );
-            })
-          )
-        ),
-
-        // POI-Threat Mapping
-        pois.length>0&&React.createElement("div",{className:"card",style:{marginTop:16}},
-          React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
-            React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"THREAT — POINT OF INTEREST MAPPING")
-          ),
-          React.createElement("table",null,
-            React.createElement("thead",null,React.createElement("tr",null,
-              React.createElement("th",null,"R#"),
-              React.createElement("th",{className:"left"},"Threat"),
-              React.createElement("th",null,"Type"),
-              React.createElement("th",null,"Rating"),
-              React.createElement("th",{className:"left"},"Applicable Points of Interest")
-            )),
-            React.createElement("tbody",null,
-              cRisks.filter(r=>r.n).map((r,i)=>{
-                const rPois=pois.filter(p=>p.threats.includes(r.id));
-                return React.createElement("tr",{key:r.id},
-                  React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
-                  React.createElement("td",{className:"text-left text-xs font-medium"},r.n),
-                  React.createElement("td",null,React.createElement("span",{style:{fontSize:9,fontWeight:600,color:r.cat==="Terrorism"?"#dc2626":"#4472C4"}},r.cat||"")),
-                  React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                  React.createElement("td",{className:"text-left text-xs"},rPois.length>0?rPois.map(p=>p.name).join(", "):React.createElement("span",{className:"text-muted"},"—"))
-                );
-              })
-            )
-          )
+        React.createElement("div",{style:{fontSize:10,color:"#94a3b8",textAlign:"center",padding:8}},
+          "Generated by Security Risk & Threat Assessment Tool v"+VERSION+" | "+(ctx.project||"")+" | "+new Date().toLocaleDateString()
         )
       ),
 
