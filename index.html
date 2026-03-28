@@ -493,9 +493,10 @@ function HelpBox({title,description,scaleItems}){
 
 const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n:"2"},{id:"assets",l:"Assets",n:"3"},{id:"threats",l:"Threats",n:"4"},
   {id:"poi",l:"Points of Interest",n:"5"},
-  {id:"vulnerability",l:"Vulnerability",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
+  {id:"vulnerability",l:"Attractiveness, Vulnerability & Likelihood",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
   {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk & Treatments",n:"10"},
   {id:"dashboard",l:"Summary",n:"11"},
+  {id:"sbd",l:"SBD Requirements",n:"12"},
   {id:"methodology",l:"Methodology",n:"13"},{id:"settings",l:"Settings",n:"14"}];
 
 // ============================================================
@@ -503,7 +504,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.85";
+  const VERSION="1.86";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -582,6 +583,7 @@ function App(){
   const[rs,setRs]=useState({});
   const[acc,setAcc]=useState({});
   const[treatmentMeasures,setTreatmentMeasures]=useState({});
+  const[sbdType,setSbdType]=useState("residential");
   const[toast,setToast]=useState(null);
   const[crimeData,setCrimeData]=useState(null);
   const[crimeRaw,setCrimeRaw]=useState(null);
@@ -865,6 +867,19 @@ function App(){
     }).catch(function(){restore();showToast("Capture failed")});
   };
 
+  // Chunked HTML copy for Word - copies formatted HTML tables that fit on A4 pages
+  const copyChunkedToWord=function(htmlChunks,title){
+    var style="<style>table{border-collapse:collapse;width:100%;font-family:Calibri,Arial;font-size:10pt;margin-bottom:8pt;page-break-inside:avoid}th{background:#1B2A4A;color:#fff;padding:6pt 8pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}td{padding:5pt 8pt;border:1pt solid #ccc;font-size:9pt}td.tl{text-align:left}.s1{background:#4472C4;color:#fff;font-weight:bold;text-align:center}.s2{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.s3{background:#FFC000;color:#000;font-weight:bold;text-align:center}.s4{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.s5{background:#C00000;color:#fff;font-weight:bold;text-align:center}tr:nth-child(even) td{background:#f8f8f8}h2{font-family:Calibri,Arial;font-size:14pt;color:#1B2A4A;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;margin:12pt 0 6pt;page-break-before:always}h2:first-child{page-break-before:avoid}h3{font-family:Calibri,Arial;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt}.badge-vl{background:#4472C4;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-lo{background:#70AD47;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-me{background:#FFC000;color:#000;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-hi{background:#ED7D31;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-vh{background:#C00000;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}</style>";
+    var html=style+(title?"<h2>"+title+"</h2>":"")+htmlChunks.join("");
+    var blob=new Blob([html],{type:"text/html"});
+    navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Copied for Word \u2014 paste with Ctrl+V")}).catch(function(){
+      var text=html.replace(/<[^>]+>/g," ").replace(/\s+/g," ");
+      navigator.clipboard.writeText(text).then(function(){showToast("Copied as text")});
+    });
+  };
+  var scClass=function(v){return v?"s"+v:""};
+  var ratClass=function(r){return!r?"":{"Very Low":"badge-vl","Low":"badge-lo","Medium":"badge-me","High":"badge-hi","Very High":"badge-vh"}[r]||""};
+
   const processCrimeData=(rawResults,monthCount,lat,lng)=>{
     var filtered=rawResults.slice(0,monthCount);
     var allCrimes=filtered.flatMap(r=>r.crimes.map(c=>({...c,month:r.month})));
@@ -979,12 +994,88 @@ function App(){
   };
 
   // Shared typical controls/treatments for a threat
-  const getTypicalControls=function(tn,context){
+  const getTypicalControls=function(tn,context,devType){
     tn=(tn||"").toLowerCase();
     context=(context||"").toLowerCase();
+    devType=(devType||"").toLowerCase();
     var m=[];
     var isExisting=context==="existing";
     var isTreatment=context==="treatment";
+    var isRes=devType.includes("resid")||devType.includes("home");
+    var isCom=devType.includes("comm")||devType.includes("office")||devType.includes("retail")||devType.includes("hotel")||devType.includes("data")||devType.includes("govern");
+    var isSch=devType.includes("school")||devType.includes("educ");
+    var isMaster=devType.includes("master");
+
+    // ── SBD-DERIVED: RESIDENTIAL-SPECIFIC ──
+    if(isRes){
+      if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")||tn.includes("criminal damage")){
+        m.push("Security-tested external doorsets with multi-point locking and anti-snap, anti-pick, anti-bump cylinders","Front entrance door fitted with wide-angle door viewer (min 160\u00b0) or video entry","Door chain or limiter to main entrance door","Letterbox restrictor to prevent fishing and arson","All easily accessible windows security-tested with internal beading and key-operated locks","Laminated glass to all easily accessible ground floor and basement windows","Window opening restrictors on accessible windows","Rear garden boundaries enclosed by 1.8m close-boarded fencing","Side gates between front and rear lockable at 1.8m height","Front boundaries max 1m to maintain natural surveillance to street");
+      }
+      if(tn.includes("arson")){
+        m.push("Letterbox restrictor or fire-protection device to prevent arson through mail opening","Bin stores enclosed, lockable and positioned away from the building");
+      }
+      if(tn.includes("burglary")||tn.includes("theft")){
+        m.push("Cycle parking in secure enclosed storage with robust stands","E-bike and e-scooter storage in fire-rated enclosure separated from dwelling","Garage doorsets security-tested where integral or attached to dwelling");
+      }
+      if(tn.includes("violence")||tn.includes("asb")||tn.includes("trespass")){
+        m.push("Clear definition between public and private space through boundary treatments","Defensive thorny planting beneath windows and along vulnerable boundaries","Tree canopies maintained above 2m and shrubs below 1m for sight lines");
+      }
+      // Communal (apartments)
+      if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("theft")||tn.includes("violence")){
+        m.push("Communal entrance doors with electronic access control and self-closing device","Audio/visual communication between visitor and each dwelling at communal entrance","Trade button deactivated between specified hours or removed","Individual flat entrance doors security-tested (and fire/security dual-certified where needed)","Lift security to residential floors with access control");
+      }
+    }
+
+    // ── SBD-DERIVED: COMMERCIAL-SPECIFIC ──
+    if(isCom){
+      if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")){
+        m.push("All external doorsets security-tested with electronic access control integration","Emergency exit doors without external ironmongery, fitted with door contacts and position monitoring","Loading bay and service entrance doors security-rated","Roller shutters to loading bays security-tested","All external doors non-recessed to prevent concealment","Ground floor and accessible windows security-tested with laminated glass","Window opening restrictors on all accessible openable windows","Internal beading preventing external glazing removal");
+      }
+      if(tn.includes("insider")||tn.includes("info")||tn.includes("cyber")){
+        m.push("Server room, MER/SER and security control room doors high-security rated","Plant room access secured with electronic access control","All security system head-end equipment in secure, environmentally controlled areas","Electronic key cabinet for mechanical key management with audit trail");
+      }
+      if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("pbied")){
+        m.push("Speedlanes or turnstiles with tailgating detection at entrance lobby","Dedicated security monitoring location in secure, non-publicly visible area","Security control room secured with high-security doorset, access control and CCTV");
+      }
+      if(tn.includes("vbied")||tn.includes("vaaw")){
+        m.push("Secure perimeter fencing/walls minimum 2.4m with anti-climb for high-risk sites","Vehicle access barriers rated for hostile vehicle mitigation where required","Pedestrian gates with access control, self-closing mechanism and anti-lift hinges");
+      }
+      if(tn.includes("burglary")||tn.includes("arson")||tn.includes("criminal damage")){
+        m.push("Intruder alarm system covering all external openings and internal sensitive areas","Alarm system verified for police response capability","System monitored 24/7 by alarm receiving centre or on-site security");
+      }
+      if(tn.includes("theft")||tn.includes("vehicle")){
+        m.push("Cycle parking in secure enclosed areas with robust stands","E-bike storage in fire-rated enclosure separated from main building","Basement car park access controlled with ANPR and barriers");
+      }
+    }
+
+    // ── SBD-DERIVED: SCHOOLS-SPECIFIC ──
+    if(isSch){
+      if(tn.includes("trespass")||tn.includes("burglary")||tn.includes("criminal damage")||tn.includes("violence")){
+        m.push("Secure perimeter fence minimum 2.0m around entire school boundary","Welded mesh, railings or expanded metal fencing colour-coated to soften appearance","Gates same height as fence with anti-lift hinges and non-climbable locking","Main vehicle and pedestrian access overlooked by school office/reception","Secondary access points kept locked unless required for deliveries","Single main entrance as the only unlocked entry during school hours","Main entrance through or adjacent to reception with direct visual oversight","Secure lobby or vestibule at main entrance for visitor processing before entry","Classroom doors lockable from inside for lockdown capability");
+      }
+      if(tn.includes("theft")||tn.includes("burglary")){
+        m.push("IT suites protected with security-rated doors and windows","Portable equipment secured with cable locks or security cages","Server room and network cabinets secured with electronic access control","Individual secure lockers in changing rooms for personal belongings","Medical room on ground floor near entrance with secure medication storage","Exam paper storage in security-rated and fire-rated cabinets");
+      }
+      if(tn.includes("violence")||tn.includes("mta")||tn.includes("mtfa")){
+        m.push("All visitors enter via single controlled main entrance through or past reception","Visitor sign-in with ID verification and DBS confirmation for regulars","Visitors issued clearly visible passes and escorted in sensitive areas","Lockdown alarm distinct and distinguishable from fire alarm","Parent/carer collection points designed to separate visitors from school areas");
+      }
+      if(tn.includes("arson")||tn.includes("criminal damage")){
+        m.push("Light fittings protected with polycarbonate covers and mounted at height","External furniture and equipment robust and securely fixed with tamper-resistant fixings","No mature trees or climbing aids adjacent to perimeter fencing");
+      }
+      if(tn.includes("asb")){
+        m.push("Play areas and sports pitches within natural surveillance from occupied building spaces","Sheltered areas, recesses and concealment points minimised in the design","Vegetation maintained below 1m or above 2m for sight lines throughout grounds","Defensive thorny planting along vulnerable boundaries and beneath accessible windows");
+      }
+    }
+
+    // ── SBD-DERIVED: MASTERPLAN-SPECIFIC ──
+    if(isMaster){
+      if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("violence")){
+        m.push("Estate-wide CPTED principles \u2014 natural surveillance, defined public/private space across the masterplan","Clear definition of ownership boundaries between residential, commercial and public realm","Consistent boundary treatments between plots and public areas","Estate-wide lighting strategy coordinated with CCTV across the masterplan","Public realm designed with clear sight lines and no concealment opportunities","Mixed-tenure layout avoiding concentration of any single tenure type","Active ground-floor frontages along primary pedestrian routes");
+      }
+      if(tn.includes("vbied")||tn.includes("vaaw")){
+        m.push("Hostile vehicle mitigation integrated into public realm design (bollards, planters, street furniture)","Vehicle access control strategy for the estate with designated delivery routes","Speed reduction measures integrated into road design across the masterplan");
+      }
+    }
 
     // ── PUBLIC REALM & CPTED ──
     if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("public order")||tn.includes("asb")||tn.includes("trespass")||tn.includes("criminal damage")||tn.includes("violence")){
@@ -1138,6 +1229,238 @@ function App(){
     }
 
     var seen={};return m.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
+  };
+
+  // Intelligent treatment engine — considers threat name, TAAR treatment method, existing controls, and development type
+  const getCategorisedTreatments=function(tn,treatMethod,controlsDesc,devType){
+    tn=(tn||"").toLowerCase();treatMethod=(treatMethod||"reduce").toLowerCase();controlsDesc=(controlsDesc||"").toLowerCase();devType=(devType||"").toLowerCase();
+    var outside=[];var inside=[];var operational=[];var narrative="";
+    var isRes=devType.includes("resid")||devType.includes("home");
+    var isCom=devType.includes("comm")||devType.includes("office")||devType.includes("retail")||devType.includes("hotel")||devType.includes("data")||devType.includes("govern");
+    var isSch=devType.includes("school")||devType.includes("educ");
+    var isMaster=devType.includes("master");
+    // Accept — minimal treatment
+    if(treatMethod==="accept"){
+      narrative="The residual risk from this threat has been assessed and accepted within the organisation\u2019s risk tolerance. No additional treatment measures are required beyond existing controls. This acceptance should be formally documented, reviewed periodically, and escalated if the threat profile changes.";
+      operational.push("Formal risk acceptance documented and signed off by risk owner","Periodic review of accepted risk \u2014 minimum annually or on change of threat level","Monitoring for changes in threat landscape that would require reassessment");
+      return{outside:outside,inside:inside,operational:operational,narrative:narrative};
+    }
+    // Transfer — focus on contractual/insurance
+    if(treatMethod==="transfer"){
+      narrative="The primary consequence mitigation for this threat is through risk transfer \u2014 insurance, contractual liability transfer, or outsourced specialist provision. Physical and procedural controls should still be maintained as supporting measures to reduce likelihood, but the financial and operational impact is absorbed by third parties through formal agreements.";
+      operational.push("Comprehensive insurance policy covering this threat\u2019s consequences","Contractual transfer of liability to appropriate third parties","Service Level Agreements with outsourced security providers","Regular review of insurance coverage adequacy and policy terms","Third-party due diligence and risk assessment","Incident response coordination agreements with transfer partners");
+    }
+    // Avoid — focus on elimination
+    if(treatMethod==="avoid"){
+      narrative="This risk will be eliminated by removing the exposure entirely. This may involve relocating vulnerable functions, changing the design or use of the building, removing public access to high-risk areas, or redesigning operational processes to remove the threat vector. The measures below address any residual exposure that cannot be fully eliminated.";
+      operational.push("Remove or relocate the vulnerable activity, function or asset","Redesign operational processes to eliminate the threat vector","Restrict or remove public access to the affected area","Change building use, layout or design to avoid exposure","Formal documentation of avoidance decision and residual exposure");
+    }
+    // Reduce — full physical treatment (also supplements Transfer/Avoid)
+    if(treatMethod==="reduce"||treatMethod===""){narrative="Treatment measures should reduce both the likelihood and impact of this threat to as low as reasonably practicable (ALARP). ";}
+
+    // ── VEHICLE-BORNE (VBIED/VAAW) ──
+    if(tn.includes("vbied")||tn.includes("vaaw")){
+      outside.push("Hostile Vehicle Mitigation (HVM) \u2014 bollards, planters or rated barriers at the perimeter to enforce standoff distance","Anti-ram rated barriers at all vehicular entry points integrated with access control","Speed reduction measures on approach \u2014 chicanes, raised tables, surface changes","Vehicle search/inspection area at safe standoff with overwatch position","Blast analysis and standoff distance modelling to inform perimeter layout","Reinforced collision/blast jackets to structural columns within vehicle reach","ANPR at vehicle access points for identification and audit","CCTV covering all vehicle approaches and perimeter");
+      inside.push("Laminated anti-blast glazing to facades facing vehicle approaches","Blast-resilient construction to reception and entrance lobbies","Window film or sacrificial glazing to reduce fragmentation");
+      narrative+="The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation. ";
+    }
+    // ── MARAUDING ATTACKS (MTA/MTFA) ──
+    if(tn.includes("mta")||tn.includes("mtfa")){
+      outside.push("Clear sight lines across all external areas for early detection of hostile approach","External CCTV with behavioural analytics for loitering and hostile reconnaissance detection","Removal of concealment opportunities in landscaping, furniture and recessed areas","Hostile Vehicle Mitigation if the threat involves vehicle approach");
+      inside.push("Lockdown capability activated from reception, security control room and distributed panic buttons","Invacuation routes and designated safe havens within the building core","Internal compartmentalisation \u2014 security-rated doors enabling zones to be isolated during an attack","Weapons detection screening at main entry points","Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking","Offices and meeting rooms with thumb-turn lockable doors for immediate shelter");
+      operational.push("Lockdown procedures with regular rehearsal and testing programme","Hostile reconnaissance awareness training for all building users","Collaboration with Counter Terrorism Security Advisors (CTSA)","Communication cascade for rapid alert during an incident","SIA-licensed security operatives during occupied hours","Emergency communication system linking security, management and emergency services");
+      narrative+="Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants. ";
+    }
+    // ── PERSON-BORNE IED ──
+    if(tn.includes("pbied")){
+      outside.push("Hostile reconnaissance detection through CCTV analytics and trained security personnel","Clear external areas with minimal concealment for device placement","Search and screening regime at building entry points");
+      inside.push("Bag search policy and/or weapons/explosives detection at main entrances","Internal CCTV coverage of all public-facing areas and circulation","Blast-resilient construction to reception and entrance lobby","Laminated glazing to entrance areas to reduce fragmentation","Visitor management \u2014 identification, sign-in, temporary pass, escort policy");
+      operational.push("Staff trained to identify suspicious behaviour and unattended items","Suspicious item/package response procedures","Evacuation and invacuation drills specific to blast scenarios");
+      narrative+="Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building. ";
+    }
+    // ── IED / IED-DRONE / MAIL ──
+    if((tn.includes("ied")&&!tn.includes("vbied")&&!tn.includes("pbied"))||tn.includes("mail")||tn.includes("parcel")){
+      outside.push("Perimeter security preventing unauthorised access to building shell and service areas","CCTV analytics for detection of suspicious items and unattended packages");
+      inside.push("Dedicated mail/post room physically separated from occupied areas","Mail screening equipment (X-ray) appropriate to threat level","Receiving room with independent ventilation","Secure delivery holding area for parcels awaiting screening");
+      operational.push("Mail screening procedures and trained personnel","Suspicious mail identification training for all staff handling deliveries","Delivery vehicle inspection and verification protocols","Response procedures for suspect packages");
+      if(tn.includes("drone"))outside.push("Counter-UAS detection and mitigation measures where drone delivery risk is assessed","Monitoring of airspace above site for unauthorised drone activity");
+      narrative+="IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities. ";
+    }
+    // ── CBR ──
+    if(tn.includes("cbr")){
+      outside.push("CCTV coverage of building air intakes and ventilation access points","Air intakes elevated and protected from ground-level interference","Perimeter controls preventing access to MEP infrastructure");
+      inside.push("HVAC zoning with rapid isolation and shutdown capability","CBR detection at air handling units where threat assessment requires","Sealed post room with independent ventilation");
+      operational.push("CBR incident response procedures including shelter-in-place","Staff awareness training on recognising CBR indicators","Emergency services liaison on CBR response protocols");
+      narrative+="CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation. ";
+    }
+    // ── GENERAL TERRORISM CPTED (any terrorism threat) ──
+    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("mtfa")||tn.includes("pbied")||tn.includes("ied")||tn.includes("cbr")){
+      if(treatMethod!=="avoid"){
+        outside.push("CPTED principles \u2014 natural surveillance, defined public/private space, clear sight lines","Uniform dusk-to-dawn external lighting coordinated with CCTV at building shell and entries","Vandal-resistant light fittings with colour-rendering lamps supporting identification");
+        inside.push("Main entrance controlled with electronic access control, intercom and lockdown","Visitor management \u2014 all visitors identified, signed in and issued passes");
+        operational.push("Dedicated security monitoring in secure area with UPS backup","UPS backup for all security systems and monitoring positions");
+      }
+    }
+    // ── BURGLARY ──
+    if(tn.includes("burglary")){
+      outside.push("Security-rated perimeter fencing/walls at consistent height","Security-rated pedestrian boundary gates with self-closing mechanism","Dusk-to-dawn external lighting at all entries, service areas and parking","External CCTV covering perimeter, entries, recessed areas and service bays","Defensive planting beneath windows and along vulnerable boundaries","Landscape maintained for sight lines \u2014 canopies above 2.2m, shrubs below 1m");
+      inside.push("Security-tested external doorsets with multi-point locking and access control integration","Enhanced security glazing to all ground floor and accessible windows","Laminated glass with internal beading preventing external removal","Window opening restrictors on accessible windows","Electronic access control at all external entry points with audit trail","Intruder alarm system with panic buttons and 24/7 monitoring","Door contacts with forced/left-open/tamper alarms on perimeter doors","Fire escape doors alarmed, without external ironmongery");
+      narrative+="Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry. ";
+    }
+    // ── THEFT ──
+    if(tn.includes("theft")&&!tn.includes("info")){
+      outside.push("Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures","E-bike/e-scooter storage in fire-rated enclosure separated from building");
+      inside.push("CCTV in stair cores, lift lobbies and circulation areas","Access control preventing unauthorised floor-to-floor movement","Secure storage for high-value portable equipment");
+      narrative+="Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity. ";
+    }
+    // ── VEHICLE CRIME ──
+    if(tn.includes("vehicle crime")){
+      outside.push("Car park CCTV at all entry/exit points, aisles and pedestrian routes","ANPR at car park barriers","Well-lit parking with uniform illumination and no dark spots","Natural surveillance from occupied rooms into parking areas");
+      narrative+="Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building. ";
+    }
+    // ── ARSON ──
+    if(tn.includes("arson")){
+      outside.push("Refuse/bin storage lockable and positioned away from building exterior","External lighting to rear and service areas","No combustible material stored against building exterior walls");
+      inside.push("Fire detection system covering all areas including voids and risers","Sprinkler or suppression system","Fire compartmentation to limit spread","Smoke ventilation to protect escape routes","Letterbox fire protection where letter slots exist");
+      narrative+="Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation. ";
+    }
+    // ── TRESPASS ──
+    if(tn.includes("trespass")){
+      outside.push("Perimeter demarcation through fencing, walls, landscaping and signage","Consistent perimeter boundary height","Clear 2m zone either side of boundary for surveillance","CCTV with out-of-hours intrusion detection analytics");
+      inside.push("Electronic access control preventing unauthorised internal movement","Stair core and lift lobby access control at each level");
+      narrative+="Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence. ";
+    }
+    // ── ASB / CRIMINAL DAMAGE ──
+    if(tn.includes("asb")||tn.includes("criminal damage")){
+      outside.push("CPTED principles \u2014 natural surveillance, defined ownership, active maintenance regime","Robust, securely fixed street furniture and hard landscaping","Anti-graffiti coating on vulnerable external surfaces","Dusk-to-dawn lighting with vandal-resistant fittings at height","External CCTV with recording for evidence and deterrence");
+      narrative+="ASB and criminal damage treatment applies CPTED principles outside the building \u2014 surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour. ";
+    }
+    // ── PUBLIC ORDER ──
+    if(tn.includes("public order")){
+      outside.push("External CCTV with wide-area coverage and recording","HVM measures that also control crowd movement","Clear pedestrian routes and defined public/private boundaries");
+      operational.push("Public order response plan coordinated with police","Escalation procedures for protest or demonstration activity","Business continuity plan for access disruption");
+      narrative+="Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity. ";
+    }
+    // ── VIOLENCE & SEXUAL ──
+    if(tn.includes("violence")){
+      outside.push("Well-lit external areas with no concealment opportunities","CCTV covering all pedestrian routes, entrances and car parks","Natural surveillance from occupied spaces to external areas");
+      inside.push("Internal CCTV in corridors, stair cores and isolated areas","Panic buttons at reception and public-facing positions","Controlled access preventing unauthorised individuals reaching occupied areas");
+      operational.push("Staff trained on conflict de-escalation and personal safety","Lone worker policy and monitoring procedures","Incident recording and pattern analysis");
+      narrative+="Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building. ";
+    }
+    // ── CYBERCRIME ──
+    if(tn.includes("cyber")){
+      inside.push("Security-rated doorsets to server rooms, MER/SER and data storage","Access control to IT infrastructure with full audit trail","Environmental monitoring in server rooms");
+      operational.push("Network segmentation isolating security, BMS and corporate networks","Intrusion detection and prevention systems","Encrypted storage and transmission for sensitive data","Endpoint protection with managed detection and response","Regular penetration testing and vulnerability assessments","Patch management for all systems including IoT and OT","Staff cyber awareness training with phishing simulations","Mobile device management and removable media controls","Cyber incident response plan","Backup and disaster recovery tested regularly");
+      narrative+="Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences. ";
+    }
+    // ── INFO THEFT ──
+    if(tn.includes("info")){
+      inside.push("Security-rated doorsets to areas storing/processing sensitive information","Clear desk policy with secure document storage","Secure print-release preventing uncollected documents","Shredding facilities for confidential waste");
+      operational.push("Data classification and handling policy","Encrypted storage and transmission","Access logging with anomaly detection","Secure media disposal procedures","Data loss prevention on email and file transfer","Third-party data processing agreements","Regular information asset audit");
+      narrative+="Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally. ";
+    }
+    // ── INSIDER THREAT ──
+    if(tn.includes("insider")){
+      inside.push("Access control zoning restricting individuals to role-required areas only","CCTV in sensitive areas with recording","Key management via secure electronic cabinet with audit");
+      operational.push("Pre-employment vetting and ongoing security screening","Joiners/movers/leavers access process \u2014 immediate revocation on departure","Whistleblowing and confidential reporting policy","Regular access rights reviews enforcing least privilege","User behaviour monitoring and anomaly detection","Clear desk and screen policy enforcement","Security clearance for sensitive roles","Separation of duties for critical processes");
+      narrative+="Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally. ";
+    }
+    // ── SOC ──
+    if(tn.includes("soc")){
+      inside.push("Security-rated doorsets to high-value areas","CCTV at all access points to valuable assets and cash handling");
+      operational.push("Background screening for staff and contractors in positions of trust","Supply chain due diligence and third-party risk assessment","Fraud prevention controls with segregation of duties","Anomaly detection in financial and access systems","Organised crime threat briefings","Whistleblowing and confidential reporting");
+      narrative+="Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally. ";
+    }
+    // ── KRE ──
+    if(tn.includes("kre")){
+      inside.push("Controlled access to areas occupied by at-risk individuals","CCTV at entrances capturing identification-quality images");
+      operational.push("Travel security procedures for at-risk personnel","Personal security risk assessments for key individuals","Secure communication channels","Kidnap/ransom/extortion incident response plan","Close liaison with police and specialist advisors");
+      narrative+="Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally. ";
+    }
+    // ── GENERAL OPERATIONAL FALLBACK ──
+    if(operational.length<3&&treatMethod!=="accept"){
+      operational.push("Regular review of security systems and procedures","Staff training on security policies, evacuation and invacuation","Incident recording, reporting and lessons-learned procedures");
+    }
+
+    // ── SBD-DERIVED DEVELOPMENT-SPECIFIC TREATMENTS (no standards referenced) ──
+    if(treatMethod!=="accept"){
+      // RESIDENTIAL
+      if(isRes){
+        if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")){
+          outside.push("Rear garden boundaries enclosed by 1.8m close-boarded fencing or equivalent","Side gates between front and rear of dwelling lockable at 1.8m height","Front boundaries max 1m to maintain natural surveillance from dwelling to street","Defensive thorny planting beneath windows and along vulnerable boundary sections","Dusk-to-dawn lighting to all external entrance doors and pedestrian routes");
+          inside.push("Security-tested external doorsets with multi-point locking and anti-snap, anti-pick, anti-bump, anti-drill cylinders","Front door fitted with wide-angle door viewer (min 160\u00b0) or video door entry","Door chain or limiter fitted to main entrance door","Letterbox restrictor to prevent fishing and arson attacks","All easily accessible windows security-tested with internal beading and key-operated locks","Laminated glass to all easily accessible windows","Garage doorsets security-tested where integral or attached to dwelling");
+        }
+        if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("violence")){
+          inside.push("Communal entrance doors with electronic access control, self-closing device and audio/visual intercom to each dwelling","Trade button deactivated between specified hours or removed entirely","Individual flat entrance doors security-tested and dual-certified (fire + security) where required","Lift access control to residential floors");
+        }
+        if(tn.includes("arson")){
+          inside.push("Letterbox fire-protection device to prevent arson through mail opening");
+          outside.push("Bin stores enclosed, lockable and positioned away from the building exterior");
+        }
+        if(tn.includes("theft")||tn.includes("criminal damage")){
+          outside.push("Cycle stands in secure enclosed well-lit storage areas","E-bike/e-scooter storage in fire-rated enclosure separated from dwelling");
+        }
+      }
+      // COMMERCIAL
+      if(isCom){
+        if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")){
+          outside.push("All external doors non-recessed to prevent concealment \u2014 where unavoidable, fit CCTV or mirrors","Secure perimeter fencing/walls minimum 2.4m with anti-climb for high-risk sites","Pedestrian gates with access control, self-closing mechanism and anti-lift hinges");
+          inside.push("Security-tested external doorsets integrated with electronic access control","Emergency exit doors without external ironmongery, fitted with door contacts and position monitoring","Loading bay and service entrance doors security-rated","Roller shutters to loading bays security-tested","Ground floor and accessible windows security-tested with laminated glass and internal beading","Window opening restrictors on all accessible openable windows","Anti-bandit glazing to cash handling or high-value areas");
+        }
+        if(tn.includes("insider")||tn.includes("info")||tn.includes("cyber")){
+          inside.push("Server rooms, MER/SER and security control room fitted with high-security doorsets","All security system head-end equipment in secure, environmentally controlled areas","Electronic key cabinet with full audit trail");
+        }
+        if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("pbied")){
+          inside.push("Speedlanes or turnstiles with tailgating detection at entrance lobby","Dedicated security monitoring location in secure, non-publicly visible area fitted with high-security doorset");
+        }
+        if(tn.includes("burglary")||tn.includes("arson")||tn.includes("criminal damage")){
+          operational.push("Intruder alarm covering all external openings and sensitive internal areas, monitored 24/7 by alarm receiving centre");
+        }
+        if(tn.includes("theft")||tn.includes("vehicle")){
+          outside.push("Cycle parking in secure enclosed well-lit areas with robust stands","E-bike storage in fire-rated enclosure separated from main building","Basement car park access controlled with ANPR and barriers");
+        }
+        if(tn.includes("vbied")||tn.includes("vaaw")){
+          outside.push("Vehicle access barriers rated for hostile vehicle mitigation at perimeter","Clear 2m zone either side of perimeter boundary for surveillance");
+        }
+      }
+      // SCHOOLS
+      if(isSch){
+        if(tn.includes("trespass")||tn.includes("burglary")||tn.includes("criminal damage")||tn.includes("violence")){
+          outside.push("Secure perimeter fence minimum 2.0m around entire school boundary","Fencing colour-coated (dark preferred) to soften appearance and reduce light reflection","Gates same height as fence with anti-lift hinges and non-climbable locking mechanisms","Main vehicle and pedestrian access points overlooked by school office/reception","Secondary access points kept locked unless specifically required","Public footpaths adjacent to boundary addressed with defensive planting","No climbing aids (trees, bins, furniture) adjacent to perimeter fencing","Play areas and sports pitches within natural surveillance from occupied buildings","Sheltered areas, recesses and concealment points minimised in site design","Vegetation maintained below 1m or above 2m for sight lines throughout grounds");
+          inside.push("Single main entrance as the only unlocked entry during school hours","Main entrance through or adjacent to reception with direct visual oversight","Secure lobby or vestibule at main entrance for visitor processing before entry to school","Classroom doors lockable from inside for lockdown capability","Staff areas (staffroom, offices) secured from pupil access","Recessed external doorways avoided \u2014 where unavoidable, mirrors or CCTV fitted");
+        }
+        if(tn.includes("theft")||tn.includes("burglary")){
+          inside.push("IT suites protected with security-rated doors and windows","Portable equipment secured with cable locks or security cages","Server room and network cabinets secured with electronic access control","Individual secure lockers in changing rooms for personal belongings","Medical room on ground floor near entrance with secure medication storage","Exam paper storage in security-rated and fire-rated cabinets");
+        }
+        if(tn.includes("violence")||tn.includes("mta")||tn.includes("mtfa")){
+          inside.push("All visitors enter via single controlled main entrance through or past reception","Visitor sign-in with ID verification and DBS confirmation for regular visitors","Visitors issued clearly visible passes and escorted in sensitive areas");
+          operational.push("Lockdown alarm distinct and distinguishable from fire alarm, tested regularly","Parent/carer collection points separating visitors from unrestricted school areas");
+        }
+        if(tn.includes("arson")||tn.includes("criminal damage")){
+          outside.push("Light fittings protected with polycarbonate covers and mounted at height","External furniture and equipment robust and securely fixed with tamper-resistant fixings");
+        }
+      }
+      // MASTERPLAN
+      if(isMaster){
+        if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("violence")||tn.includes("theft")){
+          outside.push("Estate-wide CPTED principles \u2014 natural surveillance, defined public/private space across the masterplan","Clear definition of ownership boundaries between residential, commercial and public realm","Consistent boundary treatments between individual plots and public areas","Estate-wide lighting strategy coordinated with CCTV","Public realm designed with clear sight lines and no concealment opportunities","Mixed-tenure layout avoiding concentration of any single tenure type","Active ground-floor frontages along primary pedestrian routes to promote natural surveillance");
+        }
+        if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")){
+          outside.push("Hostile vehicle mitigation integrated into public realm (bollards, planters, street furniture)","Vehicle access control strategy for the estate with designated delivery routes","Speed reduction measures integrated into road design across the masterplan");
+        }
+        if(tn.includes("burglary")||tn.includes("theft")){
+          inside.push("Residential doorsets and windows security-tested across all tenures within the masterplan","Communal entrances to apartment buildings with access control and intercom");
+          outside.push("Secure cycle hubs at transport nodes and within each building plot","E-bike charging in fire-rated enclosures separated from residential buildings");
+        }
+      }
+    }
+    // ── APPEND TREATMENT METHOD CONTEXT TO NARRATIVE ──
+    if(treatMethod==="transfer"){narrative+="As the treatment is Transfer, physical measures support but insurance and contractual arrangements absorb the primary financial consequence.";}
+    else if(treatMethod==="avoid"){narrative+="As the treatment is Avoid, the priority is eliminating exposure. Listed measures address residual risk that cannot be fully eliminated.";}
+    else{narrative+="The measures below should reduce both likelihood and impact to ALARP.";}
+    var dedup=function(arr){var s={};return arr.filter(function(t){if(s[t])return false;s[t]=true;return true})};
+    return{outside:dedup(outside),inside:dedup(inside),operational:dedup(operational),narrative:narrative};
   };
 
 
@@ -2856,8 +3179,40 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // POINTS OF INTEREST
       tab==="poi"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Points of Interest (POI)"),
-        React.createElement("p",{className:"section-sub"},"Identify vulnerable points on the site and map applicable threats to each location."),
+        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Points of Interest (POI)"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Identify vulnerable points on the site and map applicable threats to each location.")
+          ),
+          pois.length>0&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var chunks=[];
+            chunks.push("<h2>Points of Interest Summary</h2>");
+            chunks.push("<p style='font-family:Calibri;font-size:10pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Site: <b>"+(ctx.address||"\u2014")+"</b> | Total POIs: <b>"+pois.length+"</b></p>");
+            // Summary table
+            chunks.push("<table><tr><th>#</th><th style='text-align:left'>POI Name</th><th style='text-align:left'>Location / Description</th><th style='text-align:left'>Notes</th><th style='text-align:left'>Applicable Threats</th><th>Count</th></tr>");
+            pois.forEach(function(poi,i){
+              var threatNames=poi.threats.map(function(tid){var t=cThreats.find(function(t){return t.id===tid});return t?t.n:""}).filter(Boolean);
+              var terrorT=threatNames.filter(function(n){var t=cThreats.find(function(t2){return t2.n===n});return t&&t.cat==="Terrorism"});
+              var crimeT=threatNames.filter(function(n){var t=cThreats.find(function(t2){return t2.n===n});return t&&t.cat!=="Terrorism"});
+              var formatted="";
+              if(terrorT.length)formatted+="<span style='color:#dc2626;font-size:8pt;font-weight:bold'>T: </span><span style='font-size:8pt'>"+terrorT.join(", ")+"</span>";
+              if(terrorT.length&&crimeT.length)formatted+="<br/>";
+              if(crimeT.length)formatted+="<span style='color:#4472C4;font-size:8pt;font-weight:bold'>C: </span><span style='font-size:8pt'>"+crimeT.join(", ")+"</span>";
+              chunks.push("<tr><td style='text-align:center'>POI-"+(i+1)+"</td><td class='tl'><b>"+(poi.name||"")+"</b></td><td class='tl'>"+(poi.desc||"")+"</td><td class='tl'>"+(poi.location||"")+"</td><td class='tl'>"+formatted+"</td><td style='text-align:center;font-weight:bold'>"+poi.threats.length+"</td></tr>");
+            });
+            chunks.push("</table>");
+            // Threat frequency summary
+            var threatFreq={};
+            pois.forEach(function(poi){poi.threats.forEach(function(tid){threatFreq[tid]=(threatFreq[tid]||0)+1})});
+            var sorted=Object.entries(threatFreq).sort(function(a,b){return b[1]-a[1]});
+            if(sorted.length>0){
+              chunks.push("<h3>Threat Frequency Across POIs</h3><table><tr><th style='text-align:left'>Threat</th><th>Type</th><th>POI Count</th></tr>");
+              sorted.forEach(function(e){var t=cThreats.find(function(t2){return t2.id===parseInt(e[0])});if(t)chunks.push("<tr><td class='tl'><b>"+t.n+"</b></td><td style='text-align:center;font-size:8pt'>"+(t.cat||"")+"</td><td style='text-align:center;font-weight:bold'>"+e[1]+"/"+pois.length+"</td></tr>")});
+              chunks.push("</table>");
+            }
+            copyChunkedToWord(chunks,"Points of Interest \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word")
+        ),
         React.createElement(HelpBox,{title:"Points of Interest",
           description:"A Point of Interest (POI) is a specific location, entrance, area, or feature of the development that may be vulnerable to identified threats. For each POI, describe the location and click on the threat chips to toggle which threats apply. This creates a threat-location matrix that informs the vulnerability assessment and helps target mitigation recommendations to specific areas."}),
         pois.map((poi,i)=>{
@@ -2913,18 +3268,76 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // VULNERABILITY
       tab==="vulnerability"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Vulnerability & Likelihood"),
-        React.createElement("p",{className:"section-sub"},"Score 6 Target Attractiveness criteria + Vulnerability. Likelihood auto-calculates."),
-        React.createElement(HelpBox,{title:"Target Attractiveness & Vulnerability",
-          description:"Score how attractive and vulnerable the site is to each threat. Higher scores = higher risk. Target Attractiveness is averaged across 6 criteria, then combined with Threat Score and Vulnerability to produce Likelihood. See the criterion descriptions below each score bar for guidance on what 1 and 5 mean."}),
+        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Attractiveness, Vulnerability & Likelihood"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Capability and Intent from the Threats tab are shown read-only. Score 6 Target Attractiveness criteria + Vulnerability. Likelihood auto-calculates.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var filtered=cRisks.filter(function(r){return r.n});
+            var chunkSize=6;var chunks=[];
+            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            // Page 1: Summary table with Capability
+            chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th>Type</th><th>Cap</th><th>Int</th><th>Threat<br/>Score</th><th>TA</th><th>Vuln</th><th>Likelihood</th><th>Level</th></tr>");
+            filtered.forEach(function(r,i){
+              var likLvl=r.lik&&SC[r.lik]?SC[r.lik].l:"";
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='text-align:center;font-size:8pt'>"+r.cat+"</td><td style='"+scBg(r.cap)+"'>"+(r.cap||"")+"</td><td style='"+scBg(r.int)+"'>"+(r.int||"")+"</td><td style='"+scBg(r.sc)+"'>"+(r.sc||"")+"</td><td style='"+scBg(r.ta)+"'>"+(r.ta||"")+"</td><td style='"+scBg(r.vu)+"'>"+(r.vu||"")+"</td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='text-align:center;font-weight:bold'>"+likLvl+"</td></tr>");
+            });
+            chunks.push("</table>");
+            // Subsequent pages: Detail cards with Capability in batches
+            for(var ci=0;ci<filtered.length;ci+=chunkSize){
+              var batch=filtered.slice(ci,ci+chunkSize);
+              chunks.push("<h3 style='font-family:Calibri;font-size:11pt;color:#1B2A4A;margin:12pt 0 4pt;page-break-before:"+(ci===0?"avoid":"always")+"'>Target Attractiveness Detail"+(ci>0?" (continued)":"")+"</h3>");
+              batch.forEach(function(r,bi){
+                var v=vs[r.id]||{};var idx=ci+bi;
+                var likLvl=r.lik&&SC[r.lik]?SC[r.lik].l:"";
+                chunks.push("<table style='margin-bottom:10pt;border:1pt solid #ddd'><tr><td colspan='9' style='background:#f8fafc;font-weight:bold;font-size:10pt;padding:6pt 8pt;border-bottom:2pt solid #1B2A4A'>");
+                chunks.push("<span style='color:#94a3b8;font-size:8pt;margin-right:6pt'>T"+(idx+1)+"</span> "+r.n);
+                chunks.push(" <span style='margin-left:12pt;font-size:8pt;color:#64748b'>Cap: </span><span style='"+scBg(r.cap)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.cap||"\u2014")+"</span>");
+                chunks.push(" <span style='margin-left:4pt;font-size:8pt;color:#64748b'>Int: </span><span style='"+scBg(r.int)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.int||"\u2014")+"</span>");
+                chunks.push(" <span style='margin-left:4pt;font-size:8pt;color:#64748b'>TS: </span><span style='"+scBg(r.sc)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.sc||"\u2014")+"</span>");
+                chunks.push(" <span style='margin-left:8pt;font-size:8pt;color:#64748b'>TA: </span><span style='"+scBg(r.ta)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.ta||"\u2014")+"</span>");
+                chunks.push(" <span style='margin-left:4pt;font-size:8pt;color:#64748b'>V: </span><span style='"+scBg(r.vu)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.vu||"\u2014")+"</span>");
+                chunks.push(" <span style='margin-left:8pt;font-size:8pt;color:#64748b'>Likelihood: </span><span style='"+scBg(r.lik)+";padding:2pt 6pt;border-radius:3pt;font-size:9pt'>"+(r.lik||"\u2014")+"</span>");
+                chunks.push("</td></tr>");
+                chunks.push("<tr><th style='font-size:7pt'>Capability</th><th style='font-size:7pt'>Intent</th><th style='font-size:7pt'>Visibility</th><th style='font-size:7pt'>Status</th><th style='font-size:7pt'>Access</th><th style='font-size:7pt'>Collateral</th><th style='font-size:7pt'>Crime Profile</th><th style='font-size:7pt'>History</th><th style='font-size:7pt'>Vulnerability</th></tr>");
+                chunks.push("<tr>");
+                chunks.push("<td style='"+scBg(r.cap)+";text-align:center;font-size:11pt;padding:6pt;opacity:0.7'>"+(r.cap||"\u2014")+"</td>");
+                chunks.push("<td style='"+scBg(r.int)+";text-align:center;font-size:11pt;padding:6pt;opacity:0.7'>"+(r.int||"\u2014")+"</td>");
+                ["visibility","status","access","collateral","crime","history"].forEach(function(k){
+                  chunks.push("<td style='"+scBg(v[k])+";text-align:center;font-size:11pt;padding:6pt'>"+(v[k]||"\u2014")+"</td>");
+                });
+                chunks.push("<td style='"+scBg(v.vuln)+";text-align:center;font-size:11pt;padding:6pt;font-weight:bold'>"+(v.vuln||"\u2014")+"</td>");
+                chunks.push("</tr>");
+                chunks.push("<tr>");
+                // Scale descriptions
+                var capDesc=r.cap&&scales.capability&&scales.capability[r.cap]?scales.capability[r.cap]:"";
+                var intDesc=r.int&&scales.intent&&scales.intent[r.int]?scales.intent[r.int]:"";
+                chunks.push("<td style='font-size:7pt;color:#64748b;text-align:center;padding:3pt;border-top:none'>"+capDesc+"</td>");
+                chunks.push("<td style='font-size:7pt;color:#64748b;text-align:center;padding:3pt;border-top:none'>"+intDesc+"</td>");
+                ["visibility","status","access","collateral","crime","history","vuln"].forEach(function(k){
+                  var desc=v[k]&&scales[k]&&scales[k][v[k]]?scales[k][v[k]]:"";
+                  chunks.push("<td style='font-size:7pt;color:#64748b;text-align:center;padding:3pt;border-top:none'>"+desc+"</td>");
+                });
+                chunks.push("</tr></table>");
+              });
+            }
+            copyChunkedToWord(chunks,"Attractiveness, Vulnerability & Likelihood \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word")
+        ),
+        React.createElement(HelpBox,{title:"Capability, Attractiveness & Vulnerability",
+          description:"Capability and Intent are scored on the Threats tab and shown here read-only \u2014 they represent whether the threat actor has the means and motivation to act, which is fundamental to likelihood. The 6 Target Attractiveness criteria assess how appealing and accessible the site is to each threat. Vulnerability measures the site\u2019s susceptibility. Likelihood is then calculated: L = ROUND((Threat Score + TA + Vulnerability) / 3)."}),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const v=vs[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
           return React.createElement("div",{key:t.id,className:"card"},
             React.createElement("div",{className:"card-header"},
-              React.createElement("div",null,
-                React.createElement("span",{className:"text-xs font-mono text-muted mr-2"},"T"+(i+1)),
+              React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
+                React.createElement("span",{className:"text-xs font-mono text-muted"},"T"+(i+1)),
                 React.createElement("span",{className:"font-bold"},t.n),
-                React.createElement("span",{className:"text-muted text-xs",style:{marginLeft:12}},"Threat Score: "),React.createElement(SBadge,{value:t.sc})
+                React.createElement("span",{style:{fontSize:10,color:"#64748b",marginLeft:8}},"Cap:"),React.createElement(SBadge,{value:t.cap}),
+                React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"Int:"),React.createElement(SBadge,{value:t.int}),
+                React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"TS:"),React.createElement(SBadge,{value:t.sc}),
+                t.dbt&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",padding:"1px 6px",borderRadius:4,border:"1px solid #fecaca"}},"DBT")
               ),
               React.createElement("div",{className:"flex gap-3 items-center"},
                 React.createElement("span",{className:"text-xs text-muted"},"TA:"),React.createElement(SBadge,{value:r?.ta}),
@@ -2933,6 +3346,29 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               )
             ),
             React.createElement("div",{className:"card-body"},
+              // Capability & Intent read-only row
+              React.createElement("div",{style:{display:"flex",gap:12,marginBottom:10,padding:"8px 12px",background:"#f1f5f9",borderRadius:8,border:"1px solid #e2e8f0",alignItems:"center",flexWrap:"wrap"}},
+                React.createElement("div",{style:{fontSize:10,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83c\udfaf Threat Capability & Intent"),
+                React.createElement("div",{style:{display:"flex",gap:12,alignItems:"center"}},
+                  React.createElement("div",{style:{textAlign:"center"}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Capability"),
+                    React.createElement(SBadge,{value:t.cap}),
+                    t.cap&&scales.capability&&scales.capability[t.cap]&&React.createElement("div",{style:{fontSize:8,color:"#94a3b8",maxWidth:100,lineHeight:1.2,marginTop:2}},scales.capability[t.cap].substring(0,60)+(scales.capability[t.cap].length>60?"...":""))
+                  ),
+                  React.createElement("div",{style:{textAlign:"center"}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Intent"),
+                    React.createElement(SBadge,{value:t.int}),
+                    t.int&&scales.intent&&scales.intent[t.int]&&React.createElement("div",{style:{fontSize:8,color:"#94a3b8",maxWidth:100,lineHeight:1.2,marginTop:2}},scales.intent[t.int].substring(0,60)+(scales.intent[t.int].length>60?"...":""))
+                  ),
+                  React.createElement("div",{style:{textAlign:"center"}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Threat Score"),
+                    React.createElement(SBadge,{value:t.sc})
+                  ),
+                  (!t.cap||!t.int)&&React.createElement("span",{style:{fontSize:10,color:"#d97706",fontStyle:"italic"}},"\u2190 Score on the Threats tab")
+                )
+              ),
+              // Target Attractiveness criteria
+              React.createElement("div",{style:{fontSize:10,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:6}},"\ud83c\udfe2 Target Attractiveness & Vulnerability"),
               React.createElement("div",{className:"grid grid-7"},
                 ...[
                   {k:"visibility",l:"Visibility",h:"1 = No public profile\n5 = Highly visible, major branding"},
@@ -2959,8 +3395,30 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // IMPACT
       tab==="impact"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Impact Assessment"),
-        React.createElement("p",{className:"section-sub"},"Score 5 impact criteria. Hover over any score button to see what it means. Rating auto-calculates."),
+        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Impact Assessment"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score 5 impact criteria. Hover over any score button to see what it means. Rating auto-calculates.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var filtered=cRisks.filter(function(r){return r.n});
+            var chunkSize=8;var chunks=[];
+            for(var ci=0;ci<filtered.length;ci+=chunkSize){
+              var batch=filtered.slice(ci,ci+chunkSize);
+              if(ci>0)chunks.push("<h3 style='font-family:Calibri;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt'>Impact Assessment (continued)</h3>");
+              chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th>Disruption</th><th>Fatalities</th><th>Reputation</th><th>Financial</th><th>Property</th><th>Impact</th><th>Level</th></tr>");
+              batch.forEach(function(r,bi){
+                var im=is_[r.id]||{};var idx=ci+bi;
+                chunks.push("<tr><td style='text-align:center'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td>");
+                IC.forEach(function(c){chunks.push("<td class='"+scClass(im[c])+"'>"+(im[c]||"")+"</td>")});
+                var impLvl=r.imp&&SC[r.imp]?SC[r.imp].l:"";
+                chunks.push("<td class='"+scClass(r.imp)+"'>"+(r.imp||"")+"</td><td style='text-align:center;font-weight:bold'>"+(impLvl||"")+"</td></tr>");
+              });
+              chunks.push("</table>");
+            }
+            copyChunkedToWord(chunks,"Impact Assessment \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word")
+        ),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
           return React.createElement("div",{key:t.id,className:"card"},
@@ -3035,7 +3493,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("div",{className:"sr-label",style:{textAlign:"left"}},"Controls Description"),
                   React.createElement("textarea",{className:"input",style:{minHeight:60,resize:"vertical",fontSize:11,lineHeight:1.4},value:c.desc||"",onChange:e=>scd(t.id,"desc",e.target.value),placeholder:"Describe existing controls..."}),
                   React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginTop:6}},
-                    getTypicalControls(t.n,"existing").map(function(typ){
+                    getTypicalControls(t.n,"existing",activeAssetPreset).map(function(typ){
                       var alreadyIn=(c.desc||"").toLowerCase().includes(typ.toLowerCase().substring(0,20));
                       return React.createElement("button",{key:typ,
                         style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px solid "+(alreadyIn?"#bbf7d0":"#e2e8f0"),
@@ -3177,29 +3635,71 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
               targetedAssets.map(function(asset){
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
-                var typicals=getTypicalControls(r.n,"treatment");
+                var existingCtrl=cd[r.id]||{};
+                var catTreatments=getCategorisedTreatments(r.n,r.treat,existingCtrl.desc,activeAssetPreset);
 
                 return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
                   React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:4}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
-                  // Typical treatment buttons
+                  // Intelligent threat-specific treatment narrative
+                  catTreatments.narrative&&React.createElement("div",{style:{fontSize:10,color:"#475569",marginBottom:8,lineHeight:1.6,padding:"8px 10px",background:"#f8fafc",borderRadius:6,border:"1px solid #e2e8f0",borderLeft:"3px solid #1B2A4A"}},
+                    catTreatments.narrative
+                  ),
+                  // Categorised treatment buttons
+                  catTreatments.outside.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83c\udfe2 Outside the Building"),
+                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
+                      catTreatments.outside.map(function(typ){
+                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
+                        return React.createElement("button",{key:typ,
+                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#dbeafe"),
+                            background:alreadyAdded?"#f0fdf4":"#eff6ff",color:alreadyAdded?"#16a34a":"#1e40af",
+                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                          title:alreadyAdded?"Already added":"Click to add this measure",
+                          onClick:function(){
+                            if(alreadyAdded)return;
+                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
+                          }
+                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                      })
+                    )
+                  ),
+                  catTreatments.inside.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83d\udee1\ufe0f Inside the Building"),
+                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
+                      catTreatments.inside.map(function(typ){
+                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
+                        return React.createElement("button",{key:typ,
+                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#fde68a"),
+                            background:alreadyAdded?"#f0fdf4":"#fffbeb",color:alreadyAdded?"#16a34a":"#92400e",
+                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                          title:alreadyAdded?"Already added":"Click to add this measure",
+                          onClick:function(){
+                            if(alreadyAdded)return;
+                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
+                          }
+                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                      })
+                    )
+                  ),
+                  catTreatments.operational.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\u2699\ufe0f Operational & Procedural"),
+                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
+                      catTreatments.operational.map(function(typ){
+                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
+                        return React.createElement("button",{key:typ,
+                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
+                            background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
+                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                          title:alreadyAdded?"Already added":"Click to add this measure",
+                          onClick:function(){
+                            if(alreadyAdded)return;
+                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
+                          }
+                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                      })
+                    )
+                  ),
                   React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
-                    typicals.map(function(typ){
-                      var alreadyAdded=assetMeasures.some(function(m){return m===typ});
-                      return React.createElement("button",{key:typ,
-                        style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
-                          background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
-                          cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
-                        title:alreadyAdded?"Already added":"Click to add this measure",
-                        onClick:function(){
-                          if(alreadyAdded)return;
-                          setTreatmentMeasures(function(prev){
-                            var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
-                            var arr=[...(t2[asset.id]||[])].filter(function(v){return v});
-                            arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p;
-                          });
-                        }
-                      },alreadyAdded?"\u2713 "+typ:"+ "+typ);
-                    }),
                     React.createElement("button",{
                       style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px dashed #94a3b8",
                         background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600},
@@ -3249,7 +3749,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   threatPois.map(function(poi){
                     var poiKey="poi_"+poi.id;
                     var poiMeasures=(measures[poiKey]&&measures[poiKey].length>0)?measures[poiKey]:[""];
-                    var typicals=getTypicalControls(r.n,"treatment");
+                    var typicals=getTypicalControls(r.n,"treatment",activeAssetPreset);
                     return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
                       React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:2}},poi.name||"Unnamed POI"),
                       poi.desc&&React.createElement("div",{style:{fontSize:10,color:"#64748b",marginBottom:4}},poi.desc),
@@ -3643,6 +4143,336 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{style:{fontSize:10,color:"#94a3b8",textAlign:"center",padding:8}},
           "Generated by Security Risk & Threat Assessment Tool v"+VERSION+" | "+(ctx.project||"")+" | "+new Date().toLocaleDateString()
         )
+      ),
+
+      // SBD REQUIREMENTS
+      tab==="sbd"&&React.createElement("div",null,
+        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Secured by Design (SBD) Requirements"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Physical and electronic security requirements by development type. Select type below. Based on SBD Design Guides (Residential 2025, Commercial 2026, New Schools 2014).")
+          )
+        ),
+        (function(){
+
+          var SBD_DATA={
+            residential:{
+              title:"Residential Development",
+              guide:"SBD Homes Guide 2024/25",
+              sections:[
+                {cat:"Doorsets \u2014 External",icon:"\ud83d\udeaa",items:[
+                  "All external doorsets (including communal entrance doors) certified to PAS 24:2022 +A1:2024, or equivalent: LPS 1175 Issue 8.2 (min. Security Rating A1), STS 201 Issue 5, STS 202 (min. BR2), or LPS 2081 (min. SRB)",
+                  "Doorsets must also satisfy fitness-for-purpose requirements of BS 6375-1 (weathertightness), BS 6375-2 (operation and strength) and BS 6375-3 (additional performance)",
+                  "Door locking mechanism conforming to BS 3621 or tested as part of PAS 24 doorset assembly",
+                  "Cylinder locks rated to TS 007 3-star, or 1-star cylinder combined with 2-star handle/escutcheon \u2014 anti-snap, anti-pick, anti-bump and anti-drill",
+                  "Front entrance door fitted with door viewer (min 160\u00b0 wide-angle) or video door entry system",
+                  "Door chain or door limiter fitted to main entrance door",
+                  "Letterbox restrictor fitted to prevent fishing and arson through the letter opening",
+                  "Communal entrance doors to apartment buildings with electronic access control, self-closing device, and audio/visual communication to each dwelling",
+                  "Trade button facility deactivated between specified hours or removed entirely",
+                  "Dual Certified doorsets (fire + security on a single certificate) required where fire rating and security are both needed"
+                ]},
+                {cat:"Doorsets \u2014 Internal & Communal",icon:"\ud83d\udeaa",items:[
+                  "Individual flat entrance doors certified to PAS 24:2022 +A1:2024 (or Dual Certified for fire and security where required)",
+                  "Interconnecting garage-to-dwelling doors certified to PAS 24:2022",
+                  "Doors from communal areas to non-dwelling spaces (bin stores, plant rooms, cycle stores) security-rated and self-closing",
+                  "Stair core and corridor doors self-closing with access control integration",
+                  "Lift security compliant with BS EN 81-70 and BS EN 81-73 where serving residential floors"
+                ]},
+                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                  "All easily accessible windows certified to PAS 24:2022 +A1:2024 or equivalent (LPS 1175, STS 204)",
+                  "Easily accessible defined as: ground floor, basement, and any window reachable from a flat roof, balcony, accessible drain pipe or similar within 2m",
+                  "Windows above ground floor also to PAS 24 where accessible by flat roof, balcony or drain pipe",
+                  "Laminated glass to all easily accessible windows for SBD Gold award",
+                  "Internal beading \u2014 glass fitted from inside so glazing beads cannot be removed externally",
+                  "Window locks operable by key, key removable when locked",
+                  "Window opening restrictors fitted where windows are accessible from public areas",
+                  "Windows must also meet BS 6375 parts 1, 2 and 3 for performance"
+                ]},
+                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                  "Dusk-to-dawn lighting to all external entrance doors, pedestrian routes, parking areas and communal bin/cycle stores",
+                  "Lighting to all communal entrances operated by photoelectric cell (dusk-to-dawn), not PIR alone",
+                  "PIR-activated lighting acceptable for individual private dwelling entrances only",
+                  "Light fittings vandal-resistant where vulnerable, mounted at height",
+                  "Lighting coordinated with CCTV system design for adequate image quality",
+                  "Lighting must not adversely affect neighbouring properties or create light pollution (compliant with SBD Lighting Against Crime guide)"
+                ]},
+                {cat:"Boundary Treatments & Landscaping",icon:"\ud83c\udf33",items:[
+                  "Clear definition between public and private space through boundary treatments",
+                  "Rear garden boundaries enclosed by 1.8m close-boarded fencing, wall or equivalent",
+                  "Front boundaries max 1m to maintain natural surveillance from dwelling to street",
+                  "Side gates between front and rear of dwelling lockable, 1.8m minimum height",
+                  "Defensive planting (thorny species) beneath vulnerable windows and along boundaries",
+                  "Avoid creating blind spots or hiding places through landscape design \u2014 no dense shrubbery below window height",
+                  "Tree canopies maintained above 2m, shrubs maintained below 1m to preserve sight lines"
+                ]},
+                {cat:"Parking & Vehicle Security",icon:"\ud83d\ude97",items:[
+                  "Car parking within view of active rooms (kitchen, living room) where possible",
+                  "Communal parking well-lit with CCTV surveillance",
+                  "Garage doorsets certified to LPS 1175 Issue 8.2 (min. A1) where integral or attached to dwelling",
+                  "Cycle parking in secure, enclosed, lit storage with police-preferred specification stands",
+                  "E-bike and e-scooter storage in fire-rated enclosure separated from the dwelling",
+                  "Cycle stands certified to Sold Secure (Bicycle) Silver minimum or SBD listed"
+                ]},
+                {cat:"CCTV & Electronic Security",icon:"\ud83d\udcf9",items:[
+                  "CCTV to communal entrances, car parks, cycle stores and bin stores in apartment developments",
+                  "Audio/visual door entry or video intercom at communal entrance doors",
+                  "Access control to communal areas using fob, card or digital credential with audit trail",
+                  "Intruder alarm system (Grade 2 min. per BS EN 50131) recommended for individual dwellings (SBD Gold requirement)",
+                  "CCTV images recorded and retained for minimum 31 days",
+                  "CCTV system designed in accordance with SBD guidance and coordinated with lighting"
+                ]},
+                {cat:"Mail Delivery & Utilities",icon:"\ud83d\udcee",items:[
+                  "Communal mail delivery via secure external mailboxes or dedicated mail room with access control",
+                  "Individual letterboxes at communal entrance preferred over letter slots in flat doors to reduce fire risk",
+                  "Anti-arson letterbox protection where letter slots are used",
+                  "Utility meters accessible without entry to the dwelling \u2014 smart meters preferred",
+                  "Bin stores enclosed, lockable and positioned away from the building to reduce arson risk",
+                  "Plant rooms and service risers secured with access control"
+                ]}
+              ]
+            },
+            commercial:{
+              title:"Commercial (Non-Residential) Development",
+              guide:"SBD Commercial Guide 2024/26",
+              sections:[
+                {cat:"External Doorsets",icon:"\ud83d\udeaa",items:[
+                  "All external doorsets certified to PAS 24:2022 +A1:2024, or LPS 1175 Issue 8.2 (min. A1), or STS 202 (min. BR2)",
+                  "Main entrance doorsets integrated with electronic access control",
+                  "Emergency exit doors without external ironmongery or visible furniture, fitted with door contacts and position monitoring",
+                  "Loading bay and service entrance doors rated to LPS 1175 Issue 8.2 (min. A1)",
+                  "Roller shutters to loading bays certified to LPS 1175 Issue 8.2 (min. A1)",
+                  "All external doors non-recessed to prevent concealment \u2014 where unavoidable, fit CCTV or mirrors",
+                  "Glazed elements within or adjacent to external doors tested as part of the doorset assembly",
+                  "Dual Certified doorsets (fire + security) where both fire rating and security are required"
+                ]},
+                {cat:"Internal Secure Doors",icon:"\ud83d\udd12",items:[
+                  "Server rooms, MER/SER and security control room: doorsets min. LPS 1175 Issue 8.2 B3, or STS 202 BR3",
+                  "Plant room access secured with electronic access control",
+                  "Offices with sensitive information \u2014 thumb-turn lockable doors for lockdown capability",
+                  "Stair core and lift lobby doors with access control at each level \u2014 Dual Certified where fire separation required",
+                  "Post/mail room doors security-rated with independent ventilation where screening is required"
+                ]},
+                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                  "Ground floor and easily accessible windows certified to PAS 24:2022 +A1:2024 or equivalent",
+                  "Laminated glass (min. BS EN 356 P1A or equivalent) to all accessible ground floor glazing",
+                  "Window opening restrictors on all accessible openable windows",
+                  "Curtain walling tested to appropriate security rating where risk assessment requires",
+                  "Anti-bandit glazing (BS EN 356 P6B minimum) to cash handling or high-value areas",
+                  "Internal beading preventing external glazing removal"
+                ]},
+                {cat:"Perimeter & Boundary",icon:"\ud83c\udff0",items:[
+                  "Secure perimeter fencing/walls to defined site boundary \u2014 minimum 2.4m with anti-climb for high-risk sites",
+                  "Perimeter fencing rated to LPS 1175 Issue 8.2 where threat assessment requires",
+                  "Vehicle access barriers rated to PAS 68:2013 or IWA 14-1:2013 where HVM is required",
+                  "Pedestrian gates with access control, self-closing mechanism, and anti-lift hinges",
+                  "Clear 2m zone either side of perimeter for surveillance and maintenance",
+                  "Perimeter demarcation using landscaping and territorial markers per CPTED principles"
+                ]},
+                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                  "Uniform dusk-to-dawn lighting at building shell, all entries, service areas and car parks",
+                  "Lighting coordinated with CCTV design for optimal image quality (min. BS 5489 and SBD Lighting Against Crime guide)",
+                  "Vandal-resistant fittings mounted at height",
+                  "Colour-rendering lamps (min. Ra 60) to support identification",
+                  "Permanent dusk-to-dawn lighting on perimeter and communal areas \u2014 no PIR/sensor-only",
+                  "Lighting maintained free from obstruction by landscaping",
+                  "Emergency lighting on all escape routes per BS 5266-1"
+                ]},
+                {cat:"CCTV System",icon:"\ud83d\udcf9",items:[
+                  "CCTV coverage of entire building perimeter, all entry/exit points, vehicle entrances and service areas",
+                  "Internal CCTV at reception, lift lobbies, stair cores, back-of-house corridors and deliveries",
+                  "CCTV to cycle and bin storage areas",
+                  "System designed to BS EN 62676-4 with recognition-quality images at key points",
+                  "Vandal-resistant housings for all external cameras (IK10 minimum impact rating)",
+                  "CCTV images recorded and retained for minimum 31 days",
+                  "Remote monitoring from security control room and mobile devices",
+                  "ANPR at vehicle entrance barriers"
+                ]},
+                {cat:"Access Control System",icon:"\ud83d\udd11",items:[
+                  "Electronic Access Control (EACS) at all external entry points \u2014 system designed to BS EN 60839-11-1",
+                  "Access zones defined by user groups and permissions with full audit trail",
+                  "Door contacts on all perimeter doors with forced/left-open/tamper alarms",
+                  "EACS integrated with fire alarm for automatic door release on activation",
+                  "EACS compatible with mobile/Bluetooth/NFC/QR credentials",
+                  "Access control at stair core lobbies (ground floor minimum), each level and all sensitive areas",
+                  "Visitor management system with sign-in, photo ID and temporary pass issue",
+                  "Speedlanes or turnstiles with tailgating detection at entrance lobby"
+                ]},
+                {cat:"Intruder Detection",icon:"\ud83d\udea8",items:[
+                  "Intruder alarm system min. Grade 3 per BS EN 50131-1 covering all external openings and internal sensitive areas",
+                  "Panic buttons at reception desk and security control room",
+                  "Alarm system verified for police response capability where required",
+                  "Fire escape doors alarmed to prevent misuse",
+                  "System monitored 24/7 by ARC (BS 8591) or on-site security"
+                ]},
+                {cat:"Security Control Room",icon:"\ud83d\udcbb",items:[
+                  "Dedicated security monitoring location in secure, non-publicly visible area",
+                  "Security control room secured with LPS 1175-rated doorset, access control and CCTV",
+                  "Electronic key cabinet for mechanical key management with audit trail",
+                  "UPS backup for all security systems and monitoring positions",
+                  "All security system head-end equipment in secure, environmentally controlled areas"
+                ]},
+                {cat:"Cycle & Vehicle Parking",icon:"\ud83d\udeb2",items:[
+                  "Cycle parking in secure, enclosed, well-lit areas with Sold Secure (Bicycle) Silver or SBD-listed stands",
+                  "E-bike storage in fire-rated enclosure separated from main building",
+                  "Car park CCTV at all entry/exit points and pedestrian routes",
+                  "Basement car park access controlled with ANPR and barriers"
+                ]}
+              ]
+            },
+            schools:{
+              title:"Schools & Educational Facilities",
+              guide:"SBD New Schools Guide 2014",
+              sections:[
+                {cat:"Perimeter Fencing & Gates",icon:"\ud83c\udff0",items:[
+                  "Secure perimeter fence minimum 2.0m tall around the entire school boundary",
+                  "Fencing types: welded mesh, railings or expanded metal \u2014 colour-coated to soften appearance",
+                  "Dark colours preferred to reduce light reflection and improve observation through the fence",
+                  "Gates same height as fence with anti-lift hinges, locking mechanisms that do not aid climbing",
+                  "Fencing to LPS 1175 Issue 8.2 specification where risk assessment requires higher security",
+                  "Main vehicle and pedestrian access points must be overlooked by school office/reception",
+                  "Secondary access points kept locked unless required for deliveries or specific needs",
+                  "Public footpaths adjacent to boundary addressed with defensive planting in addition to fencing",
+                  "Party/shared boundaries should not compromise security \u2014 separate security fence inside party boundary if needed",
+                  "Fencing should be effective without creating a fortress impression \u2014 consult with CPDA/DOCO"
+                ]},
+                {cat:"External Doorsets",icon:"\ud83d\udeaa",items:[
+                  "All external doorsets certified to PAS 24:2022 +A1:2024 or equivalent (LPS 1175, STS 201, STS 202)",
+                  "Single main entrance as the only unlocked entry point during school hours",
+                  "Main entrance through or immediately adjacent to reception with direct visual oversight",
+                  "Emergency exit doors without external ironmongery, alarmed and monitored",
+                  "Recessed doorways avoided \u2014 where unavoidable, install mirrors or CCTV to check for concealment",
+                  "Separate entrance for sixth formers and staff where appropriate, controlled by access control",
+                  "Dual Certified (fire + security) doorsets where fire-rated doors also require security"
+                ]},
+                {cat:"Internal Doors & Access Control",icon:"\ud83d\udd12",items:[
+                  "Access control zoning separating public/visitor areas from teaching spaces",
+                  "Secure lobby or vestibule at main entrance for visitor processing before entry to school",
+                  "Internal doors to server rooms, IT suites and admin offices \u2014 security rated (min. PAS 24 or LPS 1175 A1)",
+                  "Classroom doors lockable from inside for lockdown capability",
+                  "Staff areas (staffroom, offices) secured from pupil access",
+                  "Science prep rooms and chemical/hazardous material stores secured with appropriate locks and access control"
+                ]},
+                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                  "Ground floor and easily accessible windows certified to PAS 24:2022 +A1:2024",
+                  "Window opening restrictors to prevent unauthorised access and egress",
+                  "Laminated glass to ground floor windows in high-risk areas (IT suites, admin, exam stores)",
+                  "Internal beading on all accessible windows to prevent external glazing removal",
+                  "Roof lights and clerestory windows secured where accessible from flat roofs or climbing aids"
+                ]},
+                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                  "External lighting scheme sufficient to support CCTV system (coordinated design)",
+                  "Dusk-to-dawn lighting to all entrances, car parks, pedestrian routes and perimeter",
+                  "Light fittings protected where vulnerable to vandalism \u2014 polycarbonate diffusers, mounted at height",
+                  "Lighting design must not conflict with landscape design or create dark hiding spots",
+                  "Emergency lighting to all escape routes per BS 5266-1"
+                ]},
+                {cat:"CCTV System",icon:"\ud83d\udcf9",items:[
+                  "CCTV at main entrance, reception, car parks, perimeter and all key external areas",
+                  "Internal CCTV to main corridors, stair cores, server room and sensitive areas",
+                  "Images recorded and retained for minimum 31 days",
+                  "System monitored from school office or remotely via secure connection",
+                  "Cameras covering all secondary access points, delivery areas and out-of-sight locations",
+                  "System designed in accordance with BS EN 62676-4 and SBD CCTV guidance"
+                ]},
+                {cat:"Secure Storage & IT",icon:"\ud83d\udcbb",items:[
+                  "IT suites protected with security-rated doors (min. PAS 24) and windows",
+                  "Portable equipment secured with cable locks or cages meeting LPS 1175 or Sold Secure certification",
+                  "Server room and network cabinets secured with electronic access control and environmental monitoring",
+                  "Individual secure storage (lockers) in changing rooms for personal belongings during lessons",
+                  "Medical room on ground floor near entrance with secure storage for medication and controlled substances",
+                  "Exam paper storage in security-rated and fire-rated cabinets"
+                ]},
+                {cat:"Visitor Management",icon:"\ud83d\udc65",items:[
+                  "All visitors enter via single controlled main entrance through or past reception",
+                  "Visitor sign-in with identification verification and DBS check confirmation for regular visitors",
+                  "Visitors issued with clearly visible passes and escorted in sensitive areas",
+                  "Delivery and contractor access managed through reception or designated secure service entrance",
+                  "Parent/carer collection points designed to separate visitors from unrestricted school areas"
+                ]},
+                {cat:"Landscaping & External Areas",icon:"\ud83c\udf33",items:[
+                  "Vegetation maintained below 1m height or above 2m to preserve sight lines throughout grounds",
+                  "Defensive planting (thorny species) along vulnerable boundaries and beneath accessible windows",
+                  "No mature trees or climbing aids adjacent to perimeter fencing",
+                  "Play areas and sports pitches within natural surveillance from occupied building spaces",
+                  "Sheltered areas, recesses and concealment points minimised in the design",
+                  "Street furniture and external equipment robust, securely fixed with tamper-resistant fixings"
+                ]},
+                {cat:"Intruder Alarm & Emergency",icon:"\ud83d\udea8",items:[
+                  "Intruder alarm system (min. Grade 2 per BS EN 50131-1) covering all external openings and sensitive internal areas",
+                  "Alarm system monitored by ARC (BS 8591) with nominated keyholder response",
+                  "Fire alarm system integrated with access control for automatic door release per BS 5839-1",
+                  "Panic/personal attack buttons at reception, head teacher office and other vulnerable positions",
+                  "Lockdown alarm system \u2014 distinct and distinguishable from fire alarm \u2014 tested regularly"
+                ]}
+              ]
+            }
+          };
+
+          var data=SBD_DATA[sbdType];
+          return React.createElement("div",null,
+            // Type selector
+            React.createElement("div",{style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
+              React.createElement("span",{style:{fontSize:11,fontWeight:600,color:"#64748b"}},"Development Type:"),
+              ["residential","commercial","schools"].map(function(t){
+                var labels={residential:"Residential",commercial:"Commercial (Non-Residential)",schools:"Schools"};
+                return React.createElement("button",{key:t,className:"preset-btn"+(sbdType===t?" active":""),onClick:function(){setSbdType(t)}},labels[t]);
+              }),
+              React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:"auto"},onClick:function(){
+                var chunks=[];
+                chunks.push("<h2>Secured by Design Requirements \u2014 "+data.title+"</h2>");
+                chunks.push("<p style='font-family:Calibri;font-size:10pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Guide: <b>"+data.guide+"</b></p>");
+                var half=Math.ceil(data.sections.length/2);
+                // First page chunk
+                data.sections.slice(0,half).forEach(function(sec){
+                  chunks.push("<h3>"+sec.icon+" "+sec.cat+"</h3>");
+                  chunks.push("<table><tr><th style='text-align:left;width:30px'>#</th><th style='text-align:left'>Requirement</th></tr>");
+                  sec.items.forEach(function(item,i){
+                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td></tr>");
+                  });
+                  chunks.push("</table>");
+                });
+                // Second page chunk
+                chunks.push("<h3 style='page-break-before:always'>&nbsp;</h3>");
+                data.sections.slice(half).forEach(function(sec){
+                  chunks.push("<h3>"+sec.icon+" "+sec.cat+"</h3>");
+                  chunks.push("<table><tr><th style='text-align:left;width:30px'>#</th><th style='text-align:left'>Requirement</th></tr>");
+                  sec.items.forEach(function(item,i){
+                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td></tr>");
+                  });
+                  chunks.push("</table>");
+                });
+                copyChunkedToWord(chunks,"SBD Requirements \u2014 "+data.title);
+              }},"\ud83d\udccb Copy to Word")
+            ),
+
+            // Content
+            React.createElement("div",{style:{background:"#f0f4f8",borderRadius:10,padding:16,marginBottom:16,border:"1px solid #e2e8f0"}},
+              React.createElement("div",{style:{fontSize:15,fontWeight:700,color:"#1B2A4A",marginBottom:4}},data.title),
+              React.createElement("div",{style:{fontSize:11,color:"#64748b"}},"Reference: "+data.guide+" | Police Preferred Specification")
+            ),
+
+            data.sections.map(function(sec,si){
+              return React.createElement("div",{key:si,className:"card",style:{marginBottom:8}},
+                React.createElement("div",{className:"card-header",style:{background:"#fafbfc"}},
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+                    React.createElement("span",{style:{fontSize:18}},sec.icon),
+                    React.createElement("span",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A"}},sec.cat)
+                  ),
+                  React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:600}},sec.items.length+" requirements")
+                ),
+                React.createElement("div",{className:"card-body",style:{padding:"8px 16px 12px"}},
+                  sec.items.map(function(item,ii){
+                    return React.createElement("div",{key:ii,style:{display:"flex",gap:8,padding:"6px 0",borderBottom:ii<sec.items.length-1?"1px solid #f1f5f9":"none",alignItems:"flex-start"}},
+                      React.createElement("span",{style:{width:22,height:22,borderRadius:4,background:"#1B2A4A",color:"#fff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},(ii+1)),
+                      React.createElement("span",{style:{fontSize:12,color:"#475569",lineHeight:1.5}},item)
+                    );
+                  })
+                )
+              );
+            })
+          );
+        })()
       ),
 
       // METHODOLOGY
