@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.87";
+  const VERSION="1.90";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -893,6 +893,38 @@ function App(){
         catch(e2){var url=canvas.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
       },"image/png");
     }).catch(function(){restore();showToast("Capture failed")});
+  };
+
+  // Load html2canvas on demand and capture an element
+  const captureForWord=function(elementId,toastMsg){
+    var el=document.getElementById(elementId);
+    if(!el){showToast("Section not ready");return}
+    if(typeof html2canvas==="undefined"){
+      var s=document.createElement("script");
+      s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      s.onload=function(){captureReport(el,toastMsg)};
+      s.onerror=function(){showToast("Could not load capture library")};
+      document.head.appendChild(s);
+    }else{captureReport(el,toastMsg)}
+  };
+
+  // Infer whether an asset or POI is inside, outside, or both based on its name/description
+  const inferLocation=function(catOrName,desc){
+    var s=((catOrName||"")+" "+(desc||"")).toLowerCase();
+    // Clearly OUTSIDE
+    var outsideTerms=["vehicle","parking","car park","cycle stor","bicycle","perimeter","fence","fencing","boundary","gate","bollard","landscap","garden","play area","playground","sports field","playing field","public realm","road","pavement","approach","forecourt","loading bay","bin store","refuse","external","roof terrace","balcon","podium","courtyard","hvm","standoff","muga","swimming pool"];
+    // Clearly INSIDE
+    var insideTerms=["server","mer ","ser ","comms room","network","it suite","office","reception","lobby","stair core","lift","elevator","apartment","dwelling","flat entrance","classroom","lecture","laboratory","workshop","studio","staff room","head teacher","admin","ward","operating","icu","pharmacy","kitchen","dining","assembly","changing room","medical room","exam","archive","safe room","strong","post room","mail room","data hall","plant room","hvac","ahu","bms","ups","generator","switchgear","distribution board","fire detection","suppression","sprinkler","vertical transport","escalator","intangible","reputation","information","personal data","financial record","student record","safeguard","cctv control","security control","monitoring"];
+    // Check outside
+    var isOut=outsideTerms.some(function(t){return s.includes(t)});
+    // Check inside
+    var isIn=insideTerms.some(function(t){return s.includes(t)});
+    // Human assets and some physical assets apply to both
+    if(s.includes("human")||s.includes("staff")||s.includes("resident")||s.includes("visitor")||s.includes("patient")||s.includes("student")||s.includes("contractor")||s.includes("building fabric")||s.includes("mep")||s.includes("safety system"))return "both";
+    if(isOut&&isIn)return "both";
+    if(isOut)return "outside";
+    if(isIn)return "inside";
+    return "both"; // default to both if uncertain
   };
 
   // Chunked HTML copy for Word - copies formatted HTML tables that fit on A4 pages
@@ -1615,33 +1647,67 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     showToast("Generating Word document...");
     // Build HTML tables for Word
     let html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-    <head><meta charset="utf-8"><style>
-    @page{size:A4 portrait;margin:2cm}
-    body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.5;color:#333}
-    table{border-collapse:collapse;width:100%;margin-bottom:12pt;font-size:9pt}
-    th{background:#1B2A4A;color:#fff;padding:6pt 8pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}
-    td{padding:5pt 8pt;border:1pt solid #ccc;text-align:center;font-size:9pt}
+    <head><meta charset="utf-8">
+    <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+    <style>
+    @page{size:A4 portrait;margin:2cm 2cm 2cm 2cm;mso-header-margin:1cm;mso-footer-margin:1cm}
+    body{font-family:Calibri,Arial,sans-serif;font-size:10pt;line-height:1.5;color:#333;mso-fareast-font-family:Calibri}
+    table{border-collapse:collapse;width:100%;margin-bottom:10pt;font-size:9pt;mso-table-lspace:0;mso-table-rspace:0}
+    th{background:#1B2A4A;color:#fff;padding:6pt 8pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A;mso-background-themecolor:text1}
+    td{padding:5pt 8pt;border:1pt solid #D6DCE4;text-align:center;font-size:9pt;vertical-align:top}
     .tl{text-align:left}
-    h1{font-size:18pt;color:#1B2A4A;margin:0 0 6pt;border-bottom:2pt solid #1B2A4A;padding-bottom:6pt}
-    h2{font-size:13pt;color:#1B2A4A;margin:12pt 0 6pt;page-break-before:always;border-bottom:1pt solid #ddd;padding-bottom:4pt}
+    h1{font-size:20pt;color:#1B2A4A;margin:0 0 4pt;border-bottom:3pt solid #1B2A4A;padding-bottom:8pt;font-weight:bold}
+    .cover-sub{font-size:11pt;color:#475569;margin:0 0 2pt}
+    .cover-meta{font-size:9pt;color:#64748b;margin:4pt 0 0;padding:8pt;background:#f8fafc;border:1pt solid #e2e8f0}
+    h2{font-size:14pt;color:#1B2A4A;margin:16pt 0 6pt;page-break-before:always;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;font-weight:bold}
     h2:first-of-type{page-break-before:avoid}
-    h3{font-size:11pt;color:#1B2A4A;margin:10pt 0 4pt}
-    p{font-size:10pt;line-height:1.5;margin:0 0 6pt}
-    .sub{font-size:8pt;color:#666;margin-bottom:6pt}
-    .vl{background:#4472C4;color:#fff;font-weight:bold}
-    .lo{background:#70AD47;color:#fff;font-weight:bold}
-    .me{background:#FFC000;color:#000;font-weight:bold}
-    .hi{background:#ED7D31;color:#fff;font-weight:bold}
-    .vh{background:#C00000;color:#fff;font-weight:bold}
-    tr:nth-child(even) td{background:#f8f8f8}
-    .mx td{border:2pt solid #fff;padding:10pt;min-width:70pt;height:70pt;font-size:11pt}
-    .mx td.lbl{background:#EBF1F8;color:#1B2A4A;font-weight:bold;border:1pt solid #ddd;font-size:8pt}
-    .footer{font-size:8pt;color:#999;text-align:center;margin-top:24pt;border-top:1pt solid #ddd;padding-top:8pt}
+    h3{font-size:11pt;color:#1B2A4A;margin:10pt 0 4pt;font-weight:bold}
+    h4{font-size:10pt;color:#475569;margin:8pt 0 3pt;font-weight:bold}
+    p{font-size:10pt;line-height:1.6;margin:0 0 6pt}
+    .sub{font-size:8pt;color:#64748b;margin-bottom:6pt;font-style:italic}
+    .vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .me{background:#FFC000;color:#000;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .vh{background:#C00000;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .gap-a{background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center}
+    .gap-p{background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center}
+    .gap-i{background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center}
+    tr:nth-child(even) td{background:#f8fafc}
+    .card{border:1pt solid #D6DCE4;margin-bottom:8pt;page-break-inside:avoid}
+    .card-hdr{background:#f0f4f8;padding:8pt 10pt;border-bottom:1pt solid #D6DCE4;font-weight:bold;font-size:10pt;color:#1B2A4A}
+    .card-body{padding:8pt 10pt;font-size:9pt}
+    .tag-t{display:inline;background:#fef2f2;color:#dc2626;padding:1pt 5pt;font-size:7pt;font-weight:bold}
+    .tag-c{display:inline;background:#EBF1F8;color:#4472C4;padding:1pt 5pt;font-size:7pt;font-weight:bold}
+    .mx td{border:2pt solid #fff;padding:10pt;min-width:60pt;height:60pt;font-size:12pt;font-weight:bold}
+    .mx td.lbl{background:#EBF1F8;color:#1B2A4A;font-weight:bold;border:1pt solid #D6DCE4;font-size:8pt;height:auto}
+    .footer{font-size:8pt;color:#94a3b8;text-align:center;margin-top:24pt;border-top:1pt solid #D6DCE4;padding-top:8pt}
+    .section-label{font-size:8pt;color:#94a3b8;text-transform:uppercase;letter-spacing:1pt;margin:0 0 4pt}
     </style></head><body>`;
     
     const rc=r=>!r?"":{1:"vl",2:"lo",3:"me",4:"hi",5:"vh"}[r]||"";
     const ratc=r=>!r?"":{"Very Low":"vl","Low":"lo","Medium":"me","High":"hi","Very High":"vh"}[r]||"";
+    const gapcW=g=>!g?"":g==="Adequate"?"gap-a":g==="Partial"?"gap-p":g==="Insufficient"?"gap-i":"";
     
+    // Cover page
+    html+=`<div style="text-align:center;padding:40pt 0 20pt">`;
+    html+=`<div style="font-size:10pt;color:#94a3b8;text-transform:uppercase;letter-spacing:3pt;margin-bottom:8pt">Security Risk &amp; Threat Assessment</div>`;
+    html+=`<h1 style="font-size:24pt;border-bottom:none;text-align:center;margin-bottom:4pt">${ctx.project||"Assessment"}</h1>`;
+    html+=`<div style="font-size:11pt;color:#64748b;margin-bottom:16pt">${ctx.address||""} ${ctx.postcode||""}</div>`;
+    html+=`</div>`;
+    html+=`<table style="width:100%;margin-bottom:16pt"><tr>`;
+    html+=`<td style="width:50%;vertical-align:top;padding:8pt;border:1pt solid #D6DCE4;background:#f8fafc"><b style="color:#1B2A4A">Project Details</b><br/><span style="font-size:9pt">Project No: ${ctx.projectNum||"\u2014"}<br/>Reference: ${ctx.ref||"\u2014"}<br/>Date: ${ctx.date||"\u2014"}<br/>Stage: ${ctx.stage||"\u2014"}<br/>Development Type: ${ctx.devType||activeAssetPreset||"\u2014"}</span></td>`;
+    html+=`<td style="width:50%;vertical-align:top;padding:8pt;border:1pt solid #D6DCE4;background:#f8fafc"><b style="color:#1B2A4A">Assessment Details</b><br/><span style="font-size:9pt">Assessor: ${ctx.assessor||"\u2014"}<br/>Client: ${ctx.client||"\u2014"}<br/>Threats Assessed: ${cRisks.filter(r=>r.sc!=null).length}<br/>Design Basis Threats: ${cRisks.filter(r=>r.dbt).length}<br/>Points of Interest: ${pois.length}</span></td>`;
+    html+=`</tr></table>`;
+    if(ctx.scope)html+=`<div class="card"><div class="card-hdr">Scope Boundaries</div><div class="card-body">${ctx.scope}</div></div>`;
+    if(ctx.assumptions)html+=`<div class="card"><div class="card-hdr">Key Assumptions</div><div class="card-body">${ctx.assumptions}</div></div>`;
+    if(ctx.notes)html+=`<div class="card"><div class="card-hdr">Notes</div><div class="card-body">${ctx.notes.replace(/\n/g,"<br/>")}</div></div>`;
+    if(meetings.length>0){
+      html+=`<h3>Stakeholder Meetings &amp; Consultations</h3><table><tr><th style="text-align:left">Date</th><th style="text-align:left">Description</th><th style="text-align:left">Attendees</th></tr>`;
+      meetings.forEach(m=>{html+=`<tr><td class="tl">${m.date||""}</td><td class="tl">${m.desc||""}</td><td class="tl" style="font-size:8pt">${m.attendees||""}</td></tr>`});
+      html+=`</table>`;
+    }
+
     // Standards section
     html+=`<h2>Methodology & Standards Compliance</h2>`;
     html+=`<h3>SRA Methodology</h3><p>This Security Risk Assessment has been conducted using the established SRA methodology, developed in full alignment with internationally recognised risk management standards. The methodology provides a structured, evidence-based framework following a logical sequence: establishing the security context and stakeholder consultation; asset identification and criticality ranking; threat identification categorised into Terrorism and Crime; Points of Interest mapping; threat analysis based on capability and intent; target attractiveness and vulnerability assessment; likelihood and impact scoring; risk rating via the 5×5 matrix; control effectiveness evaluation; risk treatment; and residual risk assessment.</p>`;
@@ -1667,6 +1733,18 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       html+=`</table>`;
     }
 
+    // Existing Controls
+    html+=`<h2>Existing Controls</h2>`;
+    html+=`<table><tr><th>T#</th><th class="tl">Threat</th><th class="tl">Controls Description</th><th>Eff</th><th>Conf</th><th>Score</th><th>Gap</th></tr>`;
+    cRisks.filter(r=>r.n).forEach((r,i)=>{
+      const c2=cd[r.id]||{};
+      const sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
+      const gap=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
+      const gapc2=gapcW(gap);
+      html+=`<tr><td>T${i+1}</td><td class="tl">${r.n}</td><td class="tl" style="font-size:8pt">${c2.desc||""}</td><td class="${rc(c2.eff)}">${c2.eff||""}</td><td class="${rc(c2.conf)}">${c2.conf||""}</td><td>${sc2||""}</td><td class="${gapc2}">${gap}</td></tr>`;
+    });
+    html+=`</table>`;
+
     // Risk Register
     html+=`<h2>Risk Register</h2><table><tr><th>R#</th><th>Type</th><th class="tl">Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>Rating</th><th>Treatment</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
@@ -1689,14 +1767,46 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     html+=`<h2>Post-Mitigation Risk Matrix</h2>`;
     html+=buildMatrixHTML(postM);
 
+    // Treatment Measures
+    const headline=cRisks.filter(r=>r.rat==="Very High"||r.rat==="High");
+    let hasAnyTreatMeasures=false;
+    headline.forEach(r=>{const m=treatmentMeasures[r.id];if(m)Object.values(m).forEach(arr=>{if(arr.some(v=>v))hasAnyTreatMeasures=true})});
+    if(hasAnyTreatMeasures){
+      html+=`<h2>Planned Treatment Measures</h2>`;
+      headline.forEach((r,i)=>{
+        const m=treatmentMeasures[r.id]||{};
+        let hasMeas=false;Object.values(m).forEach(arr=>{if(arr.some(v=>v))hasMeas=true});
+        if(!hasMeas)return;
+        html+=`<h3>${r.n} (${r.rat} — ${r.treat||"Reduce"})</h3><table><tr><th class="tl">Asset / Location</th><th class="tl">Treatment Measures</th></tr>`;
+        (r.targets||[]).forEach(tid=>{
+          const a=assets.find(a2=>a2.id===tid);
+          const arr=(m[tid]||[]).filter(v=>v);
+          if(a&&arr.length>0)html+=`<tr><td class="tl" style="width:200pt;vertical-align:top"><b>${a.cat}</b><br/>${a.desc||""}</td><td class="tl" style="font-size:8pt">${arr.map((v,vi)=>(vi+1)+". "+v).join("<br/>")}</td></tr>`;
+        });
+        html+=`</table>`;
+      });
+    }
+
     // Findings
     html+=`<h2>Findings Summary</h2>`;
     const scored=cRisks.filter(r=>r.sc!=null);
     const dbts=cRisks.filter(r=>r.dbt);
+    // Risk profile summary table
+    html+=`<h3>Risk Profile Overview</h3>`;
+    html+=`<table style="width:auto"><tr><th style="background:#C00000">Very High</th><th style="background:#ED7D31">High</th><th style="background:#FFC000;color:#000">Medium</th><th style="background:#70AD47">Low</th><th style="background:#4472C4">Very Low</th></tr>`;
+    html+=`<tr><td class="vh" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Very High").length}</td><td class="hi" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="High").length}</td><td class="me" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Medium").length}</td><td class="lo" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Low").length}</td><td class="vl" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Very Low").length}</td></tr></table>`;
     html+=`<p><b>Threat Assessment:</b> ${scored.length} threats assessed (${cRisks.filter(r=>r.cat==="Terrorism").length} Terrorism, ${cRisks.filter(r=>r.cat!=="Terrorism").length} Crime). ${dbts.length} identified as Design Basis Threats.</p>`;
-    html+=`<p><b>Pre-Mitigation:</b> ${cRisks.filter(r=>r.rat==="Very High").length} Very High, ${cRisks.filter(r=>r.rat==="High").length} High, ${cRisks.filter(r=>r.rat==="Medium").length} Medium, ${cRisks.filter(r=>r.rat==="Low").length} Low, ${cRisks.filter(r=>r.rat==="Very Low").length} Very Low.</p>`;
-    html+=`<p><b>Post-Mitigation:</b> ${cRisks.filter(r=>r.resRat==="Very High").length} Very High, ${cRisks.filter(r=>r.resRat==="High").length} High, ${cRisks.filter(r=>r.resRat==="Medium").length} Medium, ${cRisks.filter(r=>r.resRat==="Low").length} Low, ${cRisks.filter(r=>r.resRat==="Very Low").length} Very Low.</p>`;
+    html+=`<p><b>Treatment Strategy:</b> ${cRisks.filter(r=>r.treat==="Reduce").length} Reduce, ${cRisks.filter(r=>r.treat==="Transfer").length} Transfer, ${cRisks.filter(r=>r.treat==="Avoid").length} Avoid, ${cRisks.filter(r=>r.treat==="Accept").length} Accept.</p>`;
     if(pois.length>0){html+=`<p><b>Points of Interest:</b> ${pois.length} vulnerable locations identified and mapped against applicable threats.</p>`}
+    // Residual risk profile
+    const resScored2=cRisks.filter(r=>r.resRat);
+    if(resScored2.length>0){
+      html+=`<h3>Residual Risk Profile (Post-Treatment)</h3>`;
+      html+=`<table style="width:auto"><tr><th style="background:#C00000">Very High</th><th style="background:#ED7D31">High</th><th style="background:#FFC000;color:#000">Medium</th><th style="background:#70AD47">Low</th><th style="background:#4472C4">Very Low</th></tr>`;
+      html+=`<tr><td class="vh" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Very High").length}</td><td class="hi" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="High").length}</td><td class="me" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Medium").length}</td><td class="lo" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Low").length}</td><td class="vl" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Very Low").length}</td></tr></table>`;
+    }
+    // Footer
+    html+=`<div class="footer">\u00a9 ${new Date().getFullYear()} All Rights Reserved. | ${ctx.assessor||""} | v${VERSION} | Generated ${new Date().toLocaleDateString()}</div>`;
     html+=`</body></html>`;
 
     const blob=new Blob([html],{type:"application/msword"});
@@ -2994,9 +3104,25 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // THREATS
-      tab==="threats"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Threat Register"),
-        React.createElement("p",{className:"section-sub"},"Click Capability and Intent scores. DBTs auto-identify at score ≥ 3."),
+      tab==="threats"&&React.createElement("div",{id:"section-threats"},
+        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Threat Register"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Click Capability and Intent scores. DBTs auto-identify at score \u2265 3.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var chunks=[];
+            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            chunks.push("<table><tr><th>T#</th><th>Type</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Description</th><th>Cap</th><th>Int</th><th>Score</th><th>Level</th><th>DBT</th></tr>");
+            cThreats.forEach(function(t,i){
+              var lvl=t.sc&&SC[t.sc]?SC[t.sc].l:"";
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(i+1)+"</td><td style='text-align:center;font-size:8pt;"+(t.cat==="Terrorism"?"color:#dc2626":"color:#4472C4")+"'>"+t.cat+"</td><td class='tl'><b>"+t.n+"</b></td><td class='tl' style='font-size:8pt'>"+(t.d||"")+"</td><td style='"+scBg(t.cap)+"'>"+(t.cap||"")+"</td><td style='"+scBg(t.int)+"'>"+(t.int||"")+"</td><td style='"+scBg(t.sc)+"'>"+(t.sc||"")+"</td><td style='text-align:center'>"+lvl+"</td><td style='text-align:center;font-weight:bold;"+(t.dbt?"color:#dc2626":"color:#94a3b8")+"'>"+(t.dbt?"YES":"No")+"</td></tr>");
+            });
+            chunks.push("</table>");
+            copyChunkedToWord(chunks,"Threat Register \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-threats","Threat register captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+        ),
         React.createElement("div",{className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
           ...Object.keys(THREAT_PRESETS).map(type=>
@@ -3206,7 +3332,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // POINTS OF INTEREST
-      tab==="poi"&&React.createElement("div",null,
+      tab==="poi"&&React.createElement("div",{id:"section-poi"},
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Points of Interest (POI)"),
@@ -3239,7 +3365,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               chunks.push("</table>");
             }
             copyChunkedToWord(chunks,"Points of Interest \u2014 "+(ctx.project||"Assessment"));
-          }},"\ud83d\udccb Copy to Word")
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-poi","Points of interest captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
         React.createElement(HelpBox,{title:"Points of Interest",
           description:"A Point of Interest (POI) is a specific location, entrance, area, or feature of the development that may be vulnerable to identified threats. For each POI, describe the location and click on the threat chips to toggle which threats apply. This creates a threat-location matrix that informs the vulnerability assessment and helps target mitigation recommendations to specific areas."}),
@@ -3295,7 +3422,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // VULNERABILITY
-      tab==="vulnerability"&&React.createElement("div",null,
+      tab==="vulnerability"&&React.createElement("div",{id:"section-vulnerability"},
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Attractiveness, Vulnerability & Likelihood"),
@@ -3351,7 +3478,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
             }
             copyChunkedToWord(chunks,"Attractiveness, Vulnerability & Likelihood \u2014 "+(ctx.project||"Assessment"));
-          }},"\ud83d\udccb Copy to Word")
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-vulnerability","Vulnerability section captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
         React.createElement(HelpBox,{title:"Capability, Attractiveness & Vulnerability",
           description:"Capability and Intent are scored on the Threats tab and shown here read-only \u2014 they represent whether the threat actor has the means and motivation to act, which is fundamental to likelihood. The 6 Target Attractiveness criteria assess how appealing and accessible the site is to each threat. Vulnerability measures the site\u2019s susceptibility. Likelihood is then calculated: L = ROUND((Threat Score + TA + Vulnerability) / 3)."}),
@@ -3422,7 +3550,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // IMPACT
-      tab==="impact"&&React.createElement("div",null,
+      tab==="impact"&&React.createElement("div",{id:"section-impact"},
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Impact Assessment"),
@@ -3445,7 +3573,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               chunks.push("</table>");
             }
             copyChunkedToWord(chunks,"Impact Assessment \u2014 "+(ctx.project||"Assessment"));
-          }},"\ud83d\udccb Copy to Word")
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-impact","Impact assessment captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
@@ -3474,9 +3603,32 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // CONTROLS
-      tab==="controls"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Existing Controls"),
-        React.createElement("p",{className:"section-sub"},"Describe controls, click effectiveness and confidence scores."),
+      tab==="controls"&&React.createElement("div",{id:"section-controls"},
+        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Existing Controls"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Describe controls, click effectiveness and confidence scores.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var filtered=cRisks.filter(function(r){return r.n});
+            var chunkSize=8;var chunks=[];
+            var gapc=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":g==="Insufficient"?"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center":""};
+            for(var ci=0;ci<filtered.length;ci+=chunkSize){
+              var batch=filtered.slice(ci,ci+chunkSize);
+              if(ci>0)chunks.push("<h3 style='page-break-before:always;font-family:Calibri;font-size:11pt;color:#1B2A4A'>Existing Controls (continued)</h3>");
+              chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Controls Description</th><th>Eff</th><th>Conf</th><th>Score</th><th>Gap</th></tr>");
+              batch.forEach(function(r,bi){
+                var c2=cd[r.id]||{};var idx=ci+bi;
+                var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
+                var gap=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
+                chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td class='tl' style='font-size:8pt'>"+(c2.desc||"")+"</td><td class='"+scClass(c2.eff)+"'>"+(c2.eff||"")+"</td><td class='"+scClass(c2.conf)+"'>"+(c2.conf||"")+"</td><td style='text-align:center;font-weight:bold'>"+(sc2||"")+"</td><td style='"+gapc(gap)+"'>"+gap+"</td></tr>");
+              });
+              chunks.push("</table>");
+            }
+            copyChunkedToWord(chunks,"Existing Controls \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-controls","Existing controls captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+        ),
         React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
           React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
             if(!confirm("🏗️ New Build Project\n\nThis will set controls for all physical/security threats to 1 (no controls) since the building does not yet exist.\n\nProcess and operational threats (Cybercrime, Info Theft, Insider Threat, SOC) will be set to 3 (partial) as these may have organisational controls in place.\n\nExisting descriptions will be preserved.\n\nContinue?"))return;
@@ -3536,12 +3688,19 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       )
                     );
                   })(),
-                  // Categorised treatment suggestions
+                  // Categorised treatment suggestions — filtered by asset/POI locations
                   (function(){
                     var catCtrl=getCategorisedTreatments(t.n,"reduce","",activeAssetPreset);
+                    // Determine location scope from targeted assets and POIs
+                    var tgtAssets2=(t.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+                    var tgtPois2=pois.filter(function(p){return p.threats.includes(t.id)});
+                    var hasOutside=false;var hasInside=false;
+                    tgtAssets2.forEach(function(a){var loc=inferLocation(a.cat,a.desc);if(loc==="outside"||loc==="both")hasOutside=true;if(loc==="inside"||loc==="both")hasInside=true});
+                    tgtPois2.forEach(function(p){var loc=inferLocation(p.name,p.desc);if(loc==="outside"||loc==="both")hasOutside=true;if(loc==="inside"||loc==="both")hasInside=true});
+                    // If no assets/POIs assigned, show both
+                    if(!hasOutside&&!hasInside){hasOutside=true;hasInside=true}
                     var renderCat=function(label,icon,items,borderColor,bgColor,textColor){
                       if(!items||items.length===0)return null;
-                      // Only show top 8 most relevant per category for controls
                       var shown=items.slice(0,8);
                       return React.createElement("div",{style:{marginTop:4,marginBottom:4}},
                         React.createElement("div",{style:{fontSize:9,fontWeight:700,color:textColor||"#475569",marginBottom:2}},icon+" "+label),
@@ -3564,8 +3723,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       );
                     };
                     return React.createElement("div",{style:{marginTop:6}},
-                      renderCat("Outside the Building","\ud83c\udfe2",catCtrl.outside,"#dbeafe","#eff6ff","#1e40af"),
-                      renderCat("Inside the Building","\ud83d\udee1\ufe0f",catCtrl.inside,"#fde68a","#fffbeb","#92400e"),
+                      hasOutside&&renderCat("Outside the Building","\ud83c\udfe2",catCtrl.outside,"#dbeafe","#eff6ff","#1e40af"),
+                      hasInside&&renderCat("Inside the Building","\ud83d\udee1\ufe0f",catCtrl.inside,"#fde68a","#fffbeb","#92400e"),
                       renderCat("Operational & Procedural","\u2699\ufe0f",catCtrl.operational,"#e2e8f0","#f8fafc","#475569"),
                       React.createElement("button",{
                         style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600,marginTop:4},
@@ -3594,12 +3753,25 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // RISK REGISTER
-      tab==="register"&&React.createElement("div",null,
+      tab==="register"&&React.createElement("div",{id:"section-register"},
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Risk Register"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Auto-populated from threat, vulnerability and impact assessments. Select a treatment strategy for each risk.")
-          )
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var filtered=cRisks.filter(function(r){return r.n});
+            var chunks=[];
+            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var ratBg=function(r){return!r?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r]||""};
+            chunks.push("<table><tr><th>R#</th><th>Type</th><th style='text-align:left'>Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>L\u00d7I</th><th>Rating</th><th>Treatment</th></tr>");
+            filtered.forEach(function(r,i){
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td style='text-align:center;font-size:8pt'>"+r.cat+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.sc)+"'>"+(r.sc||"")+"</td><td style='"+scBg(r.ta)+"'>"+(r.ta||"")+"</td><td style='"+scBg(r.vu)+"'>"+(r.vu||"")+"</td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='text-align:center;font-weight:bold'>"+(r.lik&&r.imp?r.lik*r.imp:"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td></tr>");
+            });
+            chunks.push("</table>");
+            copyChunkedToWord(chunks,"Risk Register \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-register","Risk register captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
         React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:16}},
           React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #bbf7d0",background:"#f0fdf4"}},
@@ -3650,9 +3822,47 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // RESIDUAL RISK
-      tab==="residual"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
-        React.createElement("p",{className:"section-sub"},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry."),
+      tab==="residual"&&React.createElement("div",{id:"section-residual"},
+        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry.")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var filtered=cRisks.filter(function(r){return r.n});
+            var chunks=[];
+            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
+            // Residual risk table
+            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
+            filtered.forEach(function(r,i){
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+            });
+            chunks.push("</table>");
+            // Treatment measures detail
+            var hasAnyMeasures=false;
+            filtered.forEach(function(r){var m=treatmentMeasures[r.id];if(m)Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasAnyMeasures=true})});
+            if(hasAnyMeasures){
+              chunks.push("<h3 style='page-break-before:always;font-family:Calibri;font-size:11pt;color:#1B2A4A'>Planned Treatment Measures</h3>");
+              filtered.forEach(function(r,i){
+                var m=treatmentMeasures[r.id]||{};
+                var hasMeas=false;Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasMeas=true});
+                if(!hasMeas)return;
+                chunks.push("<table style='margin-bottom:8pt'><tr><td colspan='2' style='background:#1B2A4A;color:#fff;font-weight:bold;padding:6pt 8pt'>R"+(i+1)+" \u2014 "+r.n+" ("+r.treat+")</td></tr>");
+                var tgtAssets2=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+                tgtAssets2.forEach(function(a){
+                  var arr=(m[a.id]||[]).filter(function(v){return v});
+                  if(arr.length>0){
+                    chunks.push("<tr><td style='font-weight:bold;width:200pt;vertical-align:top;background:#f8fafc'>"+a.cat+(a.desc?" \u2014 "+a.desc:"")+"</td><td style='font-size:9pt'>"+arr.map(function(v,vi){return(vi+1)+". "+v}).join("<br/>")+"</td></tr>");
+                  }
+                });
+                chunks.push("</table>");
+              });
+            }
+            copyChunkedToWord(chunks,"Residual Risk & Treatments \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-residual","Residual risk captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+        ),
         React.createElement(HelpBox,{title:"Residual Risk Scoring",
           description:"Re-score Likelihood and Impact post-treatment to demonstrate ALARP. Risks rated High or Very High expand to show each targeted asset with space to record planned treatment measures \u2014 specific security controls, design features, or operational procedures.",
           scaleItems:[(scales.residual||{})[1]||"",(scales.residual||{})[2]||"",(scales.residual||{})[3]||"",(scales.residual||{})[4]||"",(scales.residual||{})[5]||""]}),
@@ -3697,15 +3907,22 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
                 var existingCtrl=cd[r.id]||{};
                 var catTreatments=getCategorisedTreatments(r.n,r.treat,existingCtrl.desc,activeAssetPreset);
+                var assetLoc=inferLocation(asset.cat,asset.desc);
 
                 return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
-                  React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:4}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
+                  React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}},
+                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
+                    React.createElement("span",{style:{fontSize:9,padding:"2px 6px",borderRadius:4,fontWeight:600,
+                      background:assetLoc==="outside"?"#dbeafe":assetLoc==="inside"?"#fef3c7":"#f1f5f9",
+                      color:assetLoc==="outside"?"#1e40af":assetLoc==="inside"?"#92400e":"#475569"}},
+                      assetLoc==="outside"?"\ud83c\udfe2 External asset":assetLoc==="inside"?"\ud83d\udee1\ufe0f Internal asset":"\u2194\ufe0f Internal & external")
+                  ),
                   // Intelligent threat-specific treatment narrative
                   catTreatments.narrative&&React.createElement("div",{style:{fontSize:10,color:"#475569",marginBottom:8,lineHeight:1.6,padding:"8px 10px",background:"#f8fafc",borderRadius:6,border:"1px solid #e2e8f0",borderLeft:"3px solid #1B2A4A"}},
                     catTreatments.narrative
                   ),
-                  // Categorised treatment buttons
-                  catTreatments.outside.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                  // Categorised treatment buttons — filtered by asset location
+                  (assetLoc==="outside"||assetLoc==="both")&&catTreatments.outside.length>0&&React.createElement("div",{style:{marginBottom:6}},
                     React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83c\udfe2 Outside the Building"),
                     React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
                       catTreatments.outside.map(function(typ){
@@ -3723,7 +3940,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       })
                     )
                   ),
-                  catTreatments.inside.length>0&&React.createElement("div",{style:{marginBottom:6}},
+                  (assetLoc==="inside"||assetLoc==="both")&&catTreatments.inside.length>0&&React.createElement("div",{style:{marginBottom:6}},
                     React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83d\udee1\ufe0f Inside the Building"),
                     React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
                       catTreatments.inside.map(function(typ){
@@ -3809,12 +4026,26 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   threatPois.map(function(poi){
                     var poiKey="poi_"+poi.id;
                     var poiMeasures=(measures[poiKey]&&measures[poiKey].length>0)?measures[poiKey]:[""];
-                    var typicals=getTypicalControls(r.n,"treatment",activeAssetPreset);
+                    var poiLoc=inferLocation(poi.name,poi.desc);
+                    var poiCatTreat=getCategorisedTreatments(r.n,r.treat||"reduce","",activeAssetPreset);
+                    // Combine only location-relevant treatments
+                    var relevantItems=[];
+                    if(poiLoc==="outside"||poiLoc==="both")relevantItems=relevantItems.concat(poiCatTreat.outside);
+                    if(poiLoc==="inside"||poiLoc==="both")relevantItems=relevantItems.concat(poiCatTreat.inside);
+                    relevantItems=relevantItems.concat(poiCatTreat.operational);
+                    // Deduplicate
+                    var seen2={};relevantItems=relevantItems.filter(function(t){if(seen2[t])return false;seen2[t]=true;return true});
                     return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
-                      React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",marginBottom:2}},poi.name||"Unnamed POI"),
+                      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}},
+                        React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},poi.name||"Unnamed POI"),
+                        React.createElement("span",{style:{fontSize:9,padding:"2px 6px",borderRadius:4,fontWeight:600,
+                          background:poiLoc==="outside"?"#dbeafe":poiLoc==="inside"?"#fef3c7":"#f1f5f9",
+                          color:poiLoc==="outside"?"#1e40af":poiLoc==="inside"?"#92400e":"#475569"}},
+                          poiLoc==="outside"?"\ud83c\udfe2 External":poiLoc==="inside"?"\ud83d\udee1\ufe0f Internal":"\u2194\ufe0f Both")
+                      ),
                       poi.desc&&React.createElement("div",{style:{fontSize:10,color:"#64748b",marginBottom:4}},poi.desc),
                       React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
-                        typicals.map(function(typ){
+                        relevantItems.slice(0,12).map(function(typ){
                           var alreadyAdded=poiMeasures.some(function(m){return m===typ});
                           return React.createElement("button",{key:typ,
                             style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
