@@ -2207,14 +2207,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       if(!confirm("\u26a0 Warning: Changing to '"+type+"' will replace the current threat list.\n\nAll existing scores will be preserved for any threats that also appear in the new preset.\n\nThreats unique to the current list will be lost.\n\nDo you want to continue?"))return;
     }
     var oldByName={};
-    threats.forEach(function(t){oldByName[t.n]={id:t.id,cap:t.cap,int:t.int,vs:vs[t.id],is_:is_[t.id],cd:cd[t.id],tx:tx[t.id],rs:rs[t.id],acc:acc[t.id]}});
+    threats.forEach(function(t){oldByName[t.n]={id:t.id,cap:t.cap,int:t.int,targets:t.targets,vs:vs[t.id],is_:is_[t.id],cd:cd[t.id],tx:tx[t.id],rs:rs[t.id],acc:acc[t.id]}});
     var allDef=DEF_THREATS.map(function(t){return{n:t.n,d:t.d,cat:t.cat}});
     var newThreats=[];
     preset.forEach(function(name,i){
       var def=allDef.find(function(d){return d.n===name});
       if(!def)return;
       var old=oldByName[name];
-      newThreats.push({n:def.n,d:def.d,cat:def.cat,id:i+1,cap:old?old.cap:null,int:old?old.int:null});
+      newThreats.push({n:def.n,d:def.d,cat:def.cat,id:i+1,cap:old?old.cap:null,int:old?old.int:null,targets:old?old.targets:[]});
     });
     var newVs={},newIs={},newCd={},newTx={},newRs={},newAcc={},idMap={};
     newThreats.forEach(function(t){
@@ -2253,6 +2253,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       var old=oldByDesc[p.desc];
       return{id:i+1,cat:p.cat,desc:p.desc,sc:old&&old.sc&&Object.keys(old.sc).length>0?{...old.sc}:{}};
     });
+    // Build old->new asset ID map (matched by desc) and remap threat targets
+    var assetIdMap={};
+    newAssets.forEach(function(newA){var old=oldByDesc[newA.desc];if(old&&old.id)assetIdMap[old.id]=newA.id;});
+    setThreats(function(tt){return tt.map(function(t){if(!t.targets||t.targets.length===0)return t;var newTargets=t.targets.map(function(tid){return assetIdMap[tid]||null}).filter(Boolean);return{...t,targets:newTargets};});});
     setAssets(newAssets);setActiveAssetPreset(type);
     var carried=newAssets.filter(function(a){return a.sc&&(a.sc.opImpact||a.sc.dependencies||a.sc.impactPeople||a.sc.impactEnv)}).length;
     if(assets.length>0)showToast("Preset loaded"+(carried>0?" \u2014 "+carried+" asset scores carried over":""));
