@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.90";
+  const VERSION="1.91";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -633,6 +633,8 @@ function App(){
   const[comparisonData,setComparisonData]=useState(null);
   const[compLoading,setCompLoading]=useState(false);
   const[showAddThreat,setShowAddThreat]=useState(false);
+  const[residualJustifications,setResidualJustifications]=useState({});
+  const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
   const levelColors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
@@ -669,12 +671,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures)}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance]);
 
   // Auto-sync SBD type from development type preset
   useEffect(()=>{
@@ -714,8 +716,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,sbdCompliance]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -783,7 +785,7 @@ function App(){
   const applyLoadedData=(p)=>{
     if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
   };
 
 
@@ -837,7 +839,7 @@ function App(){
   };
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);
+    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
@@ -1632,9 +1634,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const v=vs[t.id]||{};const im=is_[t.id]||{};
     const ta=avg(TAC.map(c=>v[c]||null));const vu=v.vuln||null;
     const tot=(t.sc&&ta&&vu)?t.sc+ta+vu:null;const lik=tot?Math.round(tot/3):null;
-    const imp=avg(IC.map(c=>im[c]||null));const rat=getRR(lik,imp);
+    const rawImp=avg(IC.map(c=>im[c]||null));
+    // Life Safety Override: if Fatalities ≥ 4, overall impact floor is 4
+    const fatScore=im['fatalities']||null;
+    const lifeSafetyOverride=!!(fatScore>=4&&rawImp&&rawImp<4);
+    const imp=lifeSafetyOverride?4:rawImp;
+    const rat=getRR(lik,imp);
     const r=rs[t.id]||{};const resRat=getRR(r.l,r.i);
-    return{...t,ta,vu,tot,lik,imp,rat,treat:tx[t.id]||null,resL:r.l,resI:r.i,resRat,acc:acc[t.id]||null};
+    return{...t,ta,vu,tot,lik,imp,rawImp,lifeSafetyOverride,rat,treat:tx[t.id]||null,resL:r.l,resI:r.i,resRat,acc:acc[t.id]||null};
   }),[cThreats,vs,is_,tx,rs,acc]);
 
   const preM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
@@ -3585,6 +3592,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("span",{className:"font-bold"},t.n)
               ),
               React.createElement("div",{className:"flex gap-2 items-center"},
+                r?.lifeSafetyOverride&&React.createElement("span",{title:"Life Safety Override active: Fatalities \u2265 4 raises overall impact to minimum 4",style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:4,padding:"2px 6px",cursor:"default"}},"\u26a0\ufe0f Life Safety Override"),
                 React.createElement("span",{className:"text-xs text-muted"},"Impact:"),React.createElement(SBadge,{value:r?.imp}),
                 r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
               )
@@ -3834,9 +3842,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
             var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
             // Residual risk table
-            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
+            var gapcRR=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center"};
+            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
             filtered.forEach(function(r,i){
-              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+              var c2=cd[r.id]||{};var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
+              var gap2=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+              var just=residualJustifications[r.id];
+              if(just)chunks.push("<tr><td colspan='11' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
             });
             chunks.push("</table>");
             // Treatment measures detail
@@ -3871,12 +3884,22 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           const isHigh=r.rat==="High"||r.rat==="Very High";
           const targetedAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
           const measures=treatmentMeasures[r.id]||{};
+          // Controls gap for this threat
+          const ctrl=cd[r.id]||{};
+          const ctrlSc=ctrl.eff&&ctrl.conf?Math.round((ctrl.eff+ctrl.conf)/2*10)/10:null;
+          const ctrlGap=ctrlSc>=4?"Adequate":ctrlSc>=3?"Partial":ctrlSc>=1?"Insufficient":null;
+          const ctrlGapColor=ctrlGap==="Adequate"?"#16a34a":ctrlGap==="Partial"?"#d97706":ctrlGap==="Insufficient"?"#dc2626":"#94a3b8";
+          const ctrlGapBg=ctrlGap==="Adequate"?"#f0fdf4":ctrlGap==="Partial"?"#fffbeb":ctrlGap==="Insufficient"?"#fef2f2":"#f8fafc";
+          // Cap warning: Insufficient controls → residual should not drop more than 1 below pre-mitigation
+          const insufficientCapWarning=ctrlGap==="Insufficient"&&rsc.l&&r.lik&&(r.lik-rsc.l)>1;
+          const justification=residualJustifications[r.id]||"";
           return React.createElement("div",{key:r.id,className:"card",style:{marginBottom:isHigh&&targetedAssets.length>0?12:4}},
             React.createElement("table",{style:{marginBottom:0}},
               i===0&&React.createElement("thead",null,React.createElement("tr",null,
                 React.createElement("th",{style:{width:40}},"R#"),React.createElement("th",{className:"left"},"Threat"),
                 React.createElement("th",{style:{width:50}},"Pre-L"),React.createElement("th",{style:{width:50}},"Pre-I"),React.createElement("th",{style:{width:80}},"Pre-Rating"),
-                React.createElement("th",{style:{width:60}},"Treat"),React.createElement("th",{style:{width:145}},"Post Likelihood"),React.createElement("th",{style:{width:145}},"Post Impact"),
+                React.createElement("th",{style:{width:60}},"Treat"),React.createElement("th",{style:{width:60}},"Controls"),
+                React.createElement("th",{style:{width:145}},"Post Likelihood"),React.createElement("th",{style:{width:145}},"Post Impact"),
                 React.createElement("th",{style:{width:80}},"Residual"),React.createElement("th",{style:{width:80}},"Accept?")
               )),
               React.createElement("tbody",null,
@@ -3890,6 +3913,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
                   React.createElement("td",{className:"text-xs"},r.treat||"\u2014"),
+                  React.createElement("td",{style:{textAlign:"center"}},
+                    ctrlGap?React.createElement("span",{className:"badge",style:{backgroundColor:ctrlGapBg,color:ctrlGapColor,fontSize:9},title:"Control gap from Tab 8"},ctrlGap):React.createElement("span",{className:"empty-badge"},"\u2014")
+                  ),
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.l,onChange:v=>srs(r.id,"l",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.i,onChange:v=>srs(r.id,"i",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
@@ -3899,6 +3925,22 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     ["Yes","No","Tolerate","Review"].map(o=>React.createElement("option",{key:o,value:o},o))
                   ))
                 )
+              )
+            ),
+            // ALARP Justification + cap warning
+            React.createElement("div",{style:{padding:"8px 16px 10px",borderTop:"1px solid #f1f5f9",background:"#fafbfc"}},
+              insufficientCapWarning&&React.createElement("div",{style:{marginBottom:6,padding:"6px 10px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,fontSize:11,color:"#b91c1c",fontWeight:600}},
+                "\u26a0\ufe0f Insufficient controls — residual likelihood should not drop more than 1 below pre-mitigation (",r.lik," \u2192 ",rsc.l,"). Justify this reduction or revise the score."
+              ),
+              React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
+                React.createElement("label",{style:{fontSize:10,fontWeight:700,color:"#475569",whiteSpace:"nowrap",paddingTop:6,minWidth:120}},"ALARP Justification:"),
+                React.createElement("textarea",{
+                  className:"input",
+                  style:{fontSize:11,minHeight:40,resize:"vertical",lineHeight:1.4,flex:1},
+                  value:justification,
+                  placeholder:"State why residual risk is ALARP — further reduction is not reasonably practicable because...",
+                  onChange:function(e){setResidualJustifications(function(p){return{...p,[r.id]:e.target.value}})}
+                })
               )
             ),
             isHigh&&targetedAssets.length>0&&React.createElement("div",{style:{padding:"10px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb"}},
@@ -4708,6 +4750,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             }
           };
           var data=SBD_DATA[sbdType];
+          // Compliance summary counts
+          var allItems=[];data.sections.forEach(function(sec){sec.items.forEach(function(item,ii){allItems.push(sbdType+"|"+sec.cat+"|"+ii)})});
+          var sbdStatusCounts={Compliant:0,Partial:0,Gap:0,"N/A":0,Unset:0};
+          allItems.forEach(function(k){var s=(sbdCompliance[k]||{}).status;if(s)sbdStatusCounts[s]=(sbdStatusCounts[s]||0)+1;else sbdStatusCounts.Unset++;});
+          var sbdStatusStyle=function(s){return{Compliant:{bg:"#f0fdf4",color:"#16a34a",border:"#bbf7d0"},Partial:{bg:"#fffbeb",color:"#d97706",border:"#fde68a"},Gap:{bg:"#fef2f2",color:"#dc2626",border:"#fecaca"},"N/A":{bg:"#f8fafc",color:"#94a3b8",border:"#e2e8f0"}}[s]||{bg:"#f8fafc",color:"#94a3b8",border:"#e2e8f0"}};
           return React.createElement("div",null,
             // Type selector
             React.createElement("div",{style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
@@ -4720,50 +4767,91 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var chunks=[];
                 chunks.push("<h2>Secured by Design Requirements \u2014 "+data.title+"</h2>");
                 chunks.push("<p style='font-family:Calibri;font-size:10pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Guide: <b>"+data.guide+"</b></p>");
+                // Compliance summary
+                var tot=allItems.length;var comp=sbdStatusCounts.Compliant;var part=sbdStatusCounts.Partial;var gap=sbdStatusCounts.Gap;var na=sbdStatusCounts["N/A"];
+                chunks.push("<p style='font-family:Calibri;font-size:10pt'><b>Compliance Summary:</b> "+comp+" Compliant | "+part+" Partial | "+gap+" Gap | "+na+" N/A | "+sbdStatusCounts.Unset+" Not assessed ("+tot+" total requirements)</p>");
                 var half=Math.ceil(data.sections.length/2);
-                // First page chunk
-                data.sections.slice(0,half).forEach(function(sec){
+                var renderSec=function(sec){
                   chunks.push("<h3>"+sec.icon+" "+sec.cat+"</h3>");
-                  chunks.push("<table><tr><th style='text-align:left;width:30px'>#</th><th style='text-align:left'>Requirement</th></tr>");
+                  chunks.push("<table><tr><th style='text-align:left;width:24px'>#</th><th style='text-align:left'>Requirement</th><th style='width:80px'>Status</th><th style='text-align:left;width:180px'>Notes</th></tr>");
                   sec.items.forEach(function(item,i){
-                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td></tr>");
+                    var k=sbdType+"|"+sec.cat+"|"+i;var comp2=sbdCompliance[k]||{};var st=comp2.status||"";var nt=comp2.notes||"";
+                    var stStyle=st==="Compliant"?"background:#E2EFDA;color:#16a34a":st==="Partial"?"background:#FFF2CC;color:#d97706":st==="Gap"?"background:#FFC7CE;color:#dc2626":st==="N/A"?"background:#f8fafc;color:#94a3b8":"";
+                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td><td style='text-align:center;font-weight:bold;"+stStyle+"'>"+st+"</td><td class='tl' style='font-size:8pt'>"+nt+"</td></tr>");
                   });
                   chunks.push("</table>");
-                });
-                // Second page chunk
+                };
+                data.sections.slice(0,half).forEach(renderSec);
                 chunks.push("<h3 style='page-break-before:always'>&nbsp;</h3>");
-                data.sections.slice(half).forEach(function(sec){
-                  chunks.push("<h3>"+sec.icon+" "+sec.cat+"</h3>");
-                  chunks.push("<table><tr><th style='text-align:left;width:30px'>#</th><th style='text-align:left'>Requirement</th></tr>");
-                  sec.items.forEach(function(item,i){
-                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td></tr>");
-                  });
-                  chunks.push("</table>");
-                });
+                data.sections.slice(half).forEach(renderSec);
                 copyChunkedToWord(chunks,"SBD Requirements \u2014 "+data.title);
               }},"\ud83d\udccb Copy to Word")
             ),
 
-            // Content
+            // Content + compliance summary
             React.createElement("div",{style:{background:"#f0f4f8",borderRadius:10,padding:16,marginBottom:16,border:"1px solid #e2e8f0"}},
-              React.createElement("div",{style:{fontSize:15,fontWeight:700,color:"#1B2A4A",marginBottom:4}},data.title),
-              React.createElement("div",{style:{fontSize:11,color:"#64748b"}},"Reference: "+data.guide+" | Police Preferred Specification")
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}},
+                React.createElement("div",null,
+                  React.createElement("div",{style:{fontSize:15,fontWeight:700,color:"#1B2A4A",marginBottom:4}},data.title),
+                  React.createElement("div",{style:{fontSize:11,color:"#64748b"}},"Reference: "+data.guide+" | Police Preferred Specification")
+                ),
+                React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}},
+                  React.createElement("span",{style:{fontSize:10,fontWeight:600,color:"#64748b",marginRight:2}},"Compliance:"),
+                  ["Compliant","Partial","Gap","N/A"].map(function(s){
+                    var st=sbdStatusStyle(s);var cnt=sbdStatusCounts[s]||0;
+                    return React.createElement("span",{key:s,style:{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4,background:st.bg,color:st.color,border:"1px solid "+st.border}},s+": "+cnt);
+                  }),
+                  React.createElement("span",{style:{fontSize:10,color:"#94a3b8",marginLeft:2}},"("+sbdStatusCounts.Unset+" unset)")
+                )
+              )
             ),
 
             data.sections.map(function(sec,si){
+              var secTotal=sec.items.length;
+              var secCounts={Compliant:0,Partial:0,Gap:0};
+              sec.items.forEach(function(item,ii){var k=sbdType+"|"+sec.cat+"|"+ii;var s=(sbdCompliance[k]||{}).status;if(s==="Compliant")secCounts.Compliant++;else if(s==="Partial")secCounts.Partial++;else if(s==="Gap")secCounts.Gap++;});
               return React.createElement("div",{key:si,className:"card",style:{marginBottom:8}},
                 React.createElement("div",{className:"card-header",style:{background:"#fafbfc"}},
                   React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
                     React.createElement("span",{style:{fontSize:18}},sec.icon),
                     React.createElement("span",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A"}},sec.cat)
                   ),
-                  React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:600}},sec.items.length+" requirements")
+                  React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
+                    secCounts.Gap>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}},secCounts.Gap+" Gap"),
+                    secCounts.Partial>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#fffbeb",color:"#d97706",border:"1px solid #fde68a"}},secCounts.Partial+" Partial"),
+                    secCounts.Compliant>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#f0fdf4",color:"#16a34a",border:"1px solid #bbf7d0"}},secCounts.Compliant+" \u2713"),
+                    React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:600}},secTotal+" requirements")
+                  )
                 ),
                 React.createElement("div",{className:"card-body",style:{padding:"8px 16px 12px"}},
                   sec.items.map(function(item,ii){
+                    var k=sbdType+"|"+sec.cat+"|"+ii;
+                    var comp2=sbdCompliance[k]||{};
+                    var st=comp2.status||"";var nt=comp2.notes||"";
+                    var stStyle=sbdStatusStyle(st);
+                    var updateSbd=function(field,val){setSbdCompliance(function(p){var n={...p};n[k]={...n[k],[field]:val};return n})};
                     return React.createElement("div",{key:ii,style:{display:"flex",gap:8,padding:"6px 0",borderBottom:ii<sec.items.length-1?"1px solid #f1f5f9":"none",alignItems:"flex-start"}},
-                      React.createElement("span",{style:{width:22,height:22,borderRadius:4,background:"#1B2A4A",color:"#fff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},(ii+1)),
-                      React.createElement("span",{style:{fontSize:12,color:"#475569",lineHeight:1.5}},item)
+                      React.createElement("span",{style:{width:22,height:22,borderRadius:4,background:st?stStyle.bg:"#1B2A4A",color:st?stStyle.color:"#fff",border:st?"1px solid "+stStyle.border:"none",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},(ii+1)),
+                      React.createElement("div",{style:{flex:1}},
+                        React.createElement("div",{style:{fontSize:12,color:"#475569",lineHeight:1.5,marginBottom:4}},item),
+                        React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}},
+                          ["Compliant","Partial","Gap","N/A"].map(function(s){
+                            var sel=st===s;var sty=sbdStatusStyle(s);
+                            return React.createElement("button",{key:s,
+                              style:{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4,border:"1px solid "+(sel?sty.border:"#e2e8f0"),
+                                background:sel?sty.bg:"#fff",color:sel?sty.color:"#94a3b8",cursor:"pointer",fontFamily:"inherit",transition:"all 0.1s"},
+                              onClick:function(){updateSbd("status",sel?"":s)}
+                            },s);
+                          }),
+                          React.createElement("input",{
+                            className:"input",
+                            style:{fontSize:10,padding:"2px 8px",flex:1,minWidth:120,maxWidth:320},
+                            value:nt,
+                            placeholder:"Notes (optional)...",
+                            onChange:function(e){updateSbd("notes",e.target.value)}
+                          })
+                        )
+                      )
                     );
                   })
                 )
