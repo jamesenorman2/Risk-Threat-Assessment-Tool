@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(jq -r '.tool_input.command'); echo \"$CMD\" | grep -q 'git commit' || exit 0; VERSION=$(grep -o 'VERSION=\"[^\"]*\"' index.html 2>/dev/null | head -1 | cut -d'\"' -f2); [ -z \"$VERSION\" ] && exit 0; DEST=\"Risk-Threat-Assessment-Tool-v${VERSION}.html\"; cp index.html \"$DEST\" && git add \"$DEST\" 2>/dev/null || true",
+            "statusMessage": "Creating versioned download..."
+          }
+        ]
+      }
+    ]
+  }
+}
