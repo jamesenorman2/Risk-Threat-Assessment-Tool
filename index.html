@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.93";
+  const VERSION="1.94";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -931,7 +931,7 @@ function App(){
 
   // Chunked HTML copy for Word - copies formatted HTML tables that fit on A4 pages
   const copyChunkedToWord=function(htmlChunks,title){
-    var style="<style>table{border-collapse:collapse;width:100%;font-family:Calibri,Arial;font-size:10pt;margin-bottom:8pt;page-break-inside:avoid}th{background:#1B2A4A;color:#fff;padding:6pt 8pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}td{padding:5pt 8pt;border:1pt solid #ccc;font-size:9pt}td.tl{text-align:left}.s1{background:#4472C4;color:#fff;font-weight:bold;text-align:center}.s2{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.s3{background:#FFC000;color:#000;font-weight:bold;text-align:center}.s4{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.s5{background:#C00000;color:#fff;font-weight:bold;text-align:center}tr:nth-child(even) td{background:#f8f8f8}h2{font-family:Calibri,Arial;font-size:14pt;color:#1B2A4A;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;margin:12pt 0 6pt;page-break-before:always}h2:first-child{page-break-before:avoid}h3{font-family:Calibri,Arial;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt}.badge-vl{background:#4472C4;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-lo{background:#70AD47;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-me{background:#FFC000;color:#000;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-hi{background:#ED7D31;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-vh{background:#C00000;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}</style>";
+    var style="<style>table{border-collapse:collapse;width:100%;font-family:Arial;font-size:9pt;margin-bottom:8pt;page-break-inside:avoid}th{background:#1B2A4A;color:#fff;padding:4pt 6pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}td{padding:4pt 6pt;border:1pt solid #ccc;font-size:9pt;font-family:Arial}td.tl{text-align:left}.s1{background:#4472C4;color:#fff;font-weight:bold;text-align:center}.s2{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.s3{background:#FFC000;color:#000;font-weight:bold;text-align:center}.s4{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.s5{background:#C00000;color:#fff;font-weight:bold;text-align:center}tr:nth-child(even) td{background:#f8f8f8}h2{font-family:Arial;font-size:12pt;color:#1B2A4A;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;margin:12pt 0 6pt;page-break-before:always}h2:first-child{page-break-before:avoid}h3{font-family:Arial;font-size:10pt;color:#1B2A4A;margin:8pt 0 4pt}.badge-vl{background:#4472C4;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-lo{background:#70AD47;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-me{background:#FFC000;color:#000;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-hi{background:#ED7D31;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-vh{background:#C00000;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}</style>";
     var html=style+(title?"<h2>"+title+"</h2>":"")+htmlChunks.join("");
     var blob=new Blob([html],{type:"text/html"});
     navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Copied for Word \u2014 paste with Ctrl+V")}).catch(function(){
@@ -3351,10 +3351,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           pois.length>0&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var chunks=[];
-            chunks.push("<h2>Points of Interest Summary</h2>");
-            chunks.push("<p style='font-family:Calibri;font-size:10pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Site: <b>"+(ctx.address||"\u2014")+"</b> | Total POIs: <b>"+pois.length+"</b></p>");
-            // Summary table
-            chunks.push("<table><tr><th>#</th><th style='text-align:left'>POI Name</th><th style='text-align:left'>Location / Description</th><th style='text-align:left'>Notes</th><th style='text-align:left'>Applicable Threats</th><th>Count</th></tr>");
+            // Summary table — no headings, no Count column, no Threat Frequency table
+            chunks.push("<table><tr><th>#</th><th style='text-align:left'>POI Name</th><th style='text-align:left'>Location / Description</th><th style='text-align:left'>Notes</th><th style='text-align:left'>Applicable Threats</th></tr>");
             pois.forEach(function(poi,i){
               var threatNames=poi.threats.map(function(tid){var t=cThreats.find(function(t){return t.id===tid});return t?t.n:""}).filter(Boolean);
               var terrorT=threatNames.filter(function(n){var t=cThreats.find(function(t2){return t2.n===n});return t&&t.cat==="Terrorism"});
@@ -3363,18 +3361,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               if(terrorT.length)formatted+="<span style='color:#dc2626;font-size:8pt;font-weight:bold'>T: </span><span style='font-size:8pt'>"+terrorT.join(", ")+"</span>";
               if(terrorT.length&&crimeT.length)formatted+="<br/>";
               if(crimeT.length)formatted+="<span style='color:#4472C4;font-size:8pt;font-weight:bold'>C: </span><span style='font-size:8pt'>"+crimeT.join(", ")+"</span>";
-              chunks.push("<tr><td style='text-align:center'>POI-"+(i+1)+"</td><td class='tl'><b>"+(poi.name||"")+"</b></td><td class='tl'>"+(poi.desc||"")+"</td><td class='tl'>"+(poi.location||"")+"</td><td class='tl'>"+formatted+"</td><td style='text-align:center;font-weight:bold'>"+poi.threats.length+"</td></tr>");
+              chunks.push("<tr><td style='text-align:center'>POI-"+(i+1)+"</td><td class='tl'><b>"+(poi.name||"")+"</b></td><td class='tl'>"+(poi.desc||"")+"</td><td class='tl'>"+(poi.location||"")+"</td><td class='tl'>"+formatted+"</td></tr>");
             });
             chunks.push("</table>");
-            // Threat frequency summary
-            var threatFreq={};
-            pois.forEach(function(poi){poi.threats.forEach(function(tid){threatFreq[tid]=(threatFreq[tid]||0)+1})});
-            var sorted=Object.entries(threatFreq).sort(function(a,b){return b[1]-a[1]});
-            if(sorted.length>0){
-              chunks.push("<h3>Threat Frequency Across POIs</h3><table><tr><th style='text-align:left'>Threat</th><th>Type</th><th>POI Count</th></tr>");
-              sorted.forEach(function(e){var t=cThreats.find(function(t2){return t2.id===parseInt(e[0])});if(t)chunks.push("<tr><td class='tl'><b>"+t.n+"</b></td><td style='text-align:center;font-size:8pt'>"+(t.cat||"")+"</td><td style='text-align:center;font-weight:bold'>"+e[1]+"/"+pois.length+"</td></tr>")});
-              chunks.push("</table>");
-            }
             copyChunkedToWord(chunks,"Points of Interest \u2014 "+(ctx.project||"Assessment"));
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-poi","Points of interest captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
@@ -3512,30 +3501,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("span",{className:"text-xs text-muted"},"L:"),React.createElement(SBadge,{value:r?.lik})
               )
             ),
-            React.createElement("div",{className:"card-body"},
-              // Capability & Intent read-only row
-              React.createElement("div",{style:{display:"flex",gap:12,marginBottom:10,padding:"8px 12px",background:"#f1f5f9",borderRadius:8,border:"1px solid #e2e8f0",alignItems:"center",flexWrap:"wrap"}},
-                React.createElement("div",{style:{fontSize:10,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83c\udfaf Threat Capability & Intent"),
-                React.createElement("div",{style:{display:"flex",gap:12,alignItems:"center"}},
-                  React.createElement("div",{style:{textAlign:"center"}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Capability"),
-                    React.createElement(SBadge,{value:t.cap}),
-                    t.cap&&scales.capability&&scales.capability[t.cap]&&React.createElement("div",{style:{fontSize:8,color:"#94a3b8",maxWidth:100,lineHeight:1.2,marginTop:2}},scales.capability[t.cap].substring(0,60)+(scales.capability[t.cap].length>60?"...":""))
-                  ),
-                  React.createElement("div",{style:{textAlign:"center"}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Intent"),
-                    React.createElement(SBadge,{value:t.int}),
-                    t.int&&scales.intent&&scales.intent[t.int]&&React.createElement("div",{style:{fontSize:8,color:"#94a3b8",maxWidth:100,lineHeight:1.2,marginTop:2}},scales.intent[t.int].substring(0,60)+(scales.intent[t.int].length>60?"...":""))
-                  ),
-                  React.createElement("div",{style:{textAlign:"center"}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:600,color:"#94a3b8",marginBottom:2}},"Threat Score"),
-                    React.createElement(SBadge,{value:t.sc})
-                  ),
-                  (!t.cap||!t.int)&&React.createElement("span",{style:{fontSize:10,color:"#d97706",fontStyle:"italic"}},"\u2190 Score on the Threats tab")
-                )
-              ),
-              // Target Attractiveness criteria
-              React.createElement("div",{style:{fontSize:10,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:6}},"\ud83c\udfe2 Target Attractiveness & Vulnerability"),
+            React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
               React.createElement("div",{className:"grid grid-7"},
                 ...[
                   {k:"visibility",l:"Visibility",h:"1 = No public profile\n5 = Highly visible, major branding"},
@@ -3601,7 +3567,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
               )
             ),
-            React.createElement("div",{className:"card-body"},
+            React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
               React.createElement("div",{className:"grid grid-5"},
                 ...IC.map(c=>React.createElement("div",{key:c,className:"gap-col"},
                   React.createElement("div",{className:"crit-label"},ICL[c]),
@@ -4776,12 +4742,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 chunks.push("<p style='font-family:Calibri;font-size:10pt'><b>Compliance Summary:</b> "+comp+" Compliant | "+part+" Partial | "+gap+" Gap | "+na+" N/A | "+sbdStatusCounts.Unset+" Not assessed ("+tot+" total requirements)</p>");
                 var half=Math.ceil(data.sections.length/2);
                 var renderSec=function(sec){
-                  chunks.push("<h3>"+sec.icon+" "+sec.cat+"</h3>");
+                  var visibleItems=sec.items.map(function(item,i){return{item:item,i:i,k:sbdType+"|"+sec.cat+"|"+i}}).filter(function(x){return (sbdCompliance[x.k]||{}).status!=="N/A"});
+                  if(visibleItems.length===0)return;
+                  chunks.push("<h3>"+sec.cat+"</h3>");
                   chunks.push("<table><tr><th style='text-align:left;width:24px'>#</th><th style='text-align:left'>Requirement</th><th style='width:80px'>Status</th><th style='text-align:left;width:180px'>Notes</th></tr>");
-                  sec.items.forEach(function(item,i){
-                    var k=sbdType+"|"+sec.cat+"|"+i;var comp2=sbdCompliance[k]||{};var st=comp2.status||"";var nt=comp2.notes||"";
-                    var stStyle=st==="Compliant"?"background:#E2EFDA;color:#16a34a":st==="Partial"?"background:#FFF2CC;color:#d97706":st==="Gap"?"background:#FFC7CE;color:#dc2626":st==="N/A"?"background:#f8fafc;color:#94a3b8":"";
-                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(i+1)+"</td><td class='tl'>"+item+"</td><td style='text-align:center;font-weight:bold;"+stStyle+"'>"+st+"</td><td class='tl' style='font-size:8pt'>"+nt+"</td></tr>");
+                  visibleItems.forEach(function(x){
+                    var comp2=sbdCompliance[x.k]||{};var st=comp2.status||"";var nt=comp2.notes||"";
+                    var stStyle=st==="Compliant"?"background:#E2EFDA;color:#16a34a":st==="Partial"?"background:#FFF2CC;color:#d97706":st==="Gap"?"background:#FFC7CE;color:#dc2626":"";
+                    chunks.push("<tr><td style='text-align:center;font-weight:bold'>"+(x.i+1)+"</td><td class='tl'>"+x.item+"</td><td style='text-align:center;font-weight:bold;"+stStyle+"'>"+st+"</td><td class='tl' style='font-size:8pt'>"+nt+"</td></tr>");
                   });
                   chunks.push("</table>");
                 };
@@ -4817,7 +4785,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               return React.createElement("div",{key:si,className:"card",style:{marginBottom:8}},
                 React.createElement("div",{className:"card-header",style:{background:"#fafbfc"}},
                   React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
-                    React.createElement("span",{style:{fontSize:18}},sec.icon),
                     React.createElement("span",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A"}},sec.cat)
                   ),
                   React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
