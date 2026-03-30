@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.940";
+  const VERSION="1.941";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -563,6 +563,9 @@ function App(){
   };
   const[critDescs,setCritDescs]=useState({...defaultDescs});
   const updateDesc=(key,val)=>setCritDescs(p=>({...p,[key]:val}));
+  const defaultCritLabels={disruption:"Disruption",fatalities:"Fatalities",reputation:"Reputation",financial:"Financial",property:"Property",visibility:"Visibility",status:"Status",access:"Threat Access",collateral:"Collateral Exposure",crime:"Crime Profile",history:"Historical Precedence",vuln:"Vulnerability",capability:"Capability",intent:"Intent",effectiveness:"Effectiveness",confidence:"Confidence",residual:"Residual L & I",opImpact:"Op. Impact",dependencies:"Dependencies",impactPeople:"People",impactEnv:"Environment"};
+  const[critLabels,setCritLabels]=useState({...defaultCritLabels});
+  const updateLabel=(key,val)=>setCritLabels(p=>({...p,[key]:val}));
 
   const defaultScales={
     // Impact - per criterion
@@ -671,12 +674,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats){const loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}));}
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.critLabels)setCritLabels(function(){return{...defaultCritLabels,...p.critLabels}});if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,critLabels,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,critLabels,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance]);
 
   // Auto-sync SBD type from development type preset
   useEffect(()=>{
@@ -3539,7 +3542,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             for(var ci=0;ci<filtered.length;ci+=chunkSize){
               var batch=filtered.slice(ci,ci+chunkSize);
               if(ci>0)chunks.push("<h3 style='font-family:Calibri;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt'>Impact Assessment (continued)</h3>");
-              chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th>Disruption</th><th>Fatalities</th><th>Reputation</th><th>Financial</th><th>Property</th><th>Impact</th><th>Level</th></tr>");
+              chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th>"+IC.map(function(c){return"<th>"+(critLabels[c]||ICL[c])+"</th>"}).join("")+"<th>Impact</th><th>Level</th></tr>");
               batch.forEach(function(r,bi){
                 var im=is_[r.id]||{};var idx=ci+bi;
                 chunks.push("<tr><td style='text-align:center'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td>");
@@ -3552,6 +3555,25 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             copyChunkedToWord(chunks,"Impact Assessment \u2014 "+(ctx.project||"Assessment"));
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-impact","Impact assessment captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+        ),
+        React.createElement("div",{className:"card",style:{marginBottom:12,padding:"10px 16px"}},
+          React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:8}},"Score Key"),
+          React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{borderCollapse:"collapse",width:"100%",fontSize:11}},
+              React.createElement("thead",null,
+                React.createElement("tr",null,
+                  React.createElement("th",{style:{width:28,padding:"3px 6px",background:"#f1f5f9",border:"1px solid #e2e8f0",fontWeight:700,color:"#475569",fontSize:10}},"Score"),
+                  ...IC.map(c=>React.createElement("th",{key:c,style:{padding:"3px 8px",background:"#f1f5f9",border:"1px solid #e2e8f0",fontWeight:700,color:"#475569",fontSize:10,textAlign:"left"}},critLabels[c]||ICL[c]))
+                )
+              ),
+              React.createElement("tbody",null,
+                [1,2,3,4,5].map(n=>React.createElement("tr",{key:n},
+                  React.createElement("td",{style:{padding:"3px 6px",border:"1px solid #e2e8f0",background:SC[n].bg,color:SC[n].t,fontWeight:700,fontSize:11,textAlign:"center"}},n),
+                  ...IC.map(c=>React.createElement("td",{key:c,style:{padding:"3px 8px",border:"1px solid #e2e8f0",fontSize:10,color:"#475569"}},scales[c]?.[n]||""))
+                ))
+              )
+            )
+          )
         ),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
@@ -3570,7 +3592,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
               React.createElement("div",{className:"grid grid-5"},
                 ...IC.map(c=>React.createElement("div",{key:c,className:"gap-col"},
-                  React.createElement("div",{className:"crit-label"},ICL[c]),
+                  React.createElement("div",{className:"crit-label"},critLabels[c]||ICL[c]),
                   React.createElement("div",{className:"crit-hint"},critDescs[c]||""),
                   React.createElement(ScoreBar,{value:im[c],onChange:val=>si(t.id,c,val),size:"sm",tips:scales[c]})
                 ))
@@ -4879,20 +4901,20 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // Per-criterion editor groups
         ...[
-          {title:"IMPACT CRITERIA",criteria:IC.map(c=>({key:c,label:ICL[c]}))},
-          {title:"TARGET ATTRACTIVENESS CRITERIA",criteria:[...TAC.map(c=>({key:c,label:TAL[c]})),{key:"vuln",label:"Vulnerability"}]},
-          {title:"ASSET CRITICALITY CRITERIA",criteria:AC.map(c=>({key:c,label:ACL[c]}))},
-          {title:"THREAT SCORING",criteria:[{key:"capability",label:"Capability"},{key:"intent",label:"Intent"}]},
-          {title:"CONTROL CRITERIA",criteria:[{key:"effectiveness",label:"Effectiveness"},{key:"confidence",label:"Confidence"}]},
-          {title:"RESIDUAL RISK SCORING",criteria:[{key:"residual",label:"Residual L & I"}]},
+          {title:"IMPACT CRITERIA",criteria:IC.map(c=>({key:c,label:critLabels[c]||ICL[c]}))},
+          {title:"TARGET ATTRACTIVENESS CRITERIA",criteria:[...TAC.map(c=>({key:c,label:critLabels[c]||TAL[c]})),{key:"vuln",label:critLabels.vuln||"Vulnerability"}]},
+          {title:"ASSET CRITICALITY CRITERIA",criteria:AC.map(c=>({key:c,label:critLabels[c]||ACL[c]}))},
+          {title:"THREAT SCORING",criteria:[{key:"capability",label:critLabels.capability||"Capability"},{key:"intent",label:critLabels.intent||"Intent"}]},
+          {title:"CONTROL CRITERIA",criteria:[{key:"effectiveness",label:critLabels.effectiveness||"Effectiveness"},{key:"confidence",label:critLabels.confidence||"Confidence"}]},
+          {title:"RESIDUAL RISK SCORING",criteria:[{key:"residual",label:critLabels.residual||"Residual L & I"}]},
         ].map(({title,criteria})=>
           React.createElement("div",{key:title,className:"card",style:{padding:24,marginBottom:16}},
             React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},title),
             React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:20}},
               ...criteria.map(({key,label})=>React.createElement("div",{key:key},
-                // Criterion description
-                React.createElement("div",{className:"flex items-center gap-3",style:{marginBottom:8}},
-                  React.createElement("label",{style:{width:110,fontSize:12,fontWeight:700,color:"#1e293b",flexShrink:0}},label),
+                // Criterion label + description
+                React.createElement("div",{className:"flex items-center gap-3",style:{marginBottom:4}},
+                  React.createElement("input",{className:"input",style:{width:130,fontSize:12,fontWeight:700,color:"#1e293b",flexShrink:0},value:critLabels[key]||label,onChange:e=>updateLabel(key,e.target.value),placeholder:"Label..."}),
                   critDescs[key]!==undefined&&React.createElement("input",{className:"input",value:critDescs[key]||"",onChange:e=>updateDesc(key,e.target.value),placeholder:"Criterion description..."})
                 ),
                 // 1-5 scale for this criterion
@@ -5026,7 +5048,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
 
         React.createElement("div",{style:{marginTop:8,display:"flex",gap:8}},
-          React.createElement("button",{className:"btn btn-outline",onClick:()=>{setCritDescs({...defaultDescs});setScales({...defaultScales});showToast("All settings reset to defaults")}},"Reset Criteria to Defaults"),
+          React.createElement("button",{className:"btn btn-outline",onClick:()=>{setCritDescs({...defaultDescs});setCritLabels({...defaultCritLabels});setScales({...defaultScales});showToast("All settings reset to defaults")}},"Reset Criteria to Defaults"),
           React.createElement("button",{className:"btn btn-outline",onClick:()=>{
             if(confirm("This will populate all empty criteria descriptions and scale definitions with defaults. Existing values will not be overwritten. Continue?")){
               const newDescs={...critDescs};
