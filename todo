@@ -1,0 +1,5 @@
+in Points of Interest page copy to word button should onle copy the tables and not the headings and not include Threat Frequency Across POIs table. it should also not include the 'count' column
+all copy to word should copy in Arial font size 9
+in the Attractiveness, Vulnerability & Likelihood tab it needs to be cleaned up and present the information better - make it so it is easy to screen grab just the right amount for an a4 page - do the same for Impact Assessment tab
+in the Secured by Design (SBD) Requirements make it so that requirements can be marked as not applicable - these should not be included when exporting to word
+in 9.6	Secured by Design Requirements don't use icons as they don't look good especially when exporting to word
