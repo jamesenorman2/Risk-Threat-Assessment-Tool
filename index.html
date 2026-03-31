@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.953";
+  const VERSION="1.954";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3664,7 +3664,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td class='tl' style='font-size:8pt'>"+(c2.desc||"")+"</td><td class='"+scClass(c2.eff)+"'>"+(c2.eff||"")+"</td><td class='"+scClass(c2.conf)+"'>"+(c2.conf||"")+"</td><td style='text-align:center;font-weight:bold'>"+(sc2||"")+"</td><td style='"+gapc(gap)+"'>"+gap+"</td></tr>");
             });
             chunks.push("</table>");
-            copyChunkedToWord(chunks,"Existing Controls \u2014 "+(ctx.project||"Assessment"));
+            copyChunkedToWord(chunks,null);
           }},"\ud83d\udccb Copy to Word")
         ),
         React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
