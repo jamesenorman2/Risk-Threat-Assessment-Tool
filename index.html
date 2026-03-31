@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.950";
+  const VERSION="1.951";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -634,6 +634,7 @@ function App(){
   const[compLoading,setCompLoading]=useState(false);
   const[showAddThreat,setShowAddThreat]=useState(false);
   const[residualJustifications,setResidualJustifications]=useState({});
+  const[treatOptional,setTreatOptional]=useState({});
   const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
@@ -671,12 +672,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats){const loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}));}
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,sbdCompliance]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance]);
 
   // Auto-sync SBD type from development type preset
   useEffect(()=>{
@@ -716,8 +717,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,sbdCompliance]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,sbdCompliance]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -785,7 +786,7 @@ function App(){
   const applyLoadedData=(p)=>{
     if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
   };
 
 
@@ -839,7 +840,7 @@ function App(){
   };
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setSbdCompliance({});
+    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
@@ -3872,13 +3873,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
             // Residual risk table
             var gapcRR=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center"};
-            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
+            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Optional?</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
             filtered.forEach(function(r,i){
               var c2=cd[r.id]||{};var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
               var gap2=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
-              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+              var optStyle=treatOptional[r.id]?"background:#f5f3ff;color:#7c3aed;font-weight:bold;text-align:center":"text-align:center";
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+optStyle+"'>"+(treatOptional[r.id]?"Yes — Risk Appetite":"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
               var just=residualJustifications[r.id];
-              if(just)chunks.push("<tr><td colspan='11' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
+              if(just)chunks.push("<tr><td colspan='12' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
             });
             chunks.push("</table>");
             // Treatment measures detail
@@ -3941,7 +3943,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("td",null,React.createElement(SBadge,{value:r.lik})),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                  React.createElement("td",{className:"text-xs"},r.treat||"\u2014"),
+                  React.createElement("td",{className:"text-xs"},r.treat||"\u2014",treatOptional[r.id]&&React.createElement("span",{style:{display:"block",fontSize:9,fontWeight:700,color:"#7c3aed",marginTop:2}},"Optional")),
                   React.createElement("td",{style:{textAlign:"center"}},
                     ctrlGap?React.createElement("span",{className:"badge",style:{backgroundColor:ctrlGapBg,color:ctrlGapColor,fontSize:9},title:"Control gap from Tab 8"},ctrlGap):React.createElement("span",{className:"empty-badge"},"\u2014")
                   ),
@@ -3961,7 +3963,17 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               insufficientCapWarning&&React.createElement("div",{style:{marginBottom:6,padding:"6px 10px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,fontSize:11,color:"#b91c1c",fontWeight:600}},
                 "\u26a0\ufe0f Insufficient controls — residual likelihood should not drop more than 1 below pre-mitigation (",r.lik," \u2192 ",rsc.l,"). Justify this reduction or revise the score."
               ),
-              React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:6}},
+                React.createElement("label",{style:{display:"flex",alignItems:"center",gap:6,cursor:"pointer",userSelect:"none",fontSize:11,fontWeight:600,color:treatOptional[r.id]?"#7c3aed":"#475569",background:treatOptional[r.id]?"#f5f3ff":"#f8fafc",border:"1px solid "+(treatOptional[r.id]?"#c4b5fd":"#e2e8f0"),borderRadius:6,padding:"4px 10px"}},
+                  React.createElement("input",{type:"checkbox",style:{accentColor:"#7c3aed",width:14,height:14},
+                    checked:!!treatOptional[r.id],
+                    onChange:function(e){setTreatOptional(function(p){var n={...p};if(e.target.checked)n[r.id]=true;else delete n[r.id];return n})}
+                  }),
+                  "\uD83D\uDCCA Optional — client risk appetite",
+                  treatOptional[r.id]&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#7c3aed",marginLeft:2}},"(will be flagged in export)")
+                )
+              ),
+            React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
                 React.createElement("label",{style:{fontSize:10,fontWeight:700,color:"#475569",whiteSpace:"nowrap",paddingTop:6,minWidth:120}},"ALARP Justification:"),
                 React.createElement("textarea",{
                   className:"input",
