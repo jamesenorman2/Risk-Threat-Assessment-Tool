@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.943";
+  const VERSION="1.944";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -872,8 +872,8 @@ function App(){
   };
 
   const captureReport=function(el,toastMsg){
-    var hdr=el.querySelector("[data-capture-hide]");
-    if(hdr)hdr.style.display="none";
+    var hdrs=Array.from(el.querySelectorAll("[data-capture-hide]"));
+    hdrs.forEach(function(h){h.style.display="none"});
     var els=el.querySelectorAll("*");var saved=[];
     for(var i=0;i<els.length;i++){
       var st=els[i].style;
@@ -884,7 +884,7 @@ function App(){
       if(st.maxHeight&&st.maxHeight!=="none")st.maxHeight="none";
     }
     var restore=function(){
-      if(hdr)hdr.style.display="";
+      hdrs.forEach(function(h){h.style.display=""});
       for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh}
     };
     // Fixed A4 capture width (150dpi equivalent) — ensures images fit Word page width precisely
@@ -3093,9 +3093,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // ASSETS
       tab==="assets"&&React.createElement("div",{id:"section-assets"},
-        React.createElement("h2",{className:"section-title"},"Asset Criticality"),
-        React.createElement("p",{className:"section-sub"},"Click a score to select. Click again to deselect."),
-        React.createElement("div",{className:"preset-bar"},
+        React.createElement("h2",{"data-capture-hide":"1",className:"section-title"},"Asset Criticality"),
+        React.createElement("p",{"data-capture-hide":"1",className:"section-sub"},"Click a score to select. Click again to deselect."),
+        React.createElement("div",{"data-capture-hide":"1",className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
           ...Object.keys(ASSET_PRESETS).map(type=>
             React.createElement("button",{key:type,className:"preset-btn"+((activeAssetPreset||ctx.devType)===type?" active":""),onClick:()=>fillPreset(type)},type)
@@ -3157,7 +3157,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // THREATS
       tab==="threats"&&React.createElement("div",{id:"section-threats"},
-        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Threat Register"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Click Capability and Intent scores. DBTs auto-identify at score \u2265 3.")
@@ -3385,7 +3385,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // POINTS OF INTEREST
       tab==="poi"&&React.createElement("div",{id:"section-poi"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Points of Interest (POI)"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Identify vulnerable points on the site and map applicable threats to each location.")
@@ -3464,7 +3464,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // VULNERABILITY
       tab==="vulnerability"&&React.createElement("div",{id:"section-vulnerability"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Attractiveness, Vulnerability & Likelihood"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Capability and Intent from the Threats tab are shown read-only. Score 6 Target Attractiveness criteria + Vulnerability. Likelihood auto-calculates.")
@@ -3569,7 +3569,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // IMPACT
       tab==="impact"&&React.createElement("div",{id:"section-impact"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Impact Assessment"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score 5 impact criteria. Hover over any score button to see what it means. Rating auto-calculates.")
@@ -3623,7 +3623,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // CONTROLS
       tab==="controls"&&React.createElement("div",{id:"section-controls"},
-        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Existing Controls"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Describe controls, click effectiveness and confidence scores.")
@@ -3773,7 +3773,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // RISK REGISTER
       tab==="register"&&React.createElement("div",{id:"section-register"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Risk Register"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Auto-populated from threat, vulnerability and impact assessments. Select a treatment strategy for each risk.")
@@ -3842,7 +3842,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // RESIDUAL RISK
       tab==="residual"&&React.createElement("div",{id:"section-residual"},
-        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry.")
@@ -4161,7 +4161,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // DASHBOARD
       tab==="dashboard"&&React.createElement("div",{id:"exec-summary-section"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Executive Summary"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Comprehensive risk summary for report insertion")
@@ -4491,7 +4491,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // SBD REQUIREMENTS
       tab==="sbd"&&React.createElement("div",{id:"section-sbd"},
-        React.createElement("div",{className:"flex justify-between items-center mb-4"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Secured by Design (SBD) Requirements"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Physical and electronic security requirements by development type. Select type below. Based on SBD Design Guides (Residential 2025, Commercial 2026, New Schools 2014).")
@@ -4876,7 +4876,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // METHODOLOGY
       tab==="methodology"&&React.createElement("div",{id:"section-methodology"},
-        React.createElement("div",{className:"flex justify-between items-center mb-2"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title",style:{marginBottom:2}},"Methodology & Standards"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Standards compliance and calculation methodology underpinning this assessment")
