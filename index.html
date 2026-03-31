@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.951";
+  const VERSION="1.952";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3873,14 +3873,13 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
             // Residual risk table
             var gapcRR=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center"};
-            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Optional?</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
+            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
             filtered.forEach(function(r,i){
               var c2=cd[r.id]||{};var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
               var gap2=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
-              var optStyle=treatOptional[r.id]?"background:#f5f3ff;color:#7c3aed;font-weight:bold;text-align:center":"text-align:center";
-              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+optStyle+"'>"+(treatOptional[r.id]?"Yes — Risk Appetite":"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
               var just=residualJustifications[r.id];
-              if(just)chunks.push("<tr><td colspan='12' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
+              if(just)chunks.push("<tr><td colspan='11' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
             });
             chunks.push("</table>");
             // Treatment measures detail
@@ -3895,9 +3894,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 chunks.push("<table style='margin-bottom:8pt'><tr><td colspan='2' style='background:#1B2A4A;color:#fff;font-weight:bold;padding:6pt 8pt'>R"+(i+1)+" \u2014 "+r.n+" ("+r.treat+")</td></tr>");
                 var tgtAssets2=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
                 tgtAssets2.forEach(function(a){
-                  var arr=(m[a.id]||[]).filter(function(v){return v});
+                  var rawArr=(m[a.id]||[]);var arr=rawArr.map(function(v,vi){return{v:v,vi:vi}}).filter(function(x){return x.v});
                   if(arr.length>0){
-                    chunks.push("<tr><td style='font-weight:bold;width:200pt;vertical-align:top;background:#f8fafc'>"+a.cat+(a.desc?" \u2014 "+a.desc:"")+"</td><td style='font-size:9pt'>"+arr.map(function(v,vi){return(vi+1)+". "+v}).join("<br/>")+"</td></tr>");
+                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][a.id])||{};
+                    chunks.push("<tr><td style='font-weight:bold;width:200pt;vertical-align:top;background:#f8fafc'>"+a.cat+(a.desc?" \u2014 "+a.desc:"")+"</td><td style='font-size:9pt'>"+arr.map(function(x,n){var isOpt=!!optMap[x.vi];return(n+1)+". "+(isOpt?"<span style='color:#7c3aed;font-weight:bold'>[OPTIONAL \u2014 Risk Appetite] </span>":"")+x.v}).join("<br/>")+"</td></tr>");
                   }
                 });
                 chunks.push("</table>");
@@ -3943,7 +3943,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("td",null,React.createElement(SBadge,{value:r.lik})),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.imp})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
-                  React.createElement("td",{className:"text-xs"},r.treat||"\u2014",treatOptional[r.id]&&React.createElement("span",{style:{display:"block",fontSize:9,fontWeight:700,color:"#7c3aed",marginTop:2}},"Optional")),
+                  React.createElement("td",{className:"text-xs"},r.treat||"\u2014"),
                   React.createElement("td",{style:{textAlign:"center"}},
                     ctrlGap?React.createElement("span",{className:"badge",style:{backgroundColor:ctrlGapBg,color:ctrlGapColor,fontSize:9},title:"Control gap from Tab 8"},ctrlGap):React.createElement("span",{className:"empty-badge"},"\u2014")
                   ),
@@ -3963,17 +3963,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               insufficientCapWarning&&React.createElement("div",{style:{marginBottom:6,padding:"6px 10px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,fontSize:11,color:"#b91c1c",fontWeight:600}},
                 "\u26a0\ufe0f Insufficient controls — residual likelihood should not drop more than 1 below pre-mitigation (",r.lik," \u2192 ",rsc.l,"). Justify this reduction or revise the score."
               ),
-              React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:6}},
-                React.createElement("label",{style:{display:"flex",alignItems:"center",gap:6,cursor:"pointer",userSelect:"none",fontSize:11,fontWeight:600,color:treatOptional[r.id]?"#7c3aed":"#475569",background:treatOptional[r.id]?"#f5f3ff":"#f8fafc",border:"1px solid "+(treatOptional[r.id]?"#c4b5fd":"#e2e8f0"),borderRadius:6,padding:"4px 10px"}},
-                  React.createElement("input",{type:"checkbox",style:{accentColor:"#7c3aed",width:14,height:14},
-                    checked:!!treatOptional[r.id],
-                    onChange:function(e){setTreatOptional(function(p){var n={...p};if(e.target.checked)n[r.id]=true;else delete n[r.id];return n})}
-                  }),
-                  "\uD83D\uDCCA Optional — client risk appetite",
-                  treatOptional[r.id]&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#7c3aed",marginLeft:2}},"(will be flagged in export)")
-                )
-              ),
-            React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
+              React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
                 React.createElement("label",{style:{fontSize:10,fontWeight:700,color:"#475569",whiteSpace:"nowrap",paddingTop:6,minWidth:120}},"ALARP Justification:"),
                 React.createElement("textarea",{
                   className:"input",
@@ -4075,10 +4065,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   // Current measures list
                   React.createElement("div",{style:{marginTop:4}},
                     assetMeasures.map(function(measure,mi){
+                      var isOpt=!!(treatOptional[r.id]&&treatOptional[r.id][asset.id]&&treatOptional[r.id][asset.id][mi]);
                       /* show all including empty custom fields */
                       return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
                         React.createElement("span",{style:{fontSize:10,color:"#16a34a",width:16,flexShrink:0,fontWeight:700}},(mi+1)+"."),
-                        React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:measure?"#bbf7d0":"#e2e8f0",background:measure?"#fafffe":"#fff"},
+                        React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:isOpt?"#c4b5fd":measure?"#bbf7d0":"#e2e8f0",background:isOpt?"#faf5ff":measure?"#fafffe":"#fff"},
                           value:measure,placeholder:"Type custom treatment measure...",
                           onChange:function(e){
                             var val=e.target.value;
@@ -4088,6 +4079,19 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                             });
                           }
                         }),
+                        React.createElement("button",{
+                          title:isOpt?"Remove optional flag — this measure is required":"Mark as optional (client risk appetite)",
+                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(isOpt?"#c4b5fd":"#e2e8f0"),
+                            background:isOpt?"#f5f3ff":"transparent",color:isOpt?"#7c3aed":"#94a3b8",
+                            cursor:"pointer",fontFamily:"inherit",fontWeight:600,flexShrink:0,whiteSpace:"nowrap"},
+                          onClick:(function(rId,aId,idx){return function(){
+                            setTreatOptional(function(prev){
+                              var n={...prev};var r2=n[rId]?{...n[rId]}:{};var a2=r2[aId]?{...r2[aId]}:{};
+                              if(a2[idx])delete a2[idx];else a2[idx]=true;
+                              r2[aId]=a2;n[rId]=r2;return n;
+                            });
+                          }})(r.id,asset.id,mi)
+                        },isOpt?"\uD83D\uDFE3 Opt":"\u25CB Opt"),
                         React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
                           setTreatmentMeasures(function(prev){
                             var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
