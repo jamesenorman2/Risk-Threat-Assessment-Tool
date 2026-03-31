@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.948";
+  const VERSION="1.949";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -914,6 +914,18 @@ function App(){
       var pageH=Math.round(A4W*A4RATIO)*SCALE;
       var totalH=trimmed.height;
       var pageCount=Math.ceil(totalH/pageH);
+      // Find nearest clean break (whitest row) within 300px above a page boundary
+      var ctx3=trimmed.getContext("2d");
+      var findBreak=function(yTarget){
+        var best=yTarget;var bestWhite=-1;
+        for(var y=yTarget;y>Math.max(yTarget-300,0);y-=2){
+          var row=ctx3.getImageData(0,y,trimmed.width,1).data;
+          var wc=0;for(var q=0;q<row.length;q+=4){if(row[q]>238&&row[q+1]>238&&row[q+2]>238)wc++;}
+          if(wc>bestWhite){bestWhite=wc;best=y;}
+          if(wc===trimmed.width)break;
+        }
+        return best;
+      };
       if(pageCount<=1){
         // Single page — copy to clipboard for direct paste into Word
         trimmed.toBlob(function(blob){
@@ -921,12 +933,15 @@ function App(){
           catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
         },"image/png");
       }else{
-        // Multi-page — slice into A4 pages and open preview window
+        // Multi-page — slice into A4 pages at smart break points (avoid cutting through cards)
+        var breaks=[0];
+        for(var p=1;p<pageCount;p++){breaks.push(findBreak(p*pageH));}
+        breaks.push(totalH);
         var srcs=[];
         for(var p=0;p<pageCount;p++){
-          var pc=document.createElement("canvas");pc.width=trimmed.width;
-          var sliceH=Math.min(pageH,totalH-p*pageH);pc.height=sliceH;
-          pc.getContext("2d").drawImage(trimmed,0,p*pageH,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
+          var y0=breaks[p];var y1=breaks[p+1];var sliceH=y1-y0;
+          var pc=document.createElement("canvas");pc.width=trimmed.width;pc.height=sliceH;
+          pc.getContext("2d").drawImage(trimmed,0,y0,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
           srcs.push(pc.toDataURL("image/png"));
         }
         var win=window.open("","_blank");
