@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.942";
+  const VERSION="1.941";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -887,53 +887,13 @@ function App(){
       if(hdr)hdr.style.display="";
       for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh}
     };
-    // Fixed A4 capture width (150dpi equivalent) — ensures images fit Word page width precisely
-    var A4W=1200;var A4RATIO=247/160;var SCALE=2;
-    html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:el.scrollHeight+30,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
+    var w=Math.max(el.scrollWidth||0,1100);
+    html2canvas(el,{useCORS:true,scale:2,backgroundColor:"#fff",logging:false,width:w,height:el.scrollHeight+30,windowWidth:w+40,scrollX:0,scrollY:0}).then(function(canvas){
       restore();
-      var pageH=Math.round(A4W*A4RATIO)*SCALE;
-      var totalH=canvas.height;
-      var pageCount=Math.ceil(totalH/pageH);
-      if(pageCount<=1){
-        // Single page — copy to clipboard for direct paste into Word
-        canvas.toBlob(function(blob){
-          try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
-          catch(e2){var url=canvas.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
-        },"image/png");
-      }else{
-        // Multi-page — slice into A4 pages and open preview window
-        var srcs=[];
-        for(var p=0;p<pageCount;p++){
-          var pc=document.createElement("canvas");pc.width=canvas.width;
-          var sliceH=Math.min(pageH,totalH-p*pageH);pc.height=sliceH;
-          pc.getContext("2d").drawImage(canvas,0,p*pageH,canvas.width,sliceH,0,0,canvas.width,sliceH);
-          srcs.push(pc.toDataURL("image/png"));
-        }
-        var win=window.open("","_blank");
-        var ph="<!DOCTYPE html><html><head><meta charset='utf-8'><title>Page Captures</title>";
-        ph+="<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#555;margin:0;padding:0}";
-        ph+=".toolbar{background:#1B2A4A;color:#fff;padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}";
-        ph+=".toolbar b{font-size:15px}.hint{color:#94a3b8;font-size:11px}";
-        ph+=".pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px}";
-        ph+=".page{background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);width:100%;max-width:920px}";
-        ph+=".page-bar{background:#1B2A4A;color:#fff;padding:8px 14px;font-size:12px;display:flex;justify-content:space-between;align-items:center}";
-        ph+=".page img{display:block;width:100%;height:auto}";
-        ph+=".btn{background:#4472C4;color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;margin-left:6px;text-decoration:none;display:inline-block;line-height:1.6}";
-        ph+=".btn:hover{background:#2d5ca8}.copied{background:#70AD47!important}</style>";
-        ph+="</head><body>";
-        ph+="<div class='toolbar'><b>\ud83d\udcc4 "+pageCount+" page"+(pageCount>1?"s":"")+"</b><span class='hint'>Each image = one A4 page &nbsp;\u2022&nbsp; Click \u2018Copy\u2019 then Ctrl+V into Word &nbsp;\u2022&nbsp; Or right-click any image \u2192 Save image as</span></div>";
-        ph+="<div class='pages'>";
-        srcs.forEach(function(src,i){
-          ph+="<div class='page'><div class='page-bar'><span>Page "+(i+1)+" of "+pageCount+"</span><span>";
-          ph+="<button class='btn' id='cb"+i+"' onclick='cp("+i+")'>&#128203; Copy</button>";
-          ph+="<a class='btn' href='"+src+"' download='capture-page-"+(i+1)+".png'>&#128190; Save</a></span></div>";
-          ph+="<img id='img"+i+"' src='"+src+"'/></div>";
-        });
-        ph+="</div><script>function cp(i){var img=document.getElementById('img'+i);var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);c.toBlob(function(b){navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){var btn=document.getElementById('cb'+i);btn.textContent='\u2713 Copied';btn.className='btn copied';setTimeout(function(){btn.textContent='\ud83d\udccb Copy';btn.className='btn'},2000)}).catch(function(){alert('Copy blocked \u2014 right-click image and Save As')})},'image/png')}<\/script>";
-        ph+="</body></html>";
-        win.document.write(ph);win.document.close();
-        showToast("Opened "+pageCount+" A4 pages \u2014 copy or save each");
-      }
+      canvas.toBlob(function(blob){
+        try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
+        catch(e2){var url=canvas.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
+      },"image/png");
     }).catch(function(){restore();showToast("Capture failed")});
   };
 
@@ -2438,7 +2398,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     React.createElement("main",{className:"content"},
 
       // CONTEXT
-      tab==="context"&&React.createElement("div",{id:"section-context"},
+      tab==="context"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Context & Criteria"),
         React.createElement("p",{className:"section-sub"},"ISO 31000 Clause 6.3 — Define scope, objectives and risk appetite"),
         
@@ -3092,7 +3052,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // ASSETS
-      tab==="assets"&&React.createElement("div",{id:"section-assets"},
+      tab==="assets"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Asset Criticality"),
         React.createElement("p",{className:"section-sub"},"Click a score to select. Click again to deselect."),
         React.createElement("div",{className:"preset-bar"},
@@ -3121,8 +3081,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
               navigator.clipboard.writeText(text).then(function(){showToast("Assets copied as text")});
             });
-          }},"📋 Copy for Word"),
-          React.createElement("button",{className:"preset-btn",style:{marginLeft:4},onClick:function(){captureForWord("section-assets","Assets captured \u2014 paste into Word")}},"📷 Capture")
+          }},"📋 Copy for Word")
         ),
         React.createElement(HelpBox,{title:"Asset Criticality Scoring",
           description:"Rate each asset across four criteria. Assets scoring 4.5+ are Critical, 3.5+ High, 2.5+ Medium, 1.5+ Low, below 1.5 Negligible.",
@@ -4490,13 +4449,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // SBD REQUIREMENTS
-      tab==="sbd"&&React.createElement("div",{id:"section-sbd"},
+      tab==="sbd"&&React.createElement("div",null,
         React.createElement("div",{className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Secured by Design (SBD) Requirements"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Physical and electronic security requirements by development type. Select type below. Based on SBD Design Guides (Residential 2025, Commercial 2026, New Schools 2014).")
-          ),
-          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){captureForWord("section-sbd","SBD requirements captured \u2014 paste into Word")}},"📷 Capture")
+          )
         ),
         (function(){
 
@@ -4875,14 +4833,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
       // METHODOLOGY
-      tab==="methodology"&&React.createElement("div",{id:"section-methodology"},
-        React.createElement("div",{className:"flex justify-between items-center mb-2"},
-          React.createElement("div",null,
-            React.createElement("h2",{className:"section-title",style:{marginBottom:2}},"Methodology & Standards"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Standards compliance and calculation methodology underpinning this assessment")
-          ),
-          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){captureForWord("section-methodology","Methodology captured \u2014 paste into Word")}},"📷 Capture")
-        ),
+      tab==="methodology"&&React.createElement("div",null,
+        React.createElement("h2",{className:"section-title"},"Methodology & Standards"),
+        React.createElement("p",{className:"section-sub"},"Standards compliance and calculation methodology underpinning this assessment"),
 
         React.createElement("div",{className:"card",style:{padding:24}},
           React.createElement("h3",{className:"text-sm font-bold text-slate mb-4",style:{letterSpacing:1}},"STANDARDS COMPLIANCE"),
