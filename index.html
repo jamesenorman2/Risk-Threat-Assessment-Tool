@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.945";
+  const VERSION="1.946";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -877,19 +877,24 @@ function App(){
     var els=el.querySelectorAll("*");var saved=[];
     for(var i=0;i<els.length;i++){
       var st=els[i].style;
-      saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight});
-      if(st.textOverflow==="ellipsis"||st.overflow==="hidden"||st.whiteSpace==="nowrap"){
-        st.overflow="visible";st.textOverflow="clip";st.whiteSpace="normal";
-      }
-      if(st.maxHeight&&st.maxHeight!=="none")st.maxHeight="none";
+      var cs=window.getComputedStyle(els[i]);
+      saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight,h:st.height});
+      // Fix both inline and class-based overflow/clipping that would cut content
+      if(cs.overflow==="hidden"||cs.overflow==="auto"||cs.overflow==="scroll")st.overflow="visible";
+      if(cs.textOverflow==="ellipsis")st.textOverflow="clip";
+      if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
+      if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
     }
+    // Force reflow so scrollHeight reflects unconstrained content
+    void el.offsetHeight;
     var restore=function(){
       hdrs.forEach(function(h){h.style.display=""});
-      for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh}
+      for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
     };
     // Fixed A4 capture width (150dpi equivalent) — ensures images fit Word page width precisely
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
-    html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:el.scrollHeight+600,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
+    var captureH=Math.max(el.scrollHeight,el.offsetHeight)+600;
+    html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
       restore();
       var pageH=Math.round(A4W*A4RATIO)*SCALE;
       var totalH=canvas.height;
