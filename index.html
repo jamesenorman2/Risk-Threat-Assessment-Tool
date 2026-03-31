@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.947";
+  const VERSION="1.948";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -888,12 +888,10 @@ function App(){
       if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
       if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
     }
-    // Force reflow then measure true content height by finding the furthest bottom edge
+    // Force reflow after style changes
     void el.offsetHeight;
-    var elTop=el.getBoundingClientRect().top;
-    var captureH=el.getBoundingClientRect().height;
-    Array.from(els).forEach(function(d){try{var b=d.getBoundingClientRect().bottom-elTop;if(b>captureH)captureH=b;}catch(e){}});
-    captureH=Math.round(captureH)+400;
+    // Use generous height (4× scrollHeight capped at 15000) — exact height determined by trimming below
+    var captureH=Math.min(Math.max(el.scrollHeight*4,6000)+2000,15000);
     var restore=function(){
       el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
       hdrs.forEach(function(h){h.style.display=""});
@@ -903,22 +901,32 @@ function App(){
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
     html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
       restore();
+      // Trim bottom white space — scan in 40-row chunks from bottom to find last content row
+      var trimH=canvas.height;
+      var ctx2=canvas.getContext("2d");
+      outer:for(var y=canvas.height-40;y>0;y-=40){
+        var chunk=ctx2.getImageData(0,y,canvas.width,40).data;
+        for(var p=0;p<chunk.length;p+=4){if(chunk[p]<252||chunk[p+1]<252||chunk[p+2]<252){trimH=y+40;break outer;}}
+      }
+      trimH=Math.min(trimH+80,canvas.height);
+      var trimmed=document.createElement("canvas");trimmed.width=canvas.width;trimmed.height=trimH;
+      trimmed.getContext("2d").drawImage(canvas,0,0);
       var pageH=Math.round(A4W*A4RATIO)*SCALE;
-      var totalH=canvas.height;
+      var totalH=trimmed.height;
       var pageCount=Math.ceil(totalH/pageH);
       if(pageCount<=1){
         // Single page — copy to clipboard for direct paste into Word
-        canvas.toBlob(function(blob){
+        trimmed.toBlob(function(blob){
           try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
-          catch(e2){var url=canvas.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
+          catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
         },"image/png");
       }else{
         // Multi-page — slice into A4 pages and open preview window
         var srcs=[];
         for(var p=0;p<pageCount;p++){
-          var pc=document.createElement("canvas");pc.width=canvas.width;
+          var pc=document.createElement("canvas");pc.width=trimmed.width;
           var sliceH=Math.min(pageH,totalH-p*pageH);pc.height=sliceH;
-          pc.getContext("2d").drawImage(canvas,0,p*pageH,canvas.width,sliceH,0,0,canvas.width,sliceH);
+          pc.getContext("2d").drawImage(trimmed,0,p*pageH,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
           srcs.push(pc.toDataURL("image/png"));
         }
         var win=window.open("","_blank");
