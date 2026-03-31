@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.952";
+  const VERSION="1.953";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3386,7 +3386,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("span",{className:"badge",style:{backgroundColor:t.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:t.cat==="Terrorism"?"#dc2626":"#4472C4",fontSize:9,marginTop:2}},t.cat)
               ),
               React.createElement("div",{style:{flex:1,display:"flex",flexWrap:"wrap",gap:4}},
-                assets.map(function(a){
+                assets.filter(function(a){return a.cat}).map(function(a){
                   var sel=targetIds.includes(a.id);
                   return React.createElement("button",{key:a.id,
                     style:{fontSize:10,padding:"4px 8px",borderRadius:4,
