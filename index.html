@@ -517,12 +517,135 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"sbd",l:"SBD Requirements",n:"12"},
   {id:"methodology",l:"Methodology",n:"13"},{id:"settings",l:"Settings",n:"14"}];
 
+
+// ============================================================
+// TREATMENT MEASURES DATABASE (5 categories)
+// ext_physical, ext_electronic, int_physical, int_electronic, procedures
+// ============================================================
+const DEFAULT_TREATMENT_DB=[
+  {id:"vbied_vaaw",label:"VBIED / VAAW",keywords:["vbied","vaaw"],
+   narrative:"The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation.",
+   ext_physical:["Hostile Vehicle Mitigation (HVM) \u2014 bollards, planters or rated barriers at the perimeter to enforce standoff distance","Anti-ram rated barriers at all vehicular entry points integrated with access control","Speed reduction measures on approach \u2014 chicanes, raised tables, surface changes","Vehicle search/inspection area at safe standoff with overwatch position","Reinforced collision/blast jackets to structural columns within vehicle reach","Laminated anti-blast glazing to facades facing vehicle approaches","Window film or sacrificial glazing to reduce fragmentation"],
+   ext_electronic:["ANPR at vehicle access points for identification and audit","CCTV covering all vehicle approaches and perimeter"],
+   int_physical:["Blast-resilient construction to reception and entrance lobbies"],
+   int_electronic:[],
+   procedures:["Blast analysis and standoff distance modelling to inform perimeter layout"]},
+  {id:"mta_mtfa",label:"MTA / MTFA",keywords:["mta","mtfa"],
+   narrative:"Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants.",
+   ext_physical:["Clear sight lines across all external areas for early detection of hostile approach","Removal of concealment opportunities in landscaping, furniture and recessed areas","Hostile Vehicle Mitigation if the threat involves vehicle approach"],
+   ext_electronic:["External CCTV with behavioural analytics for loitering and hostile reconnaissance detection"],
+   int_physical:["Internal compartmentalisation \u2014 security-rated doors enabling zones to be isolated during an attack","Offices and meeting rooms with thumb-turn lockable doors for immediate shelter"],
+   int_electronic:["Lockdown capability activated from reception, security control room and distributed panic buttons","Weapons detection screening at main entry points","Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking"],
+   procedures:["Invacuation routes and designated safe havens within the building core","Lockdown procedures with regular rehearsal and testing programme","Hostile reconnaissance awareness training for all building users","Collaboration with Counter Terrorism Security Advisors (CTSA)","Communication cascade for rapid alert during an incident","SIA-licensed security operatives during occupied hours","Emergency communication system linking security, management and emergency services"]},
+  {id:"pbied",label:"PBIED",keywords:["pbied"],
+   narrative:"Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building.",
+   ext_physical:["Clear external areas with minimal concealment for device placement","Search and screening regime at building entry points"],
+   ext_electronic:["Hostile reconnaissance detection through CCTV analytics and trained security personnel"],
+   int_physical:["Blast-resilient construction to reception and entrance lobby","Laminated glazing to entrance areas to reduce fragmentation"],
+   int_electronic:["Bag search policy and/or weapons/explosives detection at main entrances","Internal CCTV coverage of all public-facing areas and circulation","Visitor management \u2014 identification, sign-in, temporary pass, escort policy"],
+   procedures:["Staff trained to identify suspicious behaviour and unattended items","Suspicious item/package response procedures","Evacuation and invacuation drills specific to blast scenarios"]},
+  {id:"ied",label:"IED / Drone / Mail",keywords:["ied","mail","parcel","drone"],
+   narrative:"IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities.",
+   ext_physical:["Perimeter security preventing unauthorised access to building shell and service areas"],
+   ext_electronic:["CCTV analytics for detection of suspicious items and unattended packages","Counter-UAS detection and mitigation measures where drone delivery risk is assessed","Monitoring of airspace above site for unauthorised drone activity"],
+   int_physical:["Dedicated mail/post room physically separated from occupied areas","Receiving room with independent ventilation","Secure delivery holding area for parcels awaiting screening"],
+   int_electronic:["Mail screening equipment (X-ray) appropriate to threat level"],
+   procedures:["Mail screening procedures and trained personnel","Suspicious mail identification training for all staff handling deliveries","Delivery vehicle inspection and verification protocols","Response procedures for suspect packages"]},
+  {id:"cbr",label:"CBR",keywords:["cbr"],
+   narrative:"CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation.",
+   ext_physical:["Air intakes elevated and protected from ground-level interference","Perimeter controls preventing access to MEP infrastructure"],
+   ext_electronic:["CCTV coverage of building air intakes and ventilation access points"],
+   int_physical:["Sealed post room with independent ventilation"],
+   int_electronic:["HVAC zoning with rapid isolation and shutdown capability","CBR detection at air handling units where threat assessment requires"],
+   procedures:["CBR incident response procedures including shelter-in-place","Staff awareness training on recognising CBR indicators","Emergency services liaison on CBR response protocols"]},
+  {id:"burglary",label:"Burglary",keywords:["burglary"],
+   narrative:"Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry.",
+   ext_physical:["Security-rated perimeter fencing/walls at consistent height","Security-rated pedestrian boundary gates with self-closing mechanism","Dusk-to-dawn external lighting at all entries, service areas and parking","Defensive planting beneath windows and along vulnerable boundaries","Landscape maintained for sight lines \u2014 canopies above 2.2m, shrubs below 1m"],
+   ext_electronic:["External CCTV covering perimeter, entries, recessed areas and service bays"],
+   int_physical:["Security-tested external doorsets with multi-point locking and access control integration","Enhanced security glazing to all ground floor and accessible windows","Laminated glass with internal beading preventing external removal","Window opening restrictors on accessible windows","Fire escape doors alarmed, without external ironmongery"],
+   int_electronic:["Electronic access control at all external entry points with audit trail","Intruder alarm system with panic buttons and 24/7 monitoring","Door contacts with forced/left-open/tamper alarms on perimeter doors"],
+   procedures:[]},
+  {id:"theft",label:"Theft",keywords:["theft"],
+   narrative:"Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity.",
+   ext_physical:["Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures","E-bike/e-scooter storage in fire-rated enclosure separated from building"],
+   ext_electronic:[],
+   int_physical:["Secure storage for high-value portable equipment"],
+   int_electronic:["CCTV in stair cores, lift lobbies and circulation areas","Access control preventing unauthorised floor-to-floor movement"],
+   procedures:[]},
+  {id:"vehicle_crime",label:"Vehicle Crime",keywords:["vehicle crime"],
+   narrative:"Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building.",
+   ext_physical:["Well-lit parking with uniform illumination and no dark spots","Natural surveillance from occupied rooms into parking areas"],
+   ext_electronic:["Car park CCTV at all entry/exit points, aisles and pedestrian routes","ANPR at car park barriers"],
+   int_physical:[],int_electronic:[],procedures:[]},
+  {id:"arson",label:"Arson",keywords:["arson"],
+   narrative:"Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation.",
+   ext_physical:["Refuse/bin storage lockable and positioned away from building exterior","External lighting to rear and service areas","No combustible material stored against building exterior walls"],
+   ext_electronic:[],
+   int_physical:["Fire detection system covering all areas including voids and risers","Sprinkler or suppression system","Fire compartmentation to limit spread","Smoke ventilation to protect escape routes","Letterbox fire protection where letter slots exist"],
+   int_electronic:[],procedures:[]},
+  {id:"trespass",label:"Trespass",keywords:["trespass"],
+   narrative:"Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence.",
+   ext_physical:["Perimeter demarcation through fencing, walls, landscaping and signage","Consistent perimeter boundary height","Clear 2m zone either side of boundary for surveillance"],
+   ext_electronic:["CCTV with out-of-hours intrusion detection analytics"],
+   int_physical:[],
+   int_electronic:["Electronic access control preventing unauthorised internal movement","Stair core and lift lobby access control at each level"],
+   procedures:[]},
+  {id:"asb",label:"ASB / Criminal Damage",keywords:["asb","criminal damage"],
+   narrative:"ASB and criminal damage treatment applies CPTED principles outside the building \u2014 surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour.",
+   ext_physical:["CPTED principles \u2014 natural surveillance, defined ownership, active maintenance regime","Robust, securely fixed street furniture and hard landscaping","Anti-graffiti coating on vulnerable external surfaces","Dusk-to-dawn lighting with vandal-resistant fittings at height"],
+   ext_electronic:["External CCTV with recording for evidence and deterrence"],
+   int_physical:[],int_electronic:[],procedures:[]},
+  {id:"public_order",label:"Public Order",keywords:["public order"],
+   narrative:"Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity.",
+   ext_physical:["HVM measures that also control crowd movement","Clear pedestrian routes and defined public/private boundaries"],
+   ext_electronic:["External CCTV with wide-area coverage and recording"],
+   int_physical:[],int_electronic:[],
+   procedures:["Public order response plan coordinated with police","Escalation procedures for protest or demonstration activity","Business continuity plan for access disruption"]},
+  {id:"violence",label:"Violence / Sexual Offences",keywords:["violence"],
+   narrative:"Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building.",
+   ext_physical:["Well-lit external areas with no concealment opportunities","Natural surveillance from occupied spaces to external areas"],
+   ext_electronic:["CCTV covering all pedestrian routes, entrances and car parks"],
+   int_physical:[],
+   int_electronic:["Internal CCTV in corridors, stair cores and isolated areas","Panic buttons at reception and public-facing positions","Controlled access preventing unauthorised individuals reaching occupied areas"],
+   procedures:["Staff trained on conflict de-escalation and personal safety","Lone worker policy and monitoring procedures","Incident recording and pattern analysis"]},
+  {id:"cybercrime",label:"Cybercrime",keywords:["cyber"],
+   narrative:"Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences.",
+   ext_physical:[],ext_electronic:[],
+   int_physical:["Security-rated doorsets to server rooms, MER/SER and data storage"],
+   int_electronic:["Access control to IT infrastructure with full audit trail","Environmental monitoring in server rooms","Network segmentation isolating security, BMS and corporate networks","Intrusion detection and prevention systems","Encrypted storage and transmission for sensitive data","Endpoint protection with managed detection and response","Regular penetration testing and vulnerability assessments","Patch management for all systems including IoT and OT","Mobile device management and removable media controls"],
+   procedures:["Staff cyber awareness training with phishing simulations","Cyber incident response plan","Backup and disaster recovery tested regularly"]},
+  {id:"info_theft",label:"Information Theft",keywords:["info"],
+   narrative:"Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally.",
+   ext_physical:[],ext_electronic:[],
+   int_physical:["Security-rated doorsets to areas storing/processing sensitive information","Clear desk policy with secure document storage","Secure print-release preventing uncollected documents","Shredding facilities for confidential waste"],
+   int_electronic:["Access logging with anomaly detection","Data loss prevention on email and file transfer"],
+   procedures:["Data classification and handling policy","Encrypted storage and transmission","Secure media disposal procedures","Third-party data processing agreements","Regular information asset audit"]},
+  {id:"insider",label:"Insider Threat",keywords:["insider"],
+   narrative:"Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally.",
+   ext_physical:[],ext_electronic:[],
+   int_physical:["Key management via secure electronic cabinet with audit"],
+   int_electronic:["Access control zoning restricting individuals to role-required areas only","CCTV in sensitive areas with recording"],
+   procedures:["Pre-employment vetting and ongoing security screening","Joiners/movers/leavers access process \u2014 immediate revocation on departure","Whistleblowing and confidential reporting policy","Regular access rights reviews enforcing least privilege","User behaviour monitoring and anomaly detection","Clear desk and screen policy enforcement","Security clearance for sensitive roles","Separation of duties for critical processes"]},
+  {id:"soc",label:"Serious Organised Crime",keywords:["soc"],
+   narrative:"Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally.",
+   ext_physical:[],ext_electronic:[],
+   int_physical:["Security-rated doorsets to high-value areas"],
+   int_electronic:["CCTV at all access points to valuable assets and cash handling"],
+   procedures:["Background screening for staff and contractors in positions of trust","Supply chain due diligence and third-party risk assessment","Fraud prevention controls with segregation of duties","Anomaly detection in financial and access systems","Organised crime threat briefings","Whistleblowing and confidential reporting"]},
+  {id:"kre",label:"Kidnap, Ransom & Extortion",keywords:["kre"],
+   narrative:"Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally.",
+   ext_physical:[],ext_electronic:[],
+   int_physical:["Controlled access to areas occupied by at-risk individuals"],
+   int_electronic:["CCTV at entrances capturing identification-quality images"],
+   procedures:["Travel security procedures for at-risk personnel","Personal security risk assessments for key individuals","Secure communication channels","Kidnap/ransom/extortion incident response plan","Close liaison with police and specialist advisors"]}
+];
+
 // ============================================================
 // MAIN APP
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.960";
+  const VERSION="1.961";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -634,6 +757,8 @@ function App(){
   const[showAddThreat,setShowAddThreat]=useState(false);
   const[residualJustifications,setResidualJustifications]=useState({});
   const[treatOptional,setTreatOptional]=useState({});
+  const[treatmentDB,setTreatmentDB]=useState(DEFAULT_TREATMENT_DB);
+  const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
@@ -671,12 +796,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats){const loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}));}
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,treatmentDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,treatmentDB,sbdCompliance]);
 
   // Auto-sync SBD type from development type preset
   useEffect(()=>{
@@ -716,8 +841,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,sbdCompliance]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,treatmentDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,treatmentDB,sbdCompliance]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -785,7 +910,7 @@ function App(){
   const applyLoadedData=(p)=>{
     if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
   };
 
 
@@ -839,7 +964,7 @@ function App(){
   };
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setSbdCompliance({});
+    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentDB(DEFAULT_TREATMENT_DB);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
@@ -1368,236 +1493,38 @@ function App(){
     var seen={};return m.filter(function(t){if(seen[t])return false;seen[t]=true;return true});
   };
 
-  // Intelligent treatment engine — considers threat name, TAAR treatment method, existing controls, and development type
+  // Treatment engine — reads from treatmentDB (editable in Settings), 5 categories
   const getCategorisedTreatments=function(tn,treatMethod,controlsDesc,devType){
-    tn=(tn||"").toLowerCase();treatMethod=(treatMethod||"reduce").toLowerCase();controlsDesc=(controlsDesc||"").toLowerCase();devType=(devType||"").toLowerCase();
-    var outside=[];var inside=[];var operational=[];var narrative="";
-    var isRes=devType.includes("resid")||devType.includes("home");
-    var isCom=devType.includes("comm")||devType.includes("office")||devType.includes("retail")||devType.includes("hotel")||devType.includes("data")||devType.includes("govern");
-    var isSch=devType.includes("school")||devType.includes("educ")||devType.includes("univers");
-    var isMaster=devType.includes("master");
+    tn=(tn||"").toLowerCase();treatMethod=(treatMethod||"reduce").toLowerCase();devType=(devType||"").toLowerCase();
+    var ext_physical=[],ext_electronic=[],int_physical=[],int_electronic=[],procedures=[],narrative="";
     // Accept — minimal treatment
     if(treatMethod==="accept"){
       narrative="The residual risk from this threat has been assessed and accepted within the organisation\u2019s risk tolerance. No additional treatment measures are required beyond existing controls. This acceptance should be formally documented, reviewed periodically, and escalated if the threat profile changes.";
-      operational.push("Formal risk acceptance documented and signed off by risk owner","Periodic review of accepted risk \u2014 minimum annually or on change of threat level","Monitoring for changes in threat landscape that would require reassessment");
-      return{outside:outside,inside:inside,operational:operational,narrative:narrative};
+      procedures.push("Formal risk acceptance documented and signed off by risk owner","Periodic review of accepted risk \u2014 minimum annually or on change of threat level","Monitoring for changes in threat landscape that would require reassessment");
+      return{ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:procedures,narrative:narrative};
     }
-    // Transfer — focus on contractual/insurance
-    if(treatMethod==="transfer"){
-      narrative="The primary consequence mitigation for this threat is through risk transfer \u2014 insurance, contractual liability transfer, or outsourced specialist provision. Physical and procedural controls should still be maintained as supporting measures to reduce likelihood, but the financial and operational impact is absorbed by third parties through formal agreements.";
-      operational.push("Comprehensive insurance policy covering this threat\u2019s consequences","Contractual transfer of liability to appropriate third parties","Service Level Agreements with outsourced security providers","Regular review of insurance coverage adequacy and policy terms","Third-party due diligence and risk assessment","Incident response coordination agreements with transfer partners");
-    }
-    // Avoid — focus on elimination
-    if(treatMethod==="avoid"){
-      narrative="This risk will be eliminated by removing the exposure entirely. This may involve relocating vulnerable functions, changing the design or use of the building, removing public access to high-risk areas, or redesigning operational processes to remove the threat vector. The measures below address any residual exposure that cannot be fully eliminated.";
-      operational.push("Remove or relocate the vulnerable activity, function or asset","Redesign operational processes to eliminate the threat vector","Restrict or remove public access to the affected area","Change building use, layout or design to avoid exposure","Formal documentation of avoidance decision and residual exposure");
-    }
-    // Reduce — full physical treatment (also supplements Transfer/Avoid)
-    if(treatMethod==="reduce"||treatMethod===""){narrative="Treatment measures should reduce both the likelihood and impact of this threat to as low as reasonably practicable (ALARP). ";}
-
-    // ── VEHICLE-BORNE (VBIED/VAAW) ──
-    if(tn.includes("vbied")||tn.includes("vaaw")){
-      outside.push("Hostile Vehicle Mitigation (HVM) \u2014 bollards, planters or rated barriers at the perimeter to enforce standoff distance","Anti-ram rated barriers at all vehicular entry points integrated with access control","Speed reduction measures on approach \u2014 chicanes, raised tables, surface changes","Vehicle search/inspection area at safe standoff with overwatch position","Blast analysis and standoff distance modelling to inform perimeter layout","Reinforced collision/blast jackets to structural columns within vehicle reach","ANPR at vehicle access points for identification and audit","CCTV covering all vehicle approaches and perimeter");
-      inside.push("Laminated anti-blast glazing to facades facing vehicle approaches","Blast-resilient construction to reception and entrance lobbies","Window film or sacrificial glazing to reduce fragmentation");
-      narrative+="The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation. ";
-    }
-    // ── MARAUDING ATTACKS (MTA/MTFA) ──
-    if(tn.includes("mta")||tn.includes("mtfa")){
-      outside.push("Clear sight lines across all external areas for early detection of hostile approach","External CCTV with behavioural analytics for loitering and hostile reconnaissance detection","Removal of concealment opportunities in landscaping, furniture and recessed areas","Hostile Vehicle Mitigation if the threat involves vehicle approach");
-      inside.push("Lockdown capability activated from reception, security control room and distributed panic buttons","Invacuation routes and designated safe havens within the building core","Internal compartmentalisation \u2014 security-rated doors enabling zones to be isolated during an attack","Weapons detection screening at main entry points","Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking","Offices and meeting rooms with thumb-turn lockable doors for immediate shelter");
-      operational.push("Lockdown procedures with regular rehearsal and testing programme","Hostile reconnaissance awareness training for all building users","Collaboration with Counter Terrorism Security Advisors (CTSA)","Communication cascade for rapid alert during an incident","SIA-licensed security operatives during occupied hours","Emergency communication system linking security, management and emergency services");
-      narrative+="Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants. ";
-    }
-    // ── PERSON-BORNE IED ──
-    if(tn.includes("pbied")){
-      outside.push("Hostile reconnaissance detection through CCTV analytics and trained security personnel","Clear external areas with minimal concealment for device placement","Search and screening regime at building entry points");
-      inside.push("Bag search policy and/or weapons/explosives detection at main entrances","Internal CCTV coverage of all public-facing areas and circulation","Blast-resilient construction to reception and entrance lobby","Laminated glazing to entrance areas to reduce fragmentation","Visitor management \u2014 identification, sign-in, temporary pass, escort policy");
-      operational.push("Staff trained to identify suspicious behaviour and unattended items","Suspicious item/package response procedures","Evacuation and invacuation drills specific to blast scenarios");
-      narrative+="Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building. ";
-    }
-    // ── IED / IED-DRONE / MAIL ──
-    if((tn.includes("ied")&&!tn.includes("vbied")&&!tn.includes("pbied"))||tn.includes("mail")||tn.includes("parcel")){
-      outside.push("Perimeter security preventing unauthorised access to building shell and service areas","CCTV analytics for detection of suspicious items and unattended packages");
-      inside.push("Dedicated mail/post room physically separated from occupied areas","Mail screening equipment (X-ray) appropriate to threat level","Receiving room with independent ventilation","Secure delivery holding area for parcels awaiting screening");
-      operational.push("Mail screening procedures and trained personnel","Suspicious mail identification training for all staff handling deliveries","Delivery vehicle inspection and verification protocols","Response procedures for suspect packages");
-      if(tn.includes("drone"))outside.push("Counter-UAS detection and mitigation measures where drone delivery risk is assessed","Monitoring of airspace above site for unauthorised drone activity");
-      narrative+="IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities. ";
-    }
-    // ── CBR ──
-    if(tn.includes("cbr")){
-      outside.push("CCTV coverage of building air intakes and ventilation access points","Air intakes elevated and protected from ground-level interference","Perimeter controls preventing access to MEP infrastructure");
-      inside.push("HVAC zoning with rapid isolation and shutdown capability","CBR detection at air handling units where threat assessment requires","Sealed post room with independent ventilation");
-      operational.push("CBR incident response procedures including shelter-in-place","Staff awareness training on recognising CBR indicators","Emergency services liaison on CBR response protocols");
-      narrative+="CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation. ";
-    }
-    // ── GENERAL TERRORISM CPTED (any terrorism threat) ──
-    if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")||tn.includes("mtfa")||tn.includes("pbied")||tn.includes("ied")||tn.includes("cbr")){
-      if(treatMethod!=="avoid"){
-        outside.push("CPTED principles \u2014 natural surveillance, defined public/private space, clear sight lines","Uniform dusk-to-dawn external lighting coordinated with CCTV at building shell and entries","Vandal-resistant light fittings with colour-rendering lamps supporting identification");
-        inside.push("Main entrance controlled with electronic access control, intercom and lockdown","Visitor management \u2014 all visitors identified, signed in and issued passes");
-        operational.push("Dedicated security monitoring in secure area with UPS backup","UPS backup for all security systems and monitoring positions");
-      }
-    }
-    // ── BURGLARY ──
-    if(tn.includes("burglary")){
-      outside.push("Security-rated perimeter fencing/walls at consistent height","Security-rated pedestrian boundary gates with self-closing mechanism","Dusk-to-dawn external lighting at all entries, service areas and parking","External CCTV covering perimeter, entries, recessed areas and service bays","Defensive planting beneath windows and along vulnerable boundaries","Landscape maintained for sight lines \u2014 canopies above 2.2m, shrubs below 1m");
-      inside.push("Security-tested external doorsets with multi-point locking and access control integration","Enhanced security glazing to all ground floor and accessible windows","Laminated glass with internal beading preventing external removal","Window opening restrictors on accessible windows","Electronic access control at all external entry points with audit trail","Intruder alarm system with panic buttons and 24/7 monitoring","Door contacts with forced/left-open/tamper alarms on perimeter doors","Fire escape doors alarmed, without external ironmongery");
-      narrative+="Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry. ";
-    }
-    // ── THEFT ──
-    if(tn.includes("theft")&&!tn.includes("info")){
-      outside.push("Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures","E-bike/e-scooter storage in fire-rated enclosure separated from building");
-      inside.push("CCTV in stair cores, lift lobbies and circulation areas","Access control preventing unauthorised floor-to-floor movement","Secure storage for high-value portable equipment");
-      narrative+="Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity. ";
-    }
-    // ── VEHICLE CRIME ──
-    if(tn.includes("vehicle crime")){
-      outside.push("Car park CCTV at all entry/exit points, aisles and pedestrian routes","ANPR at car park barriers","Well-lit parking with uniform illumination and no dark spots","Natural surveillance from occupied rooms into parking areas");
-      narrative+="Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building. ";
-    }
-    // ── ARSON ──
-    if(tn.includes("arson")){
-      outside.push("Refuse/bin storage lockable and positioned away from building exterior","External lighting to rear and service areas","No combustible material stored against building exterior walls");
-      inside.push("Fire detection system covering all areas including voids and risers","Sprinkler or suppression system","Fire compartmentation to limit spread","Smoke ventilation to protect escape routes","Letterbox fire protection where letter slots exist");
-      narrative+="Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation. ";
-    }
-    // ── TRESPASS ──
-    if(tn.includes("trespass")){
-      outside.push("Perimeter demarcation through fencing, walls, landscaping and signage","Consistent perimeter boundary height","Clear 2m zone either side of boundary for surveillance","CCTV with out-of-hours intrusion detection analytics");
-      inside.push("Electronic access control preventing unauthorised internal movement","Stair core and lift lobby access control at each level");
-      narrative+="Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence. ";
-    }
-    // ── ASB / CRIMINAL DAMAGE ──
-    if(tn.includes("asb")||tn.includes("criminal damage")){
-      outside.push("CPTED principles \u2014 natural surveillance, defined ownership, active maintenance regime","Robust, securely fixed street furniture and hard landscaping","Anti-graffiti coating on vulnerable external surfaces","Dusk-to-dawn lighting with vandal-resistant fittings at height","External CCTV with recording for evidence and deterrence");
-      narrative+="ASB and criminal damage treatment applies CPTED principles outside the building \u2014 surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour. ";
-    }
-    // ── PUBLIC ORDER ──
-    if(tn.includes("public order")){
-      outside.push("External CCTV with wide-area coverage and recording","HVM measures that also control crowd movement","Clear pedestrian routes and defined public/private boundaries");
-      operational.push("Public order response plan coordinated with police","Escalation procedures for protest or demonstration activity","Business continuity plan for access disruption");
-      narrative+="Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity. ";
-    }
-    // ── VIOLENCE & SEXUAL ──
-    if(tn.includes("violence")){
-      outside.push("Well-lit external areas with no concealment opportunities","CCTV covering all pedestrian routes, entrances and car parks","Natural surveillance from occupied spaces to external areas");
-      inside.push("Internal CCTV in corridors, stair cores and isolated areas","Panic buttons at reception and public-facing positions","Controlled access preventing unauthorised individuals reaching occupied areas");
-      operational.push("Staff trained on conflict de-escalation and personal safety","Lone worker policy and monitoring procedures","Incident recording and pattern analysis");
-      narrative+="Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building. ";
-    }
-    // ── CYBERCRIME ──
-    if(tn.includes("cyber")){
-      inside.push("Security-rated doorsets to server rooms, MER/SER and data storage","Access control to IT infrastructure with full audit trail","Environmental monitoring in server rooms");
-      operational.push("Network segmentation isolating security, BMS and corporate networks","Intrusion detection and prevention systems","Encrypted storage and transmission for sensitive data","Endpoint protection with managed detection and response","Regular penetration testing and vulnerability assessments","Patch management for all systems including IoT and OT","Staff cyber awareness training with phishing simulations","Mobile device management and removable media controls","Cyber incident response plan","Backup and disaster recovery tested regularly");
-      narrative+="Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences. ";
-    }
-    // ── INFO THEFT ──
-    if(tn.includes("info")){
-      inside.push("Security-rated doorsets to areas storing/processing sensitive information","Clear desk policy with secure document storage","Secure print-release preventing uncollected documents","Shredding facilities for confidential waste");
-      operational.push("Data classification and handling policy","Encrypted storage and transmission","Access logging with anomaly detection","Secure media disposal procedures","Data loss prevention on email and file transfer","Third-party data processing agreements","Regular information asset audit");
-      narrative+="Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally. ";
-    }
-    // ── INSIDER THREAT ──
-    if(tn.includes("insider")){
-      inside.push("Access control zoning restricting individuals to role-required areas only","CCTV in sensitive areas with recording","Key management via secure electronic cabinet with audit");
-      operational.push("Pre-employment vetting and ongoing security screening","Joiners/movers/leavers access process \u2014 immediate revocation on departure","Whistleblowing and confidential reporting policy","Regular access rights reviews enforcing least privilege","User behaviour monitoring and anomaly detection","Clear desk and screen policy enforcement","Security clearance for sensitive roles","Separation of duties for critical processes");
-      narrative+="Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally. ";
-    }
-    // ── SOC ──
-    if(tn.includes("soc")){
-      inside.push("Security-rated doorsets to high-value areas","CCTV at all access points to valuable assets and cash handling");
-      operational.push("Background screening for staff and contractors in positions of trust","Supply chain due diligence and third-party risk assessment","Fraud prevention controls with segregation of duties","Anomaly detection in financial and access systems","Organised crime threat briefings","Whistleblowing and confidential reporting");
-      narrative+="Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally. ";
-    }
-    // ── KRE ──
-    if(tn.includes("kre")){
-      inside.push("Controlled access to areas occupied by at-risk individuals","CCTV at entrances capturing identification-quality images");
-      operational.push("Travel security procedures for at-risk personnel","Personal security risk assessments for key individuals","Secure communication channels","Kidnap/ransom/extortion incident response plan","Close liaison with police and specialist advisors");
-      narrative+="Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally. ";
-    }
-    // ── GENERAL OPERATIONAL FALLBACK ──
-    if(operational.length<3&&treatMethod!=="accept"){
-      operational.push("Regular review of security systems and procedures","Staff training on security policies, evacuation and invacuation","Incident recording, reporting and lessons-learned procedures");
-    }
-
-    // ── SBD-DERIVED DEVELOPMENT-SPECIFIC TREATMENTS (no standards referenced) ──
-    if(treatMethod!=="accept"){
-      // RESIDENTIAL
-      if(isRes){
-        if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")){
-          outside.push("Rear garden boundaries enclosed by 1.8m close-boarded fencing or equivalent","Side gates between front and rear of dwelling lockable at 1.8m height","Front boundaries max 1m to maintain natural surveillance from dwelling to street","Defensive thorny planting beneath windows and along vulnerable boundary sections","Dusk-to-dawn lighting to all external entrance doors and pedestrian routes");
-          inside.push("Security-tested external doorsets with multi-point locking and anti-snap, anti-pick, anti-bump, anti-drill cylinders","Front door fitted with wide-angle door viewer (min 160\u00b0) or video door entry","Door chain or limiter fitted to main entrance door","Letterbox restrictor to prevent fishing and arson attacks","All easily accessible windows security-tested with internal beading and key-operated locks","Laminated glass to all easily accessible windows","Garage doorsets security-tested where integral or attached to dwelling");
-        }
-        if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("violence")){
-          inside.push("Communal entrance doors with electronic access control, self-closing device and audio/visual intercom to each dwelling","Trade button deactivated between specified hours or removed entirely","Individual flat entrance doors security-tested and dual-certified (fire + security) where required","Lift access control to residential floors");
-        }
-        if(tn.includes("arson")){
-          inside.push("Letterbox fire-protection device to prevent arson through mail opening");
-          outside.push("Bin stores enclosed, lockable and positioned away from the building exterior");
-        }
-        if(tn.includes("theft")||tn.includes("criminal damage")){
-          outside.push("Cycle stands in secure enclosed well-lit storage areas","E-bike/e-scooter storage in fire-rated enclosure separated from dwelling");
-        }
-      }
-      // COMMERCIAL
-      if(isCom){
-        if(tn.includes("burglary")||tn.includes("theft")||tn.includes("trespass")){
-          outside.push("All external doors non-recessed to prevent concealment \u2014 where unavoidable, fit CCTV or mirrors","Secure perimeter fencing/walls minimum 2.4m with anti-climb for high-risk sites","Pedestrian gates with access control, self-closing mechanism and anti-lift hinges");
-          inside.push("Security-tested external doorsets integrated with electronic access control","Emergency exit doors without external ironmongery, fitted with door contacts and position monitoring","Loading bay and service entrance doors security-rated","Roller shutters to loading bays security-tested","Ground floor and accessible windows security-tested with laminated glass and internal beading","Window opening restrictors on all accessible openable windows","Anti-bandit glazing to cash handling or high-value areas");
-        }
-        if(tn.includes("insider")||tn.includes("info")||tn.includes("cyber")){
-          inside.push("Server rooms, MER/SER and security control room fitted with high-security doorsets","All security system head-end equipment in secure, environmentally controlled areas","Electronic key cabinet with full audit trail");
-        }
-        if(tn.includes("mtfa")||tn.includes("violence")||tn.includes("pbied")){
-          inside.push("Speedlanes or turnstiles with tailgating detection at entrance lobby","Dedicated security monitoring location in secure, non-publicly visible area fitted with high-security doorset");
-        }
-        if(tn.includes("burglary")||tn.includes("arson")||tn.includes("criminal damage")){
-          operational.push("Intruder alarm covering all external openings and sensitive internal areas, monitored 24/7 by alarm receiving centre");
-        }
-        if(tn.includes("theft")||tn.includes("vehicle")){
-          outside.push("Cycle parking in secure enclosed well-lit areas with robust stands","E-bike storage in fire-rated enclosure separated from main building","Basement car park access controlled with ANPR and barriers");
-        }
-        if(tn.includes("vbied")||tn.includes("vaaw")){
-          outside.push("Vehicle access barriers rated for hostile vehicle mitigation at perimeter","Clear 2m zone either side of perimeter boundary for surveillance");
-        }
-      }
-      // SCHOOLS
-      if(isSch){
-        if(tn.includes("trespass")||tn.includes("burglary")||tn.includes("criminal damage")||tn.includes("violence")){
-          outside.push("Secure perimeter fence minimum 2.0m around entire school boundary","Fencing colour-coated (dark preferred) to soften appearance and reduce light reflection","Gates same height as fence with anti-lift hinges and non-climbable locking mechanisms","Main vehicle and pedestrian access points overlooked by school office/reception","Secondary access points kept locked unless specifically required","Public footpaths adjacent to boundary addressed with defensive planting","No climbing aids (trees, bins, furniture) adjacent to perimeter fencing","Play areas and sports pitches within natural surveillance from occupied buildings","Sheltered areas, recesses and concealment points minimised in site design","Vegetation maintained below 1m or above 2m for sight lines throughout grounds");
-          inside.push("Single main entrance as the only unlocked entry during school hours","Main entrance through or adjacent to reception with direct visual oversight","Secure lobby or vestibule at main entrance for visitor processing before entry to school","Classroom doors lockable from inside for lockdown capability","Staff areas (staffroom, offices) secured from pupil access","Recessed external doorways avoided \u2014 where unavoidable, mirrors or CCTV fitted");
-        }
-        if(tn.includes("theft")||tn.includes("burglary")){
-          inside.push("IT suites protected with security-rated doors and windows","Portable equipment secured with cable locks or security cages","Server room and network cabinets secured with electronic access control","Individual secure lockers in changing rooms for personal belongings","Medical room on ground floor near entrance with secure medication storage","Exam paper storage in security-rated and fire-rated cabinets");
-        }
-        if(tn.includes("violence")||tn.includes("mta")||tn.includes("mtfa")){
-          inside.push("All visitors enter via single controlled main entrance through or past reception","Visitor sign-in with ID verification and DBS confirmation for regular visitors","Visitors issued clearly visible passes and escorted in sensitive areas");
-          operational.push("Lockdown alarm distinct and distinguishable from fire alarm, tested regularly","Parent/carer collection points separating visitors from unrestricted school areas");
-        }
-        if(tn.includes("arson")||tn.includes("criminal damage")){
-          outside.push("Light fittings protected with polycarbonate covers and mounted at height","External furniture and equipment robust and securely fixed with tamper-resistant fixings");
-        }
-      }
-      // MASTERPLAN
-      if(isMaster){
-        if(tn.includes("burglary")||tn.includes("trespass")||tn.includes("asb")||tn.includes("criminal damage")||tn.includes("violence")||tn.includes("theft")){
-          outside.push("Estate-wide CPTED principles \u2014 natural surveillance, defined public/private space across the masterplan","Clear definition of ownership boundaries between residential, commercial and public realm","Consistent boundary treatments between individual plots and public areas","Estate-wide lighting strategy coordinated with CCTV","Public realm designed with clear sight lines and no concealment opportunities","Mixed-tenure layout avoiding concentration of any single tenure type","Active ground-floor frontages along primary pedestrian routes to promote natural surveillance");
-        }
-        if(tn.includes("vbied")||tn.includes("vaaw")||tn.includes("mta")){
-          outside.push("Hostile vehicle mitigation integrated into public realm (bollards, planters, street furniture)","Vehicle access control strategy for the estate with designated delivery routes","Speed reduction measures integrated into road design across the masterplan");
-        }
-        if(tn.includes("burglary")||tn.includes("theft")){
-          inside.push("Residential doorsets and windows security-tested across all tenures within the masterplan","Communal entrances to apartment buildings with access control and intercom");
-          outside.push("Secure cycle hubs at transport nodes and within each building plot","E-bike charging in fire-rated enclosures separated from residential buildings");
-        }
-      }
-    }
-    // ── APPEND TREATMENT METHOD CONTEXT TO NARRATIVE ──
-    if(treatMethod==="transfer"){narrative+="As the treatment is Transfer, physical measures support but insurance and contractual arrangements absorb the primary financial consequence.";}
-    else if(treatMethod==="avoid"){narrative+="As the treatment is Avoid, the priority is eliminating exposure. Listed measures address residual risk that cannot be fully eliminated.";}
-    else{narrative+="The measures below should reduce both likelihood and impact to ALARP.";}
+    if(treatMethod==="transfer"){narrative="The primary consequence mitigation for this threat is through risk transfer \u2014 insurance, contractual liability transfer, or outsourced specialist provision. Physical and procedural controls should still be maintained as supporting measures to reduce likelihood, but the financial and operational impact is absorbed by third parties through formal agreements. ";}
+    else if(treatMethod==="avoid"){narrative="This risk will be eliminated by removing the exposure entirely. The measures below address any residual exposure that cannot be fully eliminated. ";}
+    else{narrative="";}
+    // Match DB entries by keyword
     var dedup=function(arr){var s={};return arr.filter(function(t){if(s[t])return false;s[t]=true;return true})};
-    return{outside:dedup(outside),inside:dedup(inside),operational:dedup(operational),narrative:narrative};
+    treatmentDB.forEach(function(entry){
+      var match=entry.keywords.some(function(kw){return tn.includes(kw)});
+      if(!match)return;
+      if(entry.narrative)narrative+=entry.narrative+" ";
+      (entry.ext_physical||[]).forEach(function(v){ext_physical.push(v)});
+      (entry.ext_electronic||[]).forEach(function(v){ext_electronic.push(v)});
+      (entry.int_physical||[]).forEach(function(v){int_physical.push(v)});
+      (entry.int_electronic||[]).forEach(function(v){int_electronic.push(v)});
+      (entry.procedures||[]).forEach(function(v){procedures.push(v)});
+    });
+    // Fallback procedures if none found
+    if(procedures.length<2){procedures.push("Regular review of security systems and procedures","Staff training on security policies, evacuation and invacuation","Incident recording, reporting and lessons-learned procedures");}
+    // Narrative suffix
+    if(treatMethod==="transfer")narrative+="As the treatment is Transfer, physical measures support but insurance and contractual arrangements absorb the primary financial consequence.";
+    else if(treatMethod==="avoid")narrative+="As the treatment is Avoid, the priority is eliminating exposure. Listed measures address residual risk that cannot be fully eliminated.";
+    else if(!narrative)narrative="Treatment measures should reduce both likelihood and impact to ALARP.";
+    return{ext_physical:dedup(ext_physical),ext_electronic:dedup(ext_electronic),int_physical:dedup(int_physical),int_electronic:dedup(int_electronic),procedures:dedup(procedures),narrative:narrative.trim()};
   };
 
 
@@ -3760,9 +3687,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       );
                     };
                     return React.createElement("div",{style:{marginTop:6}},
-                      hasOutside&&renderCat("Outside the Building","\ud83c\udfe2",catCtrl.outside,"#dbeafe","#eff6ff","#1e40af"),
-                      hasInside&&renderCat("Inside the Building","\ud83d\udee1\ufe0f",catCtrl.inside,"#fde68a","#fffbeb","#92400e"),
-                      renderCat("Operational & Procedural","\u2699\ufe0f",catCtrl.operational,"#e2e8f0","#f8fafc","#475569"),
+                      hasOutside&&renderCat("External Physical","\ud83c\udfd7\ufe0f",catCtrl.ext_physical,"#dbeafe","#eff6ff","#1e40af"),
+                      hasOutside&&renderCat("External Electronic","\ud83d\udcf6",catCtrl.ext_electronic,"#bfdbfe","#eff6ff","#1d4ed8"),
+                      hasInside&&renderCat("Internal Physical","\ud83d\udee1\ufe0f",catCtrl.int_physical,"#fde68a","#fffbeb","#92400e"),
+                      hasInside&&renderCat("Internal Electronic","\ud83d\udcbb",catCtrl.int_electronic,"#ddd6fe","#f5f3ff","#5b21b6"),
+                      renderCat("Procedures","\u2699\ufe0f",catCtrl.procedures,"#e2e8f0","#f8fafc","#475569"),
                       React.createElement("button",{
                         style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600,marginTop:4},
                         onClick:function(){
@@ -4045,61 +3974,37 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   catTreatments.narrative&&React.createElement("div",{style:{fontSize:10,color:"#475569",marginBottom:8,lineHeight:1.6,padding:"8px 10px",background:"#f8fafc",borderRadius:6,border:"1px solid #e2e8f0",borderLeft:"3px solid #1B2A4A"}},
                     catTreatments.narrative
                   ),
-                  // Categorised treatment buttons — filtered by asset location
-                  (assetLoc==="outside"||assetLoc==="both")&&catTreatments.outside.length>0&&React.createElement("div",{style:{marginBottom:6}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83c\udfe2 Outside the Building"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
-                      catTreatments.outside.map(function(typ){
-                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
-                        return React.createElement("button",{key:typ,
-                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#dbeafe"),
-                            background:alreadyAdded?"#f0fdf4":"#eff6ff",color:alreadyAdded?"#16a34a":"#1e40af",
-                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
-                          title:alreadyAdded?"Already added":"Click to add this measure",
-                          onClick:function(){
-                            if(alreadyAdded)return;
-                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
-                          }
-                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
-                      })
-                    )
-                  ),
-                  (assetLoc==="inside"||assetLoc==="both")&&catTreatments.inside.length>0&&React.createElement("div",{style:{marginBottom:6}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\ud83d\udee1\ufe0f Inside the Building"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
-                      catTreatments.inside.map(function(typ){
-                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
-                        return React.createElement("button",{key:typ,
-                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#fde68a"),
-                            background:alreadyAdded?"#f0fdf4":"#fffbeb",color:alreadyAdded?"#16a34a":"#92400e",
-                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
-                          title:alreadyAdded?"Already added":"Click to add this measure",
-                          onClick:function(){
-                            if(alreadyAdded)return;
-                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
-                          }
-                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
-                      })
-                    )
-                  ),
-                  catTreatments.operational.length>0&&React.createElement("div",{style:{marginBottom:6}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},"\u2699\ufe0f Operational & Procedural"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
-                      catTreatments.operational.map(function(typ){
-                        var alreadyAdded=assetMeasures.some(function(m){return m===typ});
-                        return React.createElement("button",{key:typ,
-                          style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
-                            background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
-                            cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
-                          title:alreadyAdded?"Already added":"Click to add this measure",
-                          onClick:function(){
-                            if(alreadyAdded)return;
-                            setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
-                          }
-                        },alreadyAdded?"\u2713 "+typ:"+ "+typ);
-                      })
-                    )
-                  ),
+                  // Categorised treatment buttons — filtered by asset location (5 categories)
+                  (function(){
+                    var cats=[
+                      {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:catTreatments.ext_physical||[],show:(assetLoc==="outside"||assetLoc==="both"),border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
+                      {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:catTreatments.ext_electronic||[],show:(assetLoc==="outside"||assetLoc==="both"),border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
+                      {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:catTreatments.int_physical||[],show:(assetLoc==="inside"||assetLoc==="both"),border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
+                      {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:catTreatments.int_electronic||[],show:(assetLoc==="inside"||assetLoc==="both"),border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
+                      {key:"procedures",label:"\u2699\ufe0f Procedures",items:catTreatments.procedures||[],show:true,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
+                    ];
+                    return cats.map(function(cat){
+                      if(!cat.show||cat.items.length===0)return null;
+                      return React.createElement("div",{key:cat.key,style:{marginBottom:6}},
+                        React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},cat.label),
+                        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
+                          cat.items.map(function(typ){
+                            var alreadyAdded=assetMeasures.some(function(m){return m===typ});
+                            return React.createElement("button",{key:typ,
+                              style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":cat.border),
+                                background:alreadyAdded?"#f0fdf4":cat.bg,color:alreadyAdded?"#16a34a":cat.col,
+                                cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                              title:alreadyAdded?"Already added":"Click to add this measure",
+                              onClick:function(){
+                                if(alreadyAdded)return;
+                                setTreatmentMeasures(function(prev){var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};var arr=[...(t2[asset.id]||[])].filter(function(v){return v});arr.push(typ);t2[asset.id]=arr;p[r.id]=t2;return p});
+                              }
+                            },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                          })
+                        )
+                      );
+                    });
+                  })(),
                   React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
                     React.createElement("button",{
                       style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px dashed #94a3b8",
@@ -4166,13 +4071,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var poiMeasures=(measures[poiKey]&&measures[poiKey].length>0)?measures[poiKey]:[""];
                     var poiLoc=inferLocation(poi.name,poi.desc);
                     var poiCatTreat=getCategorisedTreatments(r.n,r.treat||"reduce","",activeAssetPreset);
-                    // Combine only location-relevant treatments
-                    var relevantItems=[];
-                    if(poiLoc==="outside"||poiLoc==="both")relevantItems=relevantItems.concat(poiCatTreat.outside);
-                    if(poiLoc==="inside"||poiLoc==="both")relevantItems=relevantItems.concat(poiCatTreat.inside);
-                    relevantItems=relevantItems.concat(poiCatTreat.operational);
-                    // Deduplicate
-                    var seen2={};relevantItems=relevantItems.filter(function(t){if(seen2[t])return false;seen2[t]=true;return true});
                     return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
                       React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}},
                         React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
@@ -4184,23 +4082,41 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                           poiLoc==="outside"?"\ud83c\udfe2 External":poiLoc==="inside"?"\ud83d\udee1\ufe0f Internal":"\u2194\ufe0f Both")
                       ),
                       poi.desc&&React.createElement("div",{style:{fontSize:10,color:"#64748b",marginBottom:4}},poi.desc),
+                      // 5-category treatment buttons for POI
+                      (function(){
+                        var poiCats=[
+                          {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:poiCatTreat.ext_physical||[],show:(poiLoc==="outside"||poiLoc==="both"),border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
+                          {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:poiCatTreat.ext_electronic||[],show:(poiLoc==="outside"||poiLoc==="both"),border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
+                          {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:poiCatTreat.int_physical||[],show:(poiLoc==="inside"||poiLoc==="both"),border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
+                          {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:poiCatTreat.int_electronic||[],show:(poiLoc==="inside"||poiLoc==="both"),border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
+                          {key:"procedures",label:"\u2699\ufe0f Procedures",items:poiCatTreat.procedures||[],show:true,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
+                        ];
+                        return poiCats.map(function(cat){
+                          if(!cat.show||cat.items.length===0)return null;
+                          return React.createElement("div",{key:cat.key,style:{marginBottom:6}},
+                            React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#1B2A4A",marginBottom:3,textTransform:"uppercase",letterSpacing:"0.5px"}},cat.label),
+                            React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3}},
+                              cat.items.map(function(typ){
+                                var alreadyAdded=poiMeasures.some(function(m){return m===typ});
+                                return React.createElement("button",{key:typ,
+                                  style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":cat.border),
+                                    background:alreadyAdded?"#f0fdf4":cat.bg,color:alreadyAdded?"#16a34a":cat.col,
+                                    cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
+                                  onClick:function(){
+                                    if(alreadyAdded)return;
+                                    setTreatmentMeasures(function(prev){
+                                      var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
+                                      var arr=[...(t2[poiKey]||[])].filter(function(v){return v});
+                                      arr.push(typ);t2[poiKey]=arr;p[r.id]=t2;return p;
+                                    });
+                                  }
+                                },alreadyAdded?"\u2713 "+typ:"+ "+typ);
+                              })
+                            )
+                          );
+                        });
+                      })(),
                       React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}},
-                        relevantItems.slice(0,12).map(function(typ){
-                          var alreadyAdded=poiMeasures.some(function(m){return m===typ});
-                          return React.createElement("button",{key:typ,
-                            style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(alreadyAdded?"#bbf7d0":"#e2e8f0"),
-                              background:alreadyAdded?"#f0fdf4":"#f8fafc",color:alreadyAdded?"#16a34a":"#64748b",
-                              cursor:alreadyAdded?"default":"pointer",fontFamily:"inherit",opacity:alreadyAdded?0.7:1},
-                            onClick:function(){
-                              if(alreadyAdded)return;
-                              setTreatmentMeasures(function(prev){
-                                var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
-                                var arr=[...(t2[poiKey]||[])].filter(function(v){return v});
-                                arr.push(typ);t2[poiKey]=arr;p[r.id]=t2;return p;
-                              });
-                            }
-                          },alreadyAdded?"\u2713 "+typ:"+ "+typ);
-                        }),
                         React.createElement("button",{
                           style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600},
                           onClick:function(){
@@ -5123,6 +5039,134 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
               setAreaCriteria(defaultAreaCriteria);showToast("Area criteria reset to defaults")
             }},"Reset to Defaults")
+          )
+        ),
+
+        // Treatment Measures Database Editor
+        React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
+          React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"TREATMENT MEASURES DATABASE"),
+          React.createElement("p",{style:{fontSize:12,color:"#94a3b8",marginBottom:12}},"Edit, add or remove treatment measures for each threat type. Changes here affect all assessments permanently. Five categories: External Physical, External Electronic, Internal Physical, Internal Electronic, and Procedures."),
+          // Threat selector
+          React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}},
+            treatmentDB.map(function(entry){
+              var active=dbEditThreatId===entry.id;
+              return React.createElement("button",{key:entry.id,
+                style:{fontSize:11,padding:"4px 10px",borderRadius:4,fontWeight:active?700:400,
+                  border:"1px solid "+(active?"#1B2A4A":"#cbd5e1"),
+                  background:active?"#1B2A4A":"#f8fafc",color:active?"#fff":"#1e293b",cursor:"pointer",fontFamily:"inherit"},
+                onClick:function(){setDbEditThreatId(active?null:entry.id)}
+              },entry.label);
+            }),
+            React.createElement("button",{
+              style:{fontSize:11,padding:"4px 10px",borderRadius:4,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit"},
+              onClick:function(){
+                var id="custom_"+Date.now();
+                var newEntry={id:id,label:"New Threat Type",keywords:[],narrative:"",ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:[]};
+                setTreatmentDB(function(p){return[...p,newEntry]});
+                setDbEditThreatId(id);
+              }
+            },"+ Add Threat Type")
+          ),
+          // Editor panel for selected threat
+          (function(){
+            if(!dbEditThreatId)return React.createElement("div",{style:{fontSize:12,color:"#94a3b8",fontStyle:"italic"}},"Select a threat type above to edit its treatment measures.");
+            var entryIdx=treatmentDB.findIndex(function(e){return e.id===dbEditThreatId});
+            if(entryIdx===-1)return null;
+            var entry=treatmentDB[entryIdx];
+            function updateEntry(updater){
+              setTreatmentDB(function(prev){var n=[...prev];n[entryIdx]={...n[entryIdx],...updater(n[entryIdx])};return n});
+            }
+            var cats=[
+              {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",color:"#dbeafe"},
+              {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",color:"#bfdbfe"},
+              {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",color:"#fde68a"},
+              {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",color:"#ddd6fe"},
+              {key:"procedures",label:"\u2699\ufe0f Procedures",color:"#e2e8f0"}
+            ];
+            return React.createElement("div",{style:{background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0",padding:16}},
+              // Threat name + keywords
+              React.createElement("div",{style:{display:"flex",gap:10,marginBottom:12,alignItems:"flex-start"}},
+                React.createElement("div",{style:{flex:1}},
+                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Threat Label"),
+                  React.createElement("input",{className:"input",value:entry.label,
+                    onChange:function(e){var v=e.target.value;updateEntry(function(en){return{label:v}})},
+                    placeholder:"e.g. VBIED / VAAW"})
+                ),
+                React.createElement("div",{style:{flex:1}},
+                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Keywords (comma-separated, lowercase)"),
+                  React.createElement("input",{className:"input",value:(entry.keywords||[]).join(", "),
+                    onChange:function(e){var kws=e.target.value.split(",").map(function(k){return k.trim().toLowerCase()}).filter(Boolean);updateEntry(function(){return{keywords:kws}})},
+                    placeholder:"e.g. vbied, vaaw, vehicle"})
+                ),
+                React.createElement("div",null,
+                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Actions"),
+                  React.createElement("button",{className:"btn btn-outline btn-sm",
+                    style:{fontSize:11,color:"#dc2626",borderColor:"#fecaca"},
+                    onClick:function(){
+                      if(confirm("Delete this threat type from the database?")){
+                        setTreatmentDB(function(p){return p.filter(function(e){return e.id!==dbEditThreatId})});
+                        setDbEditThreatId(null);
+                      }
+                    }},"Delete")
+                )
+              ),
+              // Narrative
+              React.createElement("div",{style:{marginBottom:12}},
+                React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Narrative / Context"),
+                React.createElement("textarea",{className:"input",style:{width:"100%",minHeight:50,fontSize:11,resize:"vertical"},
+                  value:entry.narrative||"",
+                  placeholder:"Optional narrative text shown above treatment measures...",
+                  onChange:function(e){var v=e.target.value;updateEntry(function(){return{narrative:v}})}
+                })
+              ),
+              // 5-category editors
+              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
+                cats.map(function(cat){
+                  var items=entry[cat.key]||[];
+                  return React.createElement("div",{key:cat.key,style:{padding:10,background:"#fff",borderRadius:6,border:"1px solid "+cat.color}},
+                    React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#1B2A4A",marginBottom:6}},cat.label),
+                    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4}},
+                      items.map(function(item,idx){
+                        return React.createElement("div",{key:idx,style:{display:"flex",gap:4,alignItems:"center"}},
+                          React.createElement("input",{className:"input",style:{flex:1,fontSize:11},value:item,
+                            onChange:function(e){var v=e.target.value;updateEntry(function(en){var arr=[...en[cat.key]];arr[idx]=v;var obj={};obj[cat.key]=arr;return obj})},
+                            placeholder:"Treatment measure..."
+                          }),
+                          React.createElement("button",{className:"btn-x",style:{fontSize:12,flexShrink:0},
+                            onClick:function(){updateEntry(function(en){var arr=en[cat.key].filter(function(_,i){return i!==idx});var obj={};obj[cat.key]=arr;return obj})}
+                          },"×")
+                        );
+                      }),
+                      React.createElement("button",{
+                        style:{fontSize:11,padding:"3px 8px",borderRadius:4,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",alignSelf:"flex-start"},
+                        onClick:function(){updateEntry(function(en){var arr=[...en[cat.key],""];var obj={};obj[cat.key]=arr;return obj})}
+                      },"+ Add item")
+                    )
+                  );
+                })
+              ),
+              React.createElement("div",{style:{marginTop:12,display:"flex",gap:8}},
+                React.createElement("button",{className:"btn btn-outline btn-sm",
+                  onClick:function(){
+                    var def=DEFAULT_TREATMENT_DB.find(function(e){return e.id===dbEditThreatId});
+                    if(!def){showToast("No default found for this threat type");return;}
+                    if(confirm("Reset this threat type to defaults? All edits will be lost.")){
+                      setTreatmentDB(function(p){var n=[...p];n[entryIdx]={...def};return n});
+                      showToast("Reset to defaults");
+                    }
+                  }},"Reset This Threat to Default")
+              )
+            );
+          })(),
+          React.createElement("div",{style:{marginTop:12,display:"flex",gap:8}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",
+              onClick:function(){
+                if(confirm("Reset the entire Treatment Measures Database to defaults? All custom edits will be lost.")){
+                  setTreatmentDB(DEFAULT_TREATMENT_DB);
+                  setDbEditThreatId(null);
+                  showToast("Treatment database reset to defaults");
+                }
+              }},"Reset Entire Database to Defaults")
           )
         ),
 
