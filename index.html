@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.955";
+  const VERSION="1.956";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3993,8 +3993,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 })
               )
             ),
-            isHigh&&targetedAssets.length>0&&React.createElement("div",{style:{padding:"10px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb"}},
-              React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#92400e",marginBottom:8}},"PLANNED TREATMENT MEASURES \u2014 "+r.n),
+            isHigh&&targetedAssets.length>0&&React.createElement("div",{style:{borderTop:"1px solid #fecaca",background:"#fffbeb"}},
+              React.createElement("div",{style:{position:"sticky",top:0,zIndex:8,background:"#1B2A4A",padding:"7px 16px",display:"flex",alignItems:"center",gap:10}},
+                React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px"}},"Treatment measures"),
+                React.createElement("span",{style:{fontSize:12,fontWeight:700,color:"#fff"}},r.n),
+                React.createElement("span",{style:{fontSize:9,padding:"2px 8px",borderRadius:10,background:r.rat==="Very High"?"#C00000":r.rat==="High"?"#ED7D31":"#475569",color:"#fff",fontWeight:700}},r.rat||""),
+                React.createElement("span",{style:{fontSize:9,color:"#64748b",marginLeft:"auto"}},(r.treat||"")+" \u2014 R"+(cRisks.filter(function(x){return x.n}).indexOf(r)+1))
+              ),
+              React.createElement("div",{style:{padding:"10px 16px 10px"}},
               targetedAssets.map(function(asset){
                 var assetMeasures=(measures[asset.id]&&measures[asset.id].length>0)?measures[asset.id]:[""];
                 var existingCtrl=cd[r.id]||{};
@@ -4003,7 +4009,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
                 return React.createElement("div",{key:asset.id,style:{marginBottom:10,padding:10,background:"#fff",borderRadius:6,border:"1px solid #e2e8f0"}},
                   React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}},
-                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},asset.cat+(asset.desc?" \u2014 "+asset.desc:"")),
+                    React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+                      React.createElement("span",{style:{fontSize:9,padding:"2px 7px",borderRadius:3,fontWeight:700,color:"#fff",background:"#1B2A4A",whiteSpace:"nowrap"}},r.n),
+                      React.createElement("span",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},asset.cat+(asset.desc?" \u2014 "+asset.desc:""))),
                     React.createElement("span",{style:{fontSize:9,padding:"2px 6px",borderRadius:4,fontWeight:600,
                       background:assetLoc==="outside"?"#dbeafe":assetLoc==="inside"?"#fef3c7":"#f1f5f9",
                       color:assetLoc==="outside"?"#1e40af":assetLoc==="inside"?"#92400e":"#475569"}},
@@ -4143,7 +4151,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var seen2={};relevantItems=relevantItems.filter(function(t){if(seen2[t])return false;seen2[t]=true;return true});
                     return React.createElement("div",{key:poi.id,style:{marginBottom:8,padding:10,background:"#fff",borderRadius:6,border:"1px solid #fecaca"}},
                       React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}},
-                        React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},poi.name||"Unnamed POI"),
+                        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+                          React.createElement("span",{style:{fontSize:9,padding:"2px 7px",borderRadius:3,fontWeight:700,color:"#fff",background:"#1B2A4A",whiteSpace:"nowrap"}},r.n),
+                          React.createElement("span",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},poi.name||"Unnamed POI")),
                         React.createElement("span",{style:{fontSize:9,padding:"2px 6px",borderRadius:4,fontWeight:600,
                           background:poiLoc==="outside"?"#dbeafe":poiLoc==="inside"?"#fef3c7":"#f1f5f9",
                           color:poiLoc==="outside"?"#1e40af":poiLoc==="inside"?"#92400e":"#475569"}},
@@ -4204,7 +4214,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   })
                 );
               })()
-            ),
+            )),
             isHigh&&targetedAssets.length===0&&React.createElement("div",{style:{padding:"8px 16px",borderTop:"1px solid #fecaca",background:"#fffbeb",fontSize:11,color:"#92400e",fontStyle:"italic"}},
               "No assets assigned. Go to Threats tab \u2192 Threat\u2013Asset Mapping to assign assets, then treatment measures can be entered here."
             )
