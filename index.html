@@ -522,7 +522,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.958";
+  const VERSION="1.959";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4210,9 +4210,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       ),
                       React.createElement("div",{style:{marginTop:4}},
                         poiMeasures.map(function(measure,mi){
+                          var isOptPoi=!!(treatOptional[r.id]&&treatOptional[r.id][poiKey]&&treatOptional[r.id][poiKey][mi]);
                           return React.createElement("div",{key:mi,style:{display:"flex",gap:6,marginBottom:3,alignItems:"center"}},
                             React.createElement("span",{style:{fontSize:10,color:"#7f1d1d",width:16,flexShrink:0,fontWeight:700}},(mi+1)+"."),
-                            React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:measure?"#fecaca":"#e2e8f0",background:measure?"#fffbfb":"#fff"},
+                            React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px",borderColor:isOptPoi?"#c4b5fd":measure?"#fecaca":"#e2e8f0",background:isOptPoi?"#faf5ff":measure?"#fffbfb":"#fff"},
                               value:measure,placeholder:"Treatment measure for this POI...",
                               onChange:function(e){
                                 var val=e.target.value;
@@ -4222,6 +4223,19 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                                 });
                               }
                             }),
+                            React.createElement("button",{
+                              title:isOptPoi?"Remove optional flag":"Mark as optional (client risk appetite)",
+                              style:{fontSize:9,padding:"2px 6px",borderRadius:3,border:"1px solid "+(isOptPoi?"#c4b5fd":"#e2e8f0"),
+                                background:isOptPoi?"#f5f3ff":"transparent",color:isOptPoi?"#7c3aed":"#94a3b8",
+                                cursor:"pointer",fontFamily:"inherit",fontWeight:600,flexShrink:0,whiteSpace:"nowrap"},
+                              onClick:(function(rId,pKey,idx){return function(){
+                                setTreatOptional(function(prev){
+                                  var n={...prev};var r2=n[rId]?{...n[rId]}:{};var a2=r2[pKey]?{...r2[pKey]}:{};
+                                  if(a2[idx])delete a2[idx];else a2[idx]=true;
+                                  r2[pKey]=a2;n[rId]=r2;return n;
+                                });
+                              }})(r.id,poiKey,mi)
+                            },isOptPoi?"\uD83D\uDFE3 Opt":"\u25CB Opt"),
                             poiMeasures.length>1&&React.createElement("button",{className:"btn-x",style:{fontSize:10},onClick:function(){
                               setTreatmentMeasures(function(prev){
                                 var p={...prev};var t2=p[r.id]?{...p[r.id]}:{};
