@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.946";
+  const VERSION="1.947";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -874,6 +874,9 @@ function App(){
   const captureReport=function(el,toastMsg){
     var hdrs=Array.from(el.querySelectorAll("[data-capture-hide]"));
     hdrs.forEach(function(h){h.style.display="none"});
+    // Also unconstrain the section element itself
+    var elSaved={ov:el.style.overflow,h:el.style.height,mh:el.style.maxHeight};
+    el.style.overflow="visible";el.style.height="auto";el.style.maxHeight="none";
     var els=el.querySelectorAll("*");var saved=[];
     for(var i=0;i<els.length;i++){
       var st=els[i].style;
@@ -885,15 +888,19 @@ function App(){
       if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
       if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
     }
-    // Force reflow so scrollHeight reflects unconstrained content
+    // Force reflow then measure true content height by finding the furthest bottom edge
     void el.offsetHeight;
+    var elTop=el.getBoundingClientRect().top;
+    var captureH=el.getBoundingClientRect().height;
+    Array.from(els).forEach(function(d){try{var b=d.getBoundingClientRect().bottom-elTop;if(b>captureH)captureH=b;}catch(e){}});
+    captureH=Math.round(captureH)+400;
     var restore=function(){
+      el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
       hdrs.forEach(function(h){h.style.display=""});
       for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
     };
     // Fixed A4 capture width (150dpi equivalent) — ensures images fit Word page width precisely
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
-    var captureH=Math.max(el.scrollHeight,el.offsetHeight)+600;
     html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
       restore();
       var pageH=Math.round(A4W*A4RATIO)*SCALE;
