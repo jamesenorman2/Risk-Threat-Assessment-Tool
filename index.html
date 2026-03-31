@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.954";
+  const VERSION="1.955";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3868,44 +3868,63 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
-            var chunks=[];
             var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
             var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
-            // Residual risk table
             var gapcRR=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center"};
-            chunks.push("<table><tr><th>R#</th><th style='text-align:left'>Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Controls</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>");
+            var html="<table>";
+            html+="<tr><th style='width:28pt;text-align:center'>R#</th><th style='text-align:left'>Threat</th><th style='width:36pt;text-align:center'>Pre-L</th><th style='width:36pt;text-align:center'>Pre-I</th><th style='width:68pt;text-align:center'>Pre-Rating</th><th style='width:52pt;text-align:center'>Treat</th><th style='width:64pt;text-align:center'>Controls</th><th style='width:36pt;text-align:center'>Post-L</th><th style='width:36pt;text-align:center'>Post-I</th><th style='width:68pt;text-align:center'>Residual</th><th style='width:48pt;text-align:center'>Accept?</th></tr>";
             filtered.forEach(function(r,i){
               var c2=cd[r.id]||{};var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
               var gap2=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
-              chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td><td style='"+gapcRR(gap2)+"'>"+gap2+"</td><td style='"+scBg(r.resL)+"'>"+(r.resL||"")+"</td><td style='"+scBg(r.resI)+"'>"+(r.resI||"")+"</td><td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"")+"</td><td style='text-align:center'>"+(r.acc||"")+"</td></tr>");
+              var m=treatmentMeasures[r.id]||{};
+              var tgtAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+              var hasMeas=false;tgtAssets.forEach(function(a){if((m[a.id]||[]).some(function(v){return v}))hasMeas=true;});
               var just=residualJustifications[r.id];
-              if(just)chunks.push("<tr><td colspan='11' style='text-align:left;font-size:8pt;color:#475569;padding:4pt 8pt;background:#f8fafc'><b>ALARP Justification:</b> "+just+"</td></tr>");
-            });
-            chunks.push("</table>");
-            // Treatment measures detail
-            var hasAnyMeasures=false;
-            filtered.forEach(function(r){var m=treatmentMeasures[r.id];if(m)Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasAnyMeasures=true})});
-            if(hasAnyMeasures){
-              chunks.push("<h3 style='page-break-before:always;font-family:Arial;font-size:11pt;color:#1B2A4A'>Planned Treatment Measures</h3>");
-              filtered.forEach(function(r,i){
-                var m=treatmentMeasures[r.id]||{};
-                var hasMeas=false;Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasMeas=true});
-                if(!hasMeas)return;
-                chunks.push("<table style='margin-bottom:8pt'><tr><td colspan='2' style='background:#1B2A4A;color:#fff;font-weight:bold;padding:6pt 8pt'>R"+(i+1)+" \u2014 "+r.n+" ("+r.treat+")</td></tr>");
-                var tgtAssets2=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
-                tgtAssets2.forEach(function(a){
+              // Scores row
+              html+="<tr style='background:"+(i%2===0?"#fff":"#f8fafc")+"'>";
+              html+="<td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td>";
+              html+="<td style='text-align:left'><b>"+r.n+"</b></td>";
+              html+="<td style='"+scBg(r.lik)+"'>"+(r.lik||"\u2014")+"</td>";
+              html+="<td style='"+scBg(r.imp)+"'>"+(r.imp||"\u2014")+"</td>";
+              html+="<td style='"+ratBg(r.rat)+"'>"+(r.rat||"\u2014")+"</td>";
+              html+="<td style='text-align:center'>"+(r.treat||"\u2014")+"</td>";
+              html+="<td style='"+gapcRR(gap2)+"'>"+gap2+"</td>";
+              html+="<td style='"+scBg(r.resL)+"'>"+(r.resL||"\u2014")+"</td>";
+              html+="<td style='"+scBg(r.resI)+"'>"+(r.resI||"\u2014")+"</td>";
+              html+="<td style='"+ratBg(r.resRat)+"'>"+(r.resRat||"\u2014")+"</td>";
+              html+="<td style='text-align:center'>"+(r.acc||"\u2014")+"</td></tr>";
+              // Score reduction row
+              var redParts=[];
+              if(r.lik&&r.resL){var ld=r.lik-r.resL;redParts.push("Likelihood: <b>"+r.lik+"\u2192"+r.resL+"</b> "+(ld>0?"<span style='color:#16a34a'>(\u25bc"+ld+" improvement)</span>":ld<0?"<span style='color:#dc2626'>(\u25b2"+Math.abs(ld)+" increase)</span>":"<span style='color:#94a3b8'>(no change)</span>"));}
+              if(r.imp&&r.resI){var id2=r.imp-r.resI;redParts.push("Impact: <b>"+r.imp+"\u2192"+r.resI+"</b> "+(id2>0?"<span style='color:#16a34a'>(\u25bc"+id2+" improvement)</span>":id2<0?"<span style='color:#dc2626'>(\u25b2"+Math.abs(id2)+" increase)</span>":"<span style='color:#94a3b8'>(no change)</span>"));}
+              if(r.rat&&r.resRat)redParts.push("Rating: <b>"+r.rat+"</b> \u2192 <b>"+r.resRat+"</b>");
+              if(redParts.length>0)html+="<tr><td colspan='11' style='font-size:8pt;color:#1e293b;padding:3pt 8pt;background:#f0fdf4;border-top:none'>"+redParts.join(" &nbsp;\u00b7&nbsp; ")+"</td></tr>";
+              // ALARP
+              if(just)html+="<tr><td colspan='11' style='font-size:8pt;padding:4pt 8pt;background:#f8fafc;border-top:none'><b>ALARP Justification:</b> "+just+"</td></tr>";
+              // Treatment measures
+              if(hasMeas){
+                html+="<tr><td colspan='11' style='font-size:8pt;font-weight:bold;color:#fff;background:#1B2A4A;padding:4pt 8pt;letter-spacing:0.3pt'>PLANNED TREATMENT MEASURES \u2014 R"+(i+1)+" "+r.n+"</td></tr>";
+                tgtAssets.forEach(function(a){
                   var rawArr=(m[a.id]||[]);var arr=rawArr.map(function(v,vi){return{v:v,vi:vi}}).filter(function(x){return x.v});
-                  if(arr.length>0){
-                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][a.id])||{};
-                    chunks.push("<tr><td style='font-weight:bold;width:200pt;vertical-align:top;background:#f8fafc'>"+a.cat+(a.desc?" \u2014 "+a.desc:"")+"</td><td style='font-size:9pt'>"+arr.map(function(x,n){var isOpt=!!optMap[x.vi];return(n+1)+". "+(isOpt?"<span style='color:#7c3aed;font-weight:bold'>[OPTIONAL \u2014 Risk Appetite] </span>":"")+x.v}).join("<br/>")+"</td></tr>");
-                  }
+                  if(arr.length===0)return;
+                  var optMap=(treatOptional[r.id]&&treatOptional[r.id][a.id])||{};
+                  html+="<tr><td colspan='2' style='font-weight:bold;font-size:8pt;background:#EBF1F8;vertical-align:top;padding:4pt 8pt'>"+a.cat+(a.desc?" \u2014 "+a.desc:"")+"</td><td colspan='9' style='font-size:9pt;padding:4pt 8pt;background:#fff'>"+arr.map(function(x,n){var isOpt=!!optMap[x.vi];return"<span style='color:#94a3b8;font-size:8pt'>"+(n+1)+". </span>"+(isOpt?"<span style='color:#7c3aed;font-weight:bold'>[OPTIONAL \u2014 Risk Appetite] </span>":"")+x.v}).join("<br/>")+"</td></tr>";
                 });
-                chunks.push("</table>");
-              });
-            }
-            copyChunkedToWord(chunks,"Residual Risk & Treatments \u2014 "+(ctx.project||"Assessment"));
-          }},"\ud83d\udccb Copy to Word"),
-          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-residual","Residual risk captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+                // POI treatments
+                var threatPois=pois.filter(function(p2){return p2.threats.includes(r.id)});
+                threatPois.forEach(function(poi){
+                  var poiKey="poi_"+poi.id;var rawArr=(m[poiKey]||[]);var arr=rawArr.map(function(v,vi){return{v:v,vi:vi}}).filter(function(x){return x.v});
+                  if(arr.length===0)return;
+                  var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
+                  html+="<tr><td colspan='2' style='font-weight:bold;font-size:8pt;background:#fff5f5;vertical-align:top;padding:4pt 8pt'>POI: "+poi.name+"</td><td colspan='9' style='font-size:9pt;padding:4pt 8pt;background:#fff'>"+arr.map(function(x,n){var isOpt=!!optMap[x.vi];return"<span style='color:#94a3b8;font-size:8pt'>"+(n+1)+". </span>"+(isOpt?"<span style='color:#7c3aed;font-weight:bold'>[OPTIONAL \u2014 Risk Appetite] </span>":"")+x.v}).join("<br/>")+"</td></tr>";
+                });
+              }
+              // Divider
+              if(i<filtered.length-1)html+="<tr><td colspan='11' style='padding:0;height:4pt;background:#cbd5e1;border:none'></td></tr>";
+            });
+            html+="</table>";
+            copyChunkedToWord([html],"Residual Risk & Treatments \u2014 "+(ctx.project||"Assessment"));
+          }},"\ud83d\udccb Copy to Word")
         ),
         React.createElement(HelpBox,{title:"Residual Risk Scoring",
           description:"Re-score Likelihood and Impact post-treatment to demonstrate ALARP. Risks rated High or Very High expand to show each targeted asset with space to record planned treatment measures \u2014 specific security controls, design features, or operational procedures.",
