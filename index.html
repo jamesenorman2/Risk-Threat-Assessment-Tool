@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.944";
+  const VERSION="1.945";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2678,14 +2678,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     onClick:function(){changeCrimePeriod(p.v)}},p.l);
                 });
               })(),
-              React.createElement("button",{style:{padding:"3px 10px",borderRadius:4,border:"1px solid rgba(255,255,255,0.25)",background:"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit",marginLeft:4},
-                onClick:function(){
-                  var el=document.getElementById("crime-report-section");if(!el){showToast("Not ready");return}
-                  if(typeof html2canvas==="undefined"){
-                    var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                    s.onload=function(){captureReport(el,"Crime analysis captured \u2014 paste into Word")};s.onerror=function(){showToast("Could not load capture library")};document.head.appendChild(s);
-                  }else{captureReport(el,"Crime analysis captured \u2014 paste into Word")}
-                }},"📷 Capture for Report")
+              React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},
+                onClick:function(){captureForWord("crime-report-section","Crime analysis captured \u2014 paste into Word")}
+              },"📷 Capture")
             )
           ),
 
@@ -2963,7 +2958,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{id:"terrorism-report-section",style:{marginTop:24}},
 
           // Header with refresh and export
-          React.createElement("div",{style:{background:"#7f1d1d",borderRadius:"10px 10px 0 0",padding:"14px 20px",color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement("div",{"data-capture-hide":"1",style:{background:"#7f1d1d",borderRadius:"10px 10px 0 0",padding:"14px 20px",color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}},
             React.createElement("div",null,
               React.createElement("div",{style:{fontSize:15,fontWeight:700}},"UK Terrorism Context"),
               React.createElement("div",{style:{fontSize:12,opacity:0.8}},"Threat level, significant incidents and plots (2020\u2013present)")
@@ -2971,16 +2966,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{style:{display:"flex",gap:6}},
               React.createElement("button",{style:{padding:"4px 10px",borderRadius:4,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit"},
                 onClick:function(){setThreatLevel(null);fetchThreatLevel();showToast("Refreshing threat level...")}},"\u21bb Refresh"),
-              React.createElement("button",{style:{padding:"4px 10px",borderRadius:4,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit"},
-                onClick:function(){
-                  var el=document.getElementById("terrorism-report-section");if(!el)return;
-                  if(typeof html2canvas==="undefined"){
-                    var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                    s.onload=function(){captureReport(el,"Terrorism context captured \u2014 paste into Word")};
-                    s.onerror=function(){showToast("Could not load capture library")};
-                    document.head.appendChild(s);
-                  }else{captureReport(el,"Terrorism context captured \u2014 paste into Word")}
-                }},"\ud83d\udcf7 Export for Word")
+              React.createElement("button",{className:"btn btn-outline btn-sm",
+                onClick:function(){captureForWord("terrorism-report-section","Terrorism context captured \u2014 paste into Word")}
+              },"📷 Capture")
             )
           ),
 
@@ -4167,15 +4155,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Comprehensive risk summary for report insertion")
           ),
           React.createElement("div",{className:"flex gap-2"},
-            React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
-              var el=document.getElementById("exec-summary-section");if(!el)return;
-              if(typeof html2canvas==="undefined"){
-                var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-                s.onload=function(){captureReport(el,"Executive summary captured \u2014 paste into Word")};
-                s.onerror=function(){showToast("Could not load capture library")};
-                document.head.appendChild(s);
-              }else{captureReport(el,"Executive summary captured \u2014 paste into Word")}
-            }},"\ud83d\udcf7 Capture for Report"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+              captureForWord("exec-summary-section","Executive summary captured \u2014 paste into Word")
+            }},"📷 Capture"),
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
               var h="<html><head><style>body{font-family:Arial,sans-serif;font-size:9pt;color:#333;max-width:700px;margin:auto}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:9pt}td{border:1px solid #ddd;padding:5px 10px;font-size:9pt}.vh{background:#C00000;color:#fff;font-weight:bold;text-align:center}.hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.me{background:#FFC000;color:#000;font-weight:bold;text-align:center}.lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style></head><body>";
               h+="<h1>Security Risk Assessment \u2014 Executive Summary</h1>";
