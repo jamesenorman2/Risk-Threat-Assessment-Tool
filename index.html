@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.940";
+  const VERSION="1.941";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1658,7 +1658,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
     <style>
     @page{size:A4 portrait;margin:2cm 2cm 2cm 2cm;mso-header-margin:1cm;mso-footer-margin:1cm}
-    body{font-family:Calibri,Arial,sans-serif;font-size:10pt;line-height:1.5;color:#333;mso-fareast-font-family:Calibri}
+    body{font-family:Arial,sans-serif;font-size:9pt;line-height:1.5;color:#333;mso-fareast-font-family:Arial}
     table{border-collapse:collapse;width:100%;margin-bottom:10pt;font-size:9pt;mso-table-lspace:0;mso-table-rspace:0}
     th{background:#1B2A4A;color:#fff;padding:6pt 8pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A;mso-background-themecolor:text1}
     td{padding:5pt 8pt;border:1pt solid #D6DCE4;text-align:center;font-size:9pt;vertical-align:top}
@@ -1833,7 +1833,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       h+=`<tr><td style="font-weight:bold;text-align:right;padding-right:8px">${l}</td><td style="font-size:8pt;text-align:right;padding-right:6px">${LL[l]}</td>`;
       for(let j=0;j<5;j++){
         const rat=RM[i][j];const c=RC[rat];const refs=matrix[i][j];
-        h+=`<td class="${{"Very Low":"vl","Low":"lo","Medium":"me","High":"hi","Very High":"vh"}[rat]}" style="text-align:center;padding:8px;min-width:60px;color:#000;font-size:12pt">${refs.length?refs.join(", "):""}</td>`;
+        h+=`<td class="${{"Very Low":"vl","Low":"lo","Medium":"me","High":"hi","Very High":"vh"}[rat]}" style="text-align:center;padding:8px;min-width:60px;font-size:12pt">${refs.length?refs.join(", "):""}</td>`;
       }
       h+=`</tr>`;
     }
@@ -2514,7 +2514,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b"}},"Area Analysis"),
           React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
             areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-              var html="<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt;width:100%'>";
+              var html="<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;font-family:Arial;font-size:9pt;width:100%'>";
               html+="<tr style='background:#1B2A4A;color:#fff'><th colspan='2'>Area Analysis \u2014 "+(ctx.address||ctx.project||"Site")+"</th></tr>";
               areaCriteria.forEach(function(crit){
                 var text=(areaAnalysis[crit.id]||"").replace(/\n/g,"<br/>");
@@ -3063,7 +3063,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"preset-btn",style:{borderColor:"#fecaca",color:"#dc2626",marginLeft:8},onClick:clearAssets},"✕ Clear All"),
           React.createElement("button",{className:"lock-btn"+(assetsLocked?" locked":""),onClick:()=>setAssetsLocked(p=>!p)},assetsLocked?"🔒 Locked":"🔓 Lock"),
           React.createElement("button",{className:"preset-btn",style:{marginLeft:8},onClick:function(){
-            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt'>";
+            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Arial;font-size:9pt'>";
             html+="<tr style='background:#1B2A4A;color:#fff'><th>#</th><th>Category</th><th>Description</th><th>Criticality</th></tr>";
             assets.forEach(function(a,i){
               var sc=avg(AC.map(function(c){return a.sc[c]||null}));
@@ -3297,7 +3297,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},"Select which assets each threat could target. Click asset chips to toggle.")
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Calibri,Arial;font-size:9pt'>";
+            var html="<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;font-family:Arial;font-size:9pt'>";
             html+="<tr style='background:#1B2A4A;color:#fff'><th>Threat</th><th>Type</th><th>Targeted Assets</th></tr>";
             cThreats.forEach(function(t){
               var tgts=(t.targets||[]).map(function(tid){var a=assets.find(function(a){return a.id===tid});return a?(a.cat||a.desc):null}).filter(Boolean).join(", ");
@@ -3442,7 +3442,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             // Subsequent pages: Detail cards with Capability in batches
             for(var ci=0;ci<filtered.length;ci+=chunkSize){
               var batch=filtered.slice(ci,ci+chunkSize);
-              chunks.push("<h3 style='font-family:Calibri;font-size:11pt;color:#1B2A4A;margin:12pt 0 4pt;page-break-before:"+(ci===0?"avoid":"always")+"'>Target Attractiveness Detail"+(ci>0?" (continued)":"")+"</h3>");
+              chunks.push("<h3 style='font-family:Arial;font-size:11pt;color:#1B2A4A;margin:12pt 0 4pt;page-break-before:"+(ci===0?"avoid":"always")+"'>Target Attractiveness Detail"+(ci>0?" (continued)":"")+"</h3>");
               batch.forEach(function(r,bi){
                 var v=vs[r.id]||{};var idx=ci+bi;
                 var likLvl=r.lik&&SC[r.lik]?SC[r.lik].l:"";
@@ -3538,7 +3538,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var chunkSize=8;var chunks=[];
             for(var ci=0;ci<filtered.length;ci+=chunkSize){
               var batch=filtered.slice(ci,ci+chunkSize);
-              if(ci>0)chunks.push("<h3 style='font-family:Calibri;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt'>Impact Assessment (continued)</h3>");
+              if(ci>0)chunks.push("<h3 style='font-family:Arial;font-size:11pt;color:#1B2A4A;margin:8pt 0 4pt'>Impact Assessment (continued)</h3>");
               chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th>Disruption</th><th>Fatalities</th><th>Reputation</th><th>Financial</th><th>Property</th><th>Impact</th><th>Level</th></tr>");
               batch.forEach(function(r,bi){
                 var im=is_[r.id]||{};var idx=ci+bi;
@@ -3593,7 +3593,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var gapc=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":g==="Insufficient"?"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center":""};
             for(var ci=0;ci<filtered.length;ci+=chunkSize){
               var batch=filtered.slice(ci,ci+chunkSize);
-              if(ci>0)chunks.push("<h3 style='page-break-before:always;font-family:Calibri;font-size:11pt;color:#1B2A4A'>Existing Controls (continued)</h3>");
+              if(ci>0)chunks.push("<h3 style='page-break-before:always;font-family:Arial;font-size:11pt;color:#1B2A4A'>Existing Controls (continued)</h3>");
               chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Controls Description</th><th>Eff</th><th>Conf</th><th>Score</th><th>Gap</th></tr>");
               batch.forEach(function(r,bi){
                 var c2=cd[r.id]||{};var idx=ci+bi;
@@ -3826,7 +3826,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var hasAnyMeasures=false;
             filtered.forEach(function(r){var m=treatmentMeasures[r.id];if(m)Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasAnyMeasures=true})});
             if(hasAnyMeasures){
-              chunks.push("<h3 style='page-break-before:always;font-family:Calibri;font-size:11pt;color:#1B2A4A'>Planned Treatment Measures</h3>");
+              chunks.push("<h3 style='page-break-before:always;font-family:Arial;font-size:11pt;color:#1B2A4A'>Planned Treatment Measures</h3>");
               filtered.forEach(function(r,i){
                 var m=treatmentMeasures[r.id]||{};
                 var hasMeas=false;Object.values(m).forEach(function(arr){if(arr.some(function(v){return v}))hasMeas=true});
@@ -4136,7 +4136,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               }else{captureReport(el,"Executive summary captured \u2014 paste into Word")}
             }},"\ud83d\udcf7 Capture for Report"),
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-              var h="<html><head><style>body{font-family:Calibri,Arial;font-size:11pt;color:#333;max-width:700px;margin:auto}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:10pt}td{border:1px solid #ddd;padding:5px 10px;font-size:10pt}.vh{background:#C00000;color:#fff;font-weight:bold;text-align:center}.hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.me{background:#FFC000;color:#000;font-weight:bold;text-align:center}.lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style></head><body>";
+              var h="<html><head><style>body{font-family:Arial,sans-serif;font-size:9pt;color:#333;max-width:700px;margin:auto}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:9pt}td{border:1px solid #ddd;padding:5px 10px;font-size:9pt}.vh{background:#C00000;color:#fff;font-weight:bold;text-align:center}.hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.me{background:#FFC000;color:#000;font-weight:bold;text-align:center}.lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style></head><body>";
               h+="<h1>Security Risk Assessment \u2014 Executive Summary</h1>";
               h+="<p><b>Project:</b> "+(ctx.project||"\u2014")+" | <b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+"</p>";
               h+="<p><b>Site:</b> "+(ctx.address||"")+" "+(ctx.postcode||"")+" | <b>Type:</b> "+(ctx.devType||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
@@ -4410,7 +4410,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h3",{className:"text-sm font-bold text-slate",style:{letterSpacing:1}},"STAKEHOLDER MEETINGS & CONSULTATIONS"),
             React.createElement("div",{className:"flex gap-2"},
               React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-                var h2="<table border=\'1\' cellpadding=\'4\' cellspacing=\'0\' style=\'border-collapse:collapse;font-family:Calibri,Arial;font-size:10pt\'>";
+                var h2="<table border=\'1\' cellpadding=\'4\' cellspacing=\'0\' style=\'border-collapse:collapse;font-family:Arial;font-size:9pt\'>";
                 h2+="<tr style=\'background:#1B2A4A;color:#fff\'><th>Date</th><th>Description</th><th>Attendees</th></tr>";
                 meetings.forEach(function(m){h2+="<tr><td>"+((m.date)||"\u2014")+"</td><td>"+((m.desc)||"\u2014")+"</td><td>"+((m.attendees)||"\u2014")+"</td></tr>"});
                 h2+="</table>";
@@ -4736,10 +4736,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:"auto"},onClick:function(){
                 var chunks=[];
                 chunks.push("<h2>Secured by Design Requirements \u2014 "+data.title+"</h2>");
-                chunks.push("<p style='font-family:Calibri;font-size:10pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Guide: <b>"+data.guide+"</b></p>");
+                chunks.push("<p style='font-family:Arial;font-size:9pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Guide: <b>"+data.guide+"</b></p>");
                 // Compliance summary
                 var tot=allItems.length;var comp=sbdStatusCounts.Compliant;var part=sbdStatusCounts.Partial;var gap=sbdStatusCounts.Gap;var na=sbdStatusCounts["N/A"];
-                chunks.push("<p style='font-family:Calibri;font-size:10pt'><b>Compliance Summary:</b> "+comp+" Compliant | "+part+" Partial | "+gap+" Gap | "+na+" N/A | "+sbdStatusCounts.Unset+" Not assessed ("+tot+" total requirements)</p>");
+                chunks.push("<p style='font-family:Arial;font-size:9pt'><b>Compliance Summary:</b> "+comp+" Compliant | "+part+" Partial | "+gap+" Gap | "+na+" N/A | "+sbdStatusCounts.Unset+" Not assessed ("+tot+" total requirements)</p>");
                 var half=Math.ceil(data.sections.length/2);
                 var renderSec=function(sec){
                   var visibleItems=sec.items.map(function(item,i){return{item:item,i:i,k:sbdType+"|"+sec.cat+"|"+i}}).filter(function(x){return (sbdCompliance[x.k]||{}).status!=="N/A"});
