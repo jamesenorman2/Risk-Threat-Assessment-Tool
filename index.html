@@ -522,7 +522,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.959";
+  const VERSION="1.960";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3990,11 +3990,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.l,onChange:v=>srs(r.id,"l",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(ScoreBar,{value:rsc.i,onChange:v=>srs(r.id,"i",v),size:"sm",tips:scales.residual})),
                   React.createElement("td",null,React.createElement(Badge,{rating:r.resRat})),
-                  React.createElement("td",null,React.createElement("select",{className:"input",style:{fontSize:11,padding:"2px 4px"},
-                    value:acc[r.id]||"",onChange:e=>setAcc(p=>({...p,[r.id]:e.target.value||null}))},
-                    React.createElement("option",{value:""},"\u2014"),
-                    ["Yes","No","Tolerate","Review"].map(o=>React.createElement("option",{key:o,value:o},o))
-                  ))
+                  React.createElement("td",null,
+                    React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginBottom:2,textAlign:"center",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.3px"}},"Accept?"),
+                    React.createElement("select",{className:"input",style:{fontSize:11,padding:"2px 4px"},
+                      value:acc[r.id]||"",onChange:e=>setAcc(p=>({...p,[r.id]:e.target.value||null}))},
+                      React.createElement("option",{value:""},"Select..."),
+                      ["Yes","No","Tolerate","Review"].map(o=>React.createElement("option",{key:o,value:o},o))
+                    )
+                  )
                 )
               )
             ),
