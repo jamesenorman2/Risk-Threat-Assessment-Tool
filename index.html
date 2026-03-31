@@ -523,7 +523,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.949";
+  const VERSION="1.950";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3653,23 +3653,18 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
-            var chunkSize=8;var chunks=[];
+            var chunks=[];
             var gapc=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":g==="Insufficient"?"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center":""};
-            for(var ci=0;ci<filtered.length;ci+=chunkSize){
-              var batch=filtered.slice(ci,ci+chunkSize);
-              if(ci>0)chunks.push("<h3 style='page-break-before:always;font-family:Arial;font-size:11pt;color:#1B2A4A'>Existing Controls (continued)</h3>");
-              chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Controls Description</th><th>Eff</th><th>Conf</th><th>Score</th><th>Gap</th></tr>");
-              batch.forEach(function(r,bi){
-                var c2=cd[r.id]||{};var idx=ci+bi;
-                var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
-                var gap=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
-                chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td class='tl' style='font-size:8pt'>"+(c2.desc||"")+"</td><td class='"+scClass(c2.eff)+"'>"+(c2.eff||"")+"</td><td class='"+scClass(c2.conf)+"'>"+(c2.conf||"")+"</td><td style='text-align:center;font-weight:bold'>"+(sc2||"")+"</td><td style='"+gapc(gap)+"'>"+gap+"</td></tr>");
-              });
-              chunks.push("</table>");
-            }
+            chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Controls Description</th><th>Eff</th><th>Conf</th><th>Score</th><th>Gap</th></tr>");
+            filtered.forEach(function(r,idx){
+              var c2=cd[r.id]||{};
+              var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
+              var gap=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(idx+1)+"</td><td class='tl'><b>"+r.n+"</b></td><td class='tl' style='font-size:8pt'>"+(c2.desc||"")+"</td><td class='"+scClass(c2.eff)+"'>"+(c2.eff||"")+"</td><td class='"+scClass(c2.conf)+"'>"+(c2.conf||"")+"</td><td style='text-align:center;font-weight:bold'>"+(sc2||"")+"</td><td style='"+gapc(gap)+"'>"+gap+"</td></tr>");
+            });
+            chunks.push("</table>");
             copyChunkedToWord(chunks,"Existing Controls \u2014 "+(ctx.project||"Assessment"));
-          }},"\ud83d\udccb Copy to Word"),
-          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-controls","Existing controls captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+          }},"\ud83d\udccb Copy to Word")
         ),
         React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
           React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
