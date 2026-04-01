@@ -513,12 +513,13 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Attractiveness, Vulnerability & Likelihood",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
   {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk & Treatments",n:"10"},
-  {id:"dashboard",l:"Summary",n:"11"},
-  {id:"sbd",l:"SBD Requirements",n:"12"},
-  {id:"methodology",l:"Methodology",n:"13"},
-  {id:"threatlib",l:"Threat Library",n:"14"},
-  {id:"treatdb",l:"Treatment Database",n:"15"},
-  {id:"settings",l:"Settings",n:"16"}];
+  {id:"summary",l:"Summary",n:"11"},
+  {id:"dashboard",l:"Dashboard",n:"12"},
+  {id:"sbd",l:"SBD Requirements",n:"13"},
+  {id:"methodology",l:"Methodology",n:"14"},
+  {id:"threatlib",l:"Threat Library",n:"15"},
+  {id:"treatdb",l:"Treatment Database",n:"16"},
+  {id:"settings",l:"Settings",n:"17"}];
 
 
 // ============================================================
@@ -672,7 +673,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.969";
+  const VERSION="1.970";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4321,12 +4322,266 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       ),
 
 
+      // SUMMARY — all treatments per asset & per POI, deduplicated
+      tab==="summary"&&React.createElement("div",{id:"treatment-summary-section"},
+        React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
+          React.createElement("div",null,
+            React.createElement("h2",{className:"section-title"},"Treatment Summary"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"All recommended treatment measures consolidated per asset and per point of interest. Duplicates removed.")
+          ),
+          React.createElement("div",{className:"flex gap-2"},
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+              // Build rich HTML for clipboard
+              var style="<style>body{font-family:Arial,sans-serif;font-size:10pt;color:#333}h1{color:#1B2A4A;font-size:16pt;border-bottom:2pt solid #1B2A4A;padding-bottom:6pt;margin-bottom:8pt}h2{color:#1B2A4A;font-size:13pt;margin-top:16pt;margin-bottom:6pt;border-bottom:1pt solid #D6DCE4;padding-bottom:4pt}h3{color:#475569;font-size:11pt;margin:10pt 0 4pt}table{border-collapse:collapse;width:100%;margin:6pt 0}th{background:#1B2A4A;color:#fff;padding:6pt 10pt;text-align:left;font-size:9pt;font-weight:bold}td{border:1pt solid #D6DCE4;padding:5pt 10pt;font-size:9pt;vertical-align:top}tr:nth-child(even) td{background:#f8fafc}ol{margin:0;padding-left:18pt}li{margin-bottom:2pt}.opt{color:#7c3aed;font-style:italic}p{margin:4pt 0;line-height:1.5}</style>";
+              var h=style;
+              h+="<h1>Treatment Summary \u2014 "+(ctx.project||"Assessment")+"</h1>";
+              h+="<p><b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
+
+              // Build per-asset deduplicated measures
+              var assetMeasures={};
+              assets.forEach(function(a){if(a.cat)assetMeasures[a.id]={cat:a.cat,desc:a.desc,items:[],threats:[]}});
+              cRisks.forEach(function(r){
+                var m=treatmentMeasures[r.id]||{};
+                (r.targets||[]).forEach(function(tid){
+                  if(!assetMeasures[tid])return;
+                  var rawArr=m[tid]||[];
+                  var optMap=(treatOptional[r.id]&&treatOptional[r.id][tid])||{};
+                  rawArr.forEach(function(v,vi){
+                    if(!v)return;
+                    var isOpt=!!optMap[vi];
+                    var key=v.trim().toLowerCase();
+                    if(!assetMeasures[tid].items.some(function(x){return x.key===key})){
+                      assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key});
+                    }
+                  });
+                  if(!assetMeasures[tid].threats.includes(r.n))assetMeasures[tid].threats.push(r.n);
+                });
+              });
+
+              var assetKeys=Object.keys(assetMeasures).filter(function(k){return assetMeasures[k].items.length>0});
+              if(assetKeys.length>0){
+                h+="<h2>Treatment Measures by Asset</h2>";
+                assetKeys.forEach(function(aid){
+                  var a=assetMeasures[aid];
+                  h+="<h3>"+a.cat+"</h3>";
+                  if(a.desc)h+="<p style='font-size:9pt;color:#64748b;margin-bottom:4pt'>"+a.desc+"</p>";
+                  h+="<p style='font-size:8pt;color:#94a3b8'>Applicable threats: "+a.threats.join(", ")+"</p>";
+                  h+="<ol>";
+                  a.items.forEach(function(item){
+                    h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                  });
+                  h+="</ol>";
+                });
+              }
+
+              // Build per-POI deduplicated measures
+              var poiMeasures={};
+              pois.forEach(function(poi){poiMeasures[poi.id]={name:poi.name,desc:poi.desc,location:poi.location,items:[],threats:[]}});
+              cRisks.forEach(function(r){
+                var m=treatmentMeasures[r.id]||{};
+                pois.filter(function(p){return p.threats.includes(r.id)}).forEach(function(poi){
+                  var poiKey="poi_"+poi.id;
+                  var rawArr=m[poiKey]||[];
+                  var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
+                  rawArr.forEach(function(v,vi){
+                    if(!v)return;
+                    var isOpt=!!optMap[vi];
+                    var key=v.trim().toLowerCase();
+                    if(!poiMeasures[poi.id].items.some(function(x){return x.key===key})){
+                      poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key});
+                    }
+                  });
+                  if(!poiMeasures[poi.id].threats.includes(r.n))poiMeasures[poi.id].threats.push(r.n);
+                });
+              });
+
+              var poiKeys=Object.keys(poiMeasures).filter(function(k){return poiMeasures[k].items.length>0});
+              if(poiKeys.length>0){
+                h+="<h2>Treatment Measures by Point of Interest</h2>";
+                poiKeys.forEach(function(pid){
+                  var p=poiMeasures[pid];
+                  h+="<h3>"+( p.name||"POI")+"</h3>";
+                  if(p.desc||p.location)h+="<p style='font-size:9pt;color:#64748b;margin-bottom:4pt'>"+[p.desc,p.location].filter(Boolean).join(" \u2014 ")+"</p>";
+                  h+="<p style='font-size:8pt;color:#94a3b8'>Applicable threats: "+p.threats.join(", ")+"</p>";
+                  h+="<ol>";
+                  p.items.forEach(function(item){
+                    h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                  });
+                  h+="</ol>";
+                });
+              }
+
+              if(assetKeys.length===0&&poiKeys.length===0){
+                h+="<p style='color:#94a3b8;font-style:italic'>No treatment measures have been recorded yet.</p>";
+              }
+
+              h+="<p style='font-size:8pt;color:#94a3b8;margin-top:16pt;border-top:1pt solid #e2e8f0;padding-top:6pt'>Generated by Security Risk &amp; Threat Assessment Tool v"+VERSION+" on "+new Date().toLocaleDateString()+"</p>";
+
+              var blob=new Blob([h],{type:"text/html"});
+              navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){
+                showToast("Treatment summary copied \u2014 paste into Word with Ctrl+V");
+              }).catch(function(){showToast("Copy failed \u2014 check browser permissions")});
+            }},"\ud83d\udccb Copy for Word")
+          )
+        ),
+
+        // Render the summary content
+        (function(){
+          // Build per-asset deduplicated measures
+          var assetMeasures={};
+          assets.forEach(function(a){if(a.cat)assetMeasures[a.id]={cat:a.cat,desc:a.desc,items:[],threats:[]}});
+          cRisks.forEach(function(r){
+            var m=treatmentMeasures[r.id]||{};
+            (r.targets||[]).forEach(function(tid){
+              if(!assetMeasures[tid])return;
+              var rawArr=m[tid]||[];
+              var optMap=(treatOptional[r.id]&&treatOptional[r.id][tid])||{};
+              rawArr.forEach(function(v,vi){
+                if(!v)return;
+                var isOpt=!!optMap[vi];
+                var key=v.trim().toLowerCase();
+                if(!assetMeasures[tid].items.some(function(x){return x.key===key})){
+                  assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key});
+                }
+              });
+              if(!assetMeasures[tid].threats.includes(r.n))assetMeasures[tid].threats.push(r.n);
+            });
+          });
+
+          // Build per-POI deduplicated measures
+          var poiMeasures={};
+          pois.forEach(function(poi){poiMeasures[poi.id]={name:poi.name,desc:poi.desc,location:poi.location,items:[],threats:[]}});
+          cRisks.forEach(function(r){
+            var m=treatmentMeasures[r.id]||{};
+            pois.filter(function(p){return p.threats.includes(r.id)}).forEach(function(poi){
+              var poiKey="poi_"+poi.id;
+              var rawArr=m[poiKey]||[];
+              var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
+              rawArr.forEach(function(v,vi){
+                if(!v)return;
+                var isOpt=!!optMap[vi];
+                var key=v.trim().toLowerCase();
+                if(!poiMeasures[poi.id].items.some(function(x){return x.key===key})){
+                  poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key});
+                }
+              });
+              if(!poiMeasures[poi.id].threats.includes(r.n))poiMeasures[poi.id].threats.push(r.n);
+            });
+          });
+
+          var assetKeys=Object.keys(assetMeasures).filter(function(k){return assetMeasures[k].items.length>0});
+          var poiKeys=Object.keys(poiMeasures).filter(function(k){return poiMeasures[k].items.length>0});
+          var totalAssetMeasures=assetKeys.reduce(function(t,k){return t+assetMeasures[k].items.length},0);
+          var totalPoiMeasures=poiKeys.reduce(function(t,k){return t+poiMeasures[k].items.length},0);
+
+          return React.createElement("div",null,
+            // Stats
+            React.createElement("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
+              React.createElement("div",{style:{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
+                React.createElement("div",{style:{fontSize:11,color:"#0369a1",fontWeight:600}},"ASSETS WITH MEASURES"),
+                React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#0c4a6e"}},assetKeys.length)
+              ),
+              React.createElement("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
+                React.createElement("div",{style:{fontSize:11,color:"#15803d",fontWeight:600}},"ASSET MEASURES"),
+                React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#14532d"}},totalAssetMeasures)
+              ),
+              React.createElement("div",{style:{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
+                React.createElement("div",{style:{fontSize:11,color:"#dc2626",fontWeight:600}},"POIs WITH MEASURES"),
+                React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#7f1d1d"}},poiKeys.length)
+              ),
+              React.createElement("div",{style:{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
+                React.createElement("div",{style:{fontSize:11,color:"#d97706",fontWeight:600}},"POI MEASURES"),
+                React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#92400e"}},totalPoiMeasures)
+              )
+            ),
+
+            // Per-Asset treatment cards
+            assetKeys.length>0&&React.createElement("div",{style:{marginBottom:24}},
+              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1B2A4A",marginBottom:10,display:"flex",alignItems:"center",gap:8}},
+                "Treatment Measures by Asset",
+                React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:400}},totalAssetMeasures+" unique measures across "+assetKeys.length+" assets")
+              ),
+              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+                assetKeys.map(function(aid){
+                  var a=assetMeasures[aid];
+                  return React.createElement("div",{key:aid,className:"card",style:{overflow:"hidden"}},
+                    React.createElement("div",{style:{padding:"10px 14px",background:"#f8fafc",borderBottom:"1px solid #e2e8f0",display:"flex",alignItems:"center",gap:10}},
+                      React.createElement("div",{style:{flex:1}},
+                        React.createElement("div",{style:{fontWeight:700,fontSize:13,color:"#1e293b"}},a.cat),
+                        a.desc&&React.createElement("div",{style:{fontSize:11,color:"#64748b"}},a.desc)
+                      ),
+                      React.createElement("span",{style:{fontSize:10,padding:"2px 8px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600}},a.items.length+" measure"+(a.items.length!==1?"s":"")),
+                      React.createElement("span",{style:{fontSize:10,padding:"2px 8px",borderRadius:4,background:"#f1f5f9",color:"#475569",border:"1px solid #e2e8f0",fontWeight:600}},a.threats.length+" threat"+(a.threats.length!==1?"s":""))
+                    ),
+                    React.createElement("div",{style:{padding:"8px 14px"}},
+                      React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginBottom:6}},"Applicable threats: "+a.threats.join(", ")),
+                      a.items.map(function(item,idx){
+                        return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:4,marginBottom:3,lineHeight:1.5}},
+                          React.createElement("span",{style:{color:"#1B2A4A",fontWeight:600,flexShrink:0,width:22,textAlign:"right"}},(idx+1)+"."),
+                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                        );
+                      })
+                    )
+                  );
+                })
+              )
+            ),
+
+            // Per-POI treatment cards
+            poiKeys.length>0&&React.createElement("div",{style:{marginBottom:24}},
+              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#7f1d1d",marginBottom:10,display:"flex",alignItems:"center",gap:8}},
+                "Treatment Measures by Point of Interest",
+                React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:400}},totalPoiMeasures+" unique measures across "+poiKeys.length+" POIs")
+              ),
+              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+                poiKeys.map(function(pid){
+                  var p=poiMeasures[pid];
+                  return React.createElement("div",{key:pid,className:"card",style:{overflow:"hidden",border:"1px solid #fecaca"}},
+                    React.createElement("div",{style:{padding:"10px 14px",background:"#fef2f2",borderBottom:"1px solid #fecaca",display:"flex",alignItems:"center",gap:10}},
+                      React.createElement("div",{style:{flex:1}},
+                        React.createElement("div",{style:{fontWeight:700,fontSize:13,color:"#7f1d1d"}},p.name||"Point of Interest"),
+                        (p.desc||p.location)&&React.createElement("div",{style:{fontSize:11,color:"#92400e"}},[p.desc,p.location].filter(Boolean).join(" \u2014 "))
+                      ),
+                      React.createElement("span",{style:{fontSize:10,padding:"2px 8px",borderRadius:4,background:"#fff",color:"#dc2626",border:"1px solid #fecaca",fontWeight:600}},p.items.length+" measure"+(p.items.length!==1?"s":"")),
+                      React.createElement("span",{style:{fontSize:10,padding:"2px 8px",borderRadius:4,background:"#fff",color:"#92400e",border:"1px solid #fde68a",fontWeight:600}},p.threats.length+" threat"+(p.threats.length!==1?"s":""))
+                    ),
+                    React.createElement("div",{style:{padding:"8px 14px"}},
+                      React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginBottom:6}},"Applicable threats: "+p.threats.join(", ")),
+                      p.items.map(function(item,idx){
+                        return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:4,marginBottom:3,lineHeight:1.5}},
+                          React.createElement("span",{style:{color:"#7f1d1d",fontWeight:600,flexShrink:0,width:22,textAlign:"right"}},(idx+1)+"."),
+                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                        );
+                      })
+                    )
+                  );
+                })
+              )
+            ),
+
+            // Empty state
+            assetKeys.length===0&&poiKeys.length===0&&React.createElement("div",{style:{textAlign:"center",padding:40,color:"#94a3b8"}},
+              React.createElement("div",{style:{fontSize:32,marginBottom:8}},"\ud83d\udccb"),
+              React.createElement("div",{style:{fontSize:14,fontWeight:600,marginBottom:4}},"No treatment measures recorded yet"),
+              React.createElement("div",{style:{fontSize:12}},"Treatment measures are added in the Residual Risk & Treatments tab (Tab 10). Once added, they will appear here consolidated per asset and per POI with duplicates removed.")
+            ),
+
+            // Footer
+            React.createElement("div",{style:{fontSize:10,color:"#94a3b8",textAlign:"center",padding:8,marginTop:16}},
+              "Generated by Security Risk & Threat Assessment Tool v"+VERSION+" | "+(ctx.project||"")+" | "+new Date().toLocaleDateString()
+            )
+          );
+        })()
+      ),
+
       // DASHBOARD
       tab==="dashboard"&&React.createElement("div",{id:"exec-summary-section"},
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
-            React.createElement("h2",{className:"section-title"},"Executive Summary"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Comprehensive risk summary for report insertion")
+            React.createElement("h2",{className:"section-title"},"Dashboard"),
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Executive risk summary with full register, matrices, and treatment overview")
           ),
           React.createElement("div",{className:"flex gap-2"},
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
