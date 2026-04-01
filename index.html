@@ -672,7 +672,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.967";
+  const VERSION="1.968";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -780,6 +780,7 @@ function App(){
   const[ghConfig,setGhConfig]=useState({token:"",repo:"",owner:"",enabled:true});
   const[ghBrowser,setGhBrowser]=useState({open:false,files:[],loading:false,path:"projects"});
   const[treatDBSync,setTreatDBSync]=useState({status:"idle",lastSaved:null,lastLoaded:null});
+  const[threatLibSync,setThreatLibSync]=useState({status:"idle",lastSaved:null,lastLoaded:null});
   const[comparisonData,setComparisonData]=useState(null);
   const[compLoading,setCompLoading]=useState(false);
   const[showAddThreat,setShowAddThreat]=useState(false);
@@ -793,6 +794,7 @@ function App(){
   const[tlEditing,setTlEditing]=useState(null);
   const dragRef=useRef(null);
   const treatDBAutoFetched=useRef(false);
+  const threatLibAutoFetched=useRef(false);
   const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
@@ -843,6 +845,13 @@ function App(){
     if(!ghConfig.enabled||!ghConfig.owner||!ghConfig.repo)return;
     treatDBAutoFetched.current=true;
     loadTreatmentDBFromGitHub(true);
+  },[ghConfig.owner,ghConfig.repo,ghConfig.enabled]);
+
+  useEffect(()=>{
+    if(threatLibAutoFetched.current)return;
+    if(!ghConfig.enabled||!ghConfig.owner||!ghConfig.repo)return;
+    threatLibAutoFetched.current=true;
+    loadThreatLibFromGitHub(true);
   },[ghConfig.owner,ghConfig.repo,ghConfig.enabled]);
 
   // Auto-sync SBD type from development type preset
@@ -1052,6 +1061,37 @@ function App(){
         if(!silent)showToast("Treatment database loaded from GitHub ✓");
       }
     }catch(e){if(!silent){setTreatDBSync(p=>({...p,status:"error"}));showToast("Error loading treatment database from GitHub");}}
+  };
+
+  const THREAT_LIB_PATH="shared/threat-library.json";
+
+  const saveThreatLibToGitHub=async(db)=>{
+    if(!ghConfig.enabled||!ghConfig.token||!ghConfig.repo||!ghConfig.owner){showToast("Configure GitHub (owner, repo, token) in Settings to sync");return;}
+    setThreatLibSync(p=>({...p,status:"saving"}));
+    try{
+      var headers={"Authorization":"Bearer "+ghConfig.token,"Accept":"application/vnd.github.v3+json"};
+      var sha=null;
+      try{var chk=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+THREAT_LIB_PATH,{headers:headers});if(chk.ok){var d=await chk.json();sha=d.sha}}catch(e){}
+      var payload={message:"Update threat library — "+new Date().toLocaleString(),content:btoa(unescape(encodeURIComponent(JSON.stringify(db,null,2))))};
+      if(sha)payload.sha=sha;
+      var res=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+THREAT_LIB_PATH,{method:"PUT",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(res.ok){setThreatLibSync({status:"saved",lastSaved:new Date().toLocaleTimeString(),lastLoaded:null});showToast("Threat library saved to GitHub ✓");}
+      else{setThreatLibSync(p=>({...p,status:"error"}));showToast("Failed to save threat library to GitHub");}
+    }catch(e){setThreatLibSync(p=>({...p,status:"error"}));showToast("Error saving threat library to GitHub");}
+  };
+
+  const loadThreatLibFromGitHub=async(silent)=>{
+    if(!ghConfig.enabled||!ghConfig.repo||!ghConfig.owner)return;
+    if(!silent)setThreatLibSync(p=>({...p,status:"loading"}));
+    try{
+      var headers={"Accept":"application/vnd.github.v3+json"};
+      if(ghConfig.token)headers["Authorization"]="Bearer "+ghConfig.token;
+      var res=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+THREAT_LIB_PATH,{headers:headers});
+      if(!res.ok){if(!silent){setThreatLibSync(p=>({...p,status:"idle"}));showToast("No shared threat library found in repository");}return;}
+      var data=await res.json();
+      var parsed=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,"")))));
+      if(Array.isArray(parsed)){setThreatDB(parsed);setThreatLibSync({status:"loaded",lastSaved:null,lastLoaded:new Date().toLocaleTimeString()});if(!silent)showToast("Threat library loaded from GitHub ✓");}
+    }catch(e){if(!silent){setThreatLibSync(p=>({...p,status:"error"}));showToast("Error loading threat library from GitHub");}}
   };
 
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
@@ -5091,6 +5131,30 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       tab==="threatlib"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Threat Library"),
         React.createElement("p",{className:"section-sub"},"A reference database of standard threat types. Edit descriptions and keywords, then assign which Treatment Sets apply to each threat. Assignments drive suggestion chips in the Residual Risk tab."),
+
+        // GitHub sync banner
+        ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{
+          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:8,marginBottom:12,
+          background:threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"#f0fdf4":threatLibSync.status==="error"?"#fef2f2":"#f0f9ff",
+          border:"1px solid "+(threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"#bbf7d0":threatLibSync.status==="error"?"#fecaca":"#bae6fd")
+        }},
+          React.createElement("span",{style:{fontSize:16}},threatLibSync.status==="saving"||threatLibSync.status==="loading"?"\u23f3":threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"\u2705":threatLibSync.status==="error"?"\u274c":"\u2601\ufe0f"),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},
+              threatLibSync.status==="saving"?"Saving to GitHub...":threatLibSync.status==="loading"?"Loading from GitHub...":
+              threatLibSync.status==="saved"?"Saved to GitHub at "+threatLibSync.lastSaved:
+              threatLibSync.status==="loaded"?"Loaded from GitHub at "+threatLibSync.lastLoaded:
+              threatLibSync.status==="error"?"Sync error — check Settings":"GitHub sync available"),
+            React.createElement("div",{style:{fontSize:10,color:"#64748b"}},ghConfig.owner+"/"+ghConfig.repo+" \u2192 shared/threat-library.json")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
+            onClick:function(){saveThreatLibToGitHub(threatDB)}},"\u2191 Save to GitHub"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
+            onClick:function(){loadThreatLibFromGitHub(false)}},"\u2193 Load from GitHub")
+        ),
+        !ghConfig.enabled||!ghConfig.owner||!ghConfig.repo?React.createElement("div",{style:{padding:"10px 14px",borderRadius:8,marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",fontSize:12,color:"#92400e"}},"To enable shared sync: configure your GitHub repository in Settings \u2192 Back-ups."):null,
 
         // Stats bar
         React.createElement("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
