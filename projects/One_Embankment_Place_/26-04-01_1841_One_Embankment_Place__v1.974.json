@@ -1,0 +1,2663 @@
+{
+  "ctx": {
+    "project": "One Embankment Place ",
+    "projectNum": "08215727",
+    "ref": "",
+    "date": "2026-03-25",
+    "stage": "RIBA 2",
+    "assessor": "James Norman",
+    "client": "Bridgemont",
+    "scope": "6.4.1\tOffice Building and Structural Interventions\nThe project goes beyond a standard aesthetic upgrade, acting as a comprehensive repositioning to new-build equivalent standards.\n•\tThe main air-rights building will undergo a deep retro-fit, while the Villiers Street entrance building will be completely demolished and rebuilt.\n•\tStructural modifications will vertically extend the massing of the Villiers Street building.\n•\tExisting terraces on the south elevation will be modified to improve accessibility, and upper roof levels will be altered to increase Net Internal Area and external amenity spaces.\n•\tThe building envelope, specifically the facade and roof, will see comprehensive refurbishment to replace aging fabric and improve thermal performance.\n•\tInside, floor plates will be enhanced to maximise natural light and create stimulating work settings.\n•\tThe project includes best-in-class end-of-journey facilities, featuring cycle storage, dedicated cycle lifts, showers, and lockers.\n•\tOutdated building services will be replaced with new, highly efficient heating, cooling, and ventilation plant systems to drastically lower operational carbon.\n6.4.2\tRetail Strategy and Enhancements\nThe retail footprint will be revitalised and expanded, targeting an increase to 48,000 square feet of Net Lettable Area.\n•\tThe works will renew the retail offering beneath the Embankment Place underpass, within the vaults on Villiers Street, and throughout The Arches.\n•\tStandard retail units will be delivered as 'white-box' shells with high-quality facades.\n•\tUnits located within the historic railway arches will be treated differently; original brickwork will be carefully cleaned, repaired, and treated to ensure structural integrity while showcasing the authentic architectural patina.\n•\tThe overall strategy aims to improve street visibility, offer flexible unit sizes, and maximise signage to boost all-day footfall from Hungerford Bridge.\n6.4.3\tPublic Realm and Estate Transformation\nThe scope extends beyond the immediate building footprint to create a cohesive estate identity, though interventions outside the red line boundary are subject to planning approval.\n•\tEmbankment Gardens and Villiers Street South: A new arrival square will be created to orientate pedestrians. The boundary with Victoria Embankment Gardens will be reshaped, exploring the removal of raised steps to improve flow, and the bandstand will be reinvented to provide a new frontage facing Villiers Street.\n•\tCharing Cross Station Forecourt: The current vehicle-dominated space will be transformed to prioritise pedestrians. The monument will be reframed by a new pocket garden featuring kiosks and informal seating.\n•\tEmbankment Place Underpass: The route connecting Villiers Street to Northumberland Avenue will receive a new paving language, lighting, and planting to compliment the new retail and tunnel soffit treatments.\n•\tThe Concourse: The currently poorly lit, transient space connecting the station to Hungerford Bridge will be turned into a generous, inviting route with places to pause.\n",
+    "assumptions": "The office upgrades works is being planned for a speculative build as the current tenants lease will soon be expiring",
+    "notes": "",
+    "address": "1 Embankment Pl, London ",
+    "postcode": "WC2N 6RH",
+    "devType": "Commercial",
+    "country": "United Kingdom"
+  },
+  "assets": [
+    {
+      "id": 1,
+      "cat": "Human Assets",
+      "desc": "Office staff, Management, Visitors, Clients",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 5,
+        "impactEnv": 3
+      }
+    },
+    {
+      "id": 4,
+      "cat": "Physical - Building",
+      "desc": "Office building fabric, Reception, Lobbies, Common parts",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 4,
+        "impactEnv": 2
+      }
+    },
+    {
+      "id": 5,
+      "cat": "Physical - Office Space",
+      "desc": "Open plan offices, Meeting rooms, Executive suites",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 4,
+        "impactPeople": 3,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 6,
+      "cat": "Physical - IT/Comms",
+      "desc": "MER, SER, Comms Rooms, Server Rooms, Network switches",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 1,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 7,
+      "cat": "Physical - MEP Electrical",
+      "desc": "Main power, UPS, Generator, Distribution boards",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 3,
+        "impactEnv": 2
+      }
+    },
+    {
+      "id": 8,
+      "cat": "Physical - Safety Systems",
+      "desc": "Fire detection, Suppression, Smoke ventilation",
+      "sc": {
+        "opImpact": 4,
+        "dependencies": 4,
+        "impactPeople": 5,
+        "impactEnv": 2
+      }
+    },
+    {
+      "id": 9,
+      "cat": "Physical - HVAC",
+      "desc": "AHUs, FCUs, Ventilation, BMS",
+      "sc": {
+        "opImpact": 4,
+        "dependencies": 3,
+        "impactPeople": 3,
+        "impactEnv": 2
+      }
+    },
+    {
+      "id": 11,
+      "cat": "Physical - Vehicle Parking",
+      "desc": "Visitor parking, Loading bay",
+      "sc": {
+        "opImpact": 2,
+        "dependencies": 2,
+        "impactPeople": 2,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 12,
+      "cat": "Physical - Equipment",
+      "desc": "Computers, Monitors, Laptops, Printers, Mobile devices",
+      "sc": {
+        "opImpact": 4,
+        "dependencies": 3,
+        "impactPeople": 1,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 13,
+      "cat": "Information Assets",
+      "desc": "Business data, Client information, Financial records, IP",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 4,
+        "impactPeople": 3,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 14,
+      "cat": "Information - Digital",
+      "desc": "Email systems, Cloud storage, CRM, ERP",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 2,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 15,
+      "cat": "Intangible - Reputation",
+      "desc": "Corporate brand, Client confidence, Market position",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 4,
+        "impactPeople": 2,
+        "impactEnv": 1
+      }
+    },
+    {
+      "id": 16,
+      "cat": "Intangible - Operations",
+      "desc": "Business continuity, Revenue generation, Service delivery",
+      "sc": {
+        "opImpact": 5,
+        "dependencies": 5,
+        "impactPeople": 3,
+        "impactEnv": 1
+      }
+    }
+  ],
+  "threats": [
+    {
+      "n": "VBIED",
+      "d": "Vehicle Borne IED",
+      "cat": "Terrorism",
+      "id": 1,
+      "cap": 3,
+      "int": 2,
+      "targets": [
+        11,
+        4
+      ]
+    },
+    {
+      "n": "PBIED",
+      "d": "Person Borne IED",
+      "cat": "Terrorism",
+      "id": 2,
+      "cap": 2,
+      "int": 1,
+      "targets": [
+        4
+      ]
+    },
+    {
+      "n": "IED",
+      "d": "Improvised Explosive Device",
+      "cat": "Terrorism",
+      "id": 3,
+      "cap": 2,
+      "int": 2,
+      "targets": [
+        4,
+        1
+      ]
+    },
+    {
+      "n": "MTFA",
+      "d": "Marauding Terrorist Firearm Attack",
+      "cat": "Terrorism",
+      "id": 4,
+      "cap": 2,
+      "int": 3,
+      "targets": [
+        1,
+        5,
+        11
+      ]
+    },
+    {
+      "n": "MTA",
+      "d": "Marauding Terrorist Attack (bladed)",
+      "cat": "Terrorism",
+      "id": 5,
+      "cap": 3,
+      "int": 3,
+      "targets": [
+        1,
+        4,
+        11
+      ]
+    },
+    {
+      "n": "VAAW",
+      "d": "Vehicle as a Weapon",
+      "cat": "Terrorism",
+      "id": 6,
+      "cap": 3,
+      "int": 3,
+      "targets": [
+        1,
+        4,
+        11
+      ]
+    },
+    {
+      "n": "Cybercrime",
+      "d": "IT/OT/IoT targeting",
+      "cat": "Crime",
+      "id": 7,
+      "cap": 3,
+      "int": 4,
+      "targets": [
+        6,
+        13,
+        14
+      ]
+    },
+    {
+      "n": "Violence & Sexual",
+      "d": "Violence and sexual offending",
+      "cat": "Crime",
+      "id": 8,
+      "cap": 4,
+      "int": 4,
+      "targets": [
+        1
+      ]
+    },
+    {
+      "n": "SOC",
+      "d": "Serious Organised Crime",
+      "cat": "Crime",
+      "id": 9,
+      "cap": 4,
+      "int": 4,
+      "targets": [
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "n": "Info Theft",
+      "d": "Information theft",
+      "cat": "Crime",
+      "id": 10,
+      "cap": 3,
+      "int": 2,
+      "targets": [
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "n": "Arson",
+      "d": "Deliberate fire",
+      "cat": "Crime",
+      "id": 11,
+      "cap": 2,
+      "int": 2,
+      "targets": [
+        4,
+        11
+      ]
+    },
+    {
+      "n": "Insider Threat",
+      "d": "Staff/contractor misuse",
+      "cat": "Crime",
+      "id": 12,
+      "cap": 1,
+      "int": 3,
+      "targets": [
+        6,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "n": "Burglary",
+      "d": "Unlawful entry/theft",
+      "cat": "Crime",
+      "id": 13,
+      "cap": 2,
+      "int": 2,
+      "targets": [
+        4,
+        6,
+        12
+      ]
+    },
+    {
+      "n": "Theft",
+      "d": "Asset deprivation (CRAVED)",
+      "cat": "Crime",
+      "id": 14,
+      "cap": 3,
+      "int": 4,
+      "targets": [
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "n": "Public Order",
+      "d": "Protests/direct action/civil action",
+      "cat": "Crime",
+      "id": 15,
+      "cap": 2,
+      "int": 5,
+      "targets": [
+        1,
+        4,
+        15
+      ]
+    },
+    {
+      "n": "ASB",
+      "d": "Anti-Social Behaviour",
+      "cat": "Crime",
+      "id": 16,
+      "cap": 3,
+      "int": 2,
+      "targets": [
+        1,
+        4,
+        15
+      ]
+    },
+    {
+      "n": "Criminal Damage",
+      "d": "Vandalism/criminal damage",
+      "cat": "Crime",
+      "id": 17,
+      "cap": 3,
+      "int": 4,
+      "targets": [
+        4,
+        5,
+        11,
+        12
+      ]
+    },
+    {
+      "n": "Trespass",
+      "d": "Unauthorised access to land/property",
+      "cat": "Crime",
+      "id": 18,
+      "cap": 3,
+      "int": 3,
+      "targets": [
+        4
+      ]
+    }
+  ],
+  "vs": {
+    "1": {
+      "visibility": 4,
+      "status": 3,
+      "access": 3,
+      "collateral": 5,
+      "crime": 3,
+      "history": 2,
+      "vuln": 3
+    },
+    "2": {
+      "visibility": 4,
+      "status": 4,
+      "access": 4,
+      "collateral": 4,
+      "crime": 3,
+      "history": 3,
+      "vuln": 4
+    },
+    "3": {
+      "visibility": 3,
+      "status": 3,
+      "access": 3,
+      "collateral": 3,
+      "crime": 3,
+      "history": 3,
+      "vuln": 3
+    },
+    "4": {
+      "visibility": 4,
+      "status": 4,
+      "access": 4,
+      "collateral": 5,
+      "crime": 4,
+      "history": 3,
+      "vuln": 4
+    },
+    "5": {
+      "visibility": 5,
+      "status": 4,
+      "access": 5,
+      "collateral": 5,
+      "crime": 3,
+      "history": 4,
+      "vuln": 4
+    },
+    "6": {
+      "visibility": 5,
+      "status": 4,
+      "access": 5,
+      "collateral": 4,
+      "crime": 3,
+      "history": 3,
+      "vuln": 4
+    },
+    "7": {
+      "visibility": 3,
+      "status": 4,
+      "access": 3,
+      "collateral": 3,
+      "crime": 4,
+      "history": 4,
+      "vuln": 3
+    },
+    "8": {
+      "visibility": 4,
+      "status": 3,
+      "access": 4,
+      "collateral": 4,
+      "crime": 5,
+      "history": 5,
+      "vuln": 4
+    },
+    "9": {
+      "visibility": 3,
+      "status": 4,
+      "access": 3,
+      "collateral": 3,
+      "crime": 3,
+      "history": 3,
+      "vuln": 3
+    },
+    "10": {
+      "visibility": 2,
+      "status": 4,
+      "access": 3,
+      "collateral": 2,
+      "crime": 3,
+      "history": 3,
+      "vuln": 3
+    },
+    "11": {
+      "visibility": 3,
+      "status": 3,
+      "access": 3,
+      "collateral": 4,
+      "crime": 3,
+      "history": 2,
+      "vuln": 3
+    },
+    "12": {
+      "visibility": 2,
+      "status": 3,
+      "access": 4,
+      "collateral": 3,
+      "crime": 2,
+      "history": 3,
+      "vuln": 3
+    },
+    "13": {
+      "visibility": 3,
+      "status": 3,
+      "access": 3,
+      "collateral": 2,
+      "crime": 4,
+      "history": 3,
+      "vuln": 3
+    },
+    "14": {
+      "visibility": 3,
+      "status": 3,
+      "access": 4,
+      "collateral": 2,
+      "crime": 5,
+      "history": 4,
+      "vuln": 4
+    },
+    "15": {
+      "visibility": 5,
+      "status": 4,
+      "access": 5,
+      "collateral": 4,
+      "crime": 4,
+      "history": 4,
+      "vuln": 3
+    },
+    "16": {
+      "visibility": 4,
+      "status": 3,
+      "access": 5,
+      "collateral": 3,
+      "crime": 5,
+      "history": 4,
+      "vuln": 3
+    },
+    "17": {
+      "visibility": 4,
+      "status": 3,
+      "access": 4,
+      "collateral": 3,
+      "crime": 4,
+      "history": 3,
+      "vuln": 3
+    },
+    "18": {
+      "visibility": 3,
+      "status": 3,
+      "access": 4,
+      "collateral": 2,
+      "crime": 3,
+      "history": 3,
+      "vuln": 3
+    }
+  },
+  "is_": {
+    "1": {
+      "disruption": 5,
+      "fatalities": 5,
+      "reputation": 4,
+      "financial": 5,
+      "property": 5
+    },
+    "2": {
+      "disruption": 4,
+      "fatalities": 4,
+      "reputation": 4,
+      "financial": 4,
+      "property": 3
+    },
+    "3": {
+      "disruption": 4,
+      "fatalities": 3,
+      "reputation": 4,
+      "financial": 4,
+      "property": 4
+    },
+    "4": {
+      "disruption": 5,
+      "fatalities": 5,
+      "reputation": 4,
+      "financial": 4,
+      "property": 2
+    },
+    "5": {
+      "disruption": 4,
+      "fatalities": 5,
+      "reputation": 4,
+      "financial": 4,
+      "property": 3
+    },
+    "6": {
+      "disruption": 4,
+      "fatalities": 4,
+      "reputation": 4,
+      "financial": 3,
+      "property": 3
+    },
+    "7": {
+      "disruption": 4,
+      "fatalities": 1,
+      "reputation": 4,
+      "financial": 4,
+      "property": 1
+    },
+    "8": {
+      "disruption": 3,
+      "fatalities": 3,
+      "reputation": 4,
+      "financial": 3,
+      "property": 1
+    },
+    "9": {
+      "disruption": 3,
+      "fatalities": 2,
+      "reputation": 4,
+      "financial": 4,
+      "property": 2
+    },
+    "10": {
+      "disruption": 2,
+      "fatalities": 1,
+      "reputation": 4,
+      "financial": 4,
+      "property": 1
+    },
+    "11": {
+      "disruption": 5,
+      "fatalities": 3,
+      "reputation": 4,
+      "financial": 5,
+      "property": 5
+    },
+    "12": {
+      "disruption": 3,
+      "fatalities": 1,
+      "reputation": 4,
+      "financial": 3,
+      "property": 1
+    },
+    "13": {
+      "disruption": 2,
+      "fatalities": 1,
+      "reputation": 2,
+      "financial": 3,
+      "property": 2
+    },
+    "14": {
+      "disruption": 2,
+      "fatalities": 1,
+      "reputation": 2,
+      "financial": 3,
+      "property": 1
+    },
+    "15": {
+      "disruption": 4,
+      "fatalities": 2,
+      "reputation": 3,
+      "financial": 3,
+      "property": 3
+    },
+    "16": {
+      "disruption": 2,
+      "fatalities": 1,
+      "reputation": 2,
+      "financial": 2,
+      "property": 2
+    },
+    "17": {
+      "disruption": 3,
+      "fatalities": 1,
+      "reputation": 3,
+      "financial": 3,
+      "property": 4
+    },
+    "18": {
+      "disruption": 2,
+      "fatalities": 1,
+      "reputation": 2,
+      "financial": 1,
+      "property": 1
+    }
+  },
+  "cd": {
+    "1": {
+      "desc": "CCTV covering all vehicle approaches and perimeter; Dedicated security monitoring in secure area ",
+      "eff": 3,
+      "conf": 3
+    },
+    "2": {
+      "desc": "Main entrance security with the option for Access Control in times of heightened threat level; Clear external areas with minimal concealment for device placement; CPTED principles — natural surveillance, defined public/private space, clear sight lines; Visitor management — all visitors identified, signed in and issued passes; Main entrance controlled with electronic access control, intercom and lockdown; Staff trained to identify suspicious behaviour and unattended items",
+      "eff": 3,
+      "conf": 3
+    },
+    "3": {
+      "desc": "Video surveillance monitoring and reactive security guarding; Dedicated mail/post room physically separated from occupied areas; Perimeter security preventing unauthorised access to building shell and service areas;; Main entrance controlled with electronic access control, intercom and lockdown",
+      "eff": 3,
+      "conf": 3
+    },
+    "4": {
+      "desc": "CPTED principles — natural surveillance, defined public/private space, clear sight lines; Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+      "eff": 3,
+      "conf": 3
+    },
+    "5": {
+      "desc": "External CCTV ; Some CPTED principles — natural surveillance, defined public/private space, clear sight lines; Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+      "eff": 3,
+      "conf": 3
+    },
+    "6": {
+      "desc": "Some non-rated bollards lining the road pavement on Villiers St.. ",
+      "eff": 3,
+      "conf": 3
+    },
+    "7": {
+      "desc": "Access control to IT infrastructure with full audit trail",
+      "eff": 3,
+      "conf": 3
+    },
+    "8": {
+      "desc": "CCTV covering all pedestrian routes, entrances and car parks; Controlled access preventing unauthorised individuals reaching occupied areas; Internal CCTV in corridors, stair cores and isolated areas",
+      "eff": 3,
+      "conf": 3
+    },
+    "9": {
+      "desc": "CCTV at all access points to valuable assets and cash handling",
+      "eff": 3,
+      "conf": 3
+    },
+    "10": {
+      "desc": "Security-rated doorsets to areas storing/processing sensitive information; Security-tested external doorsets integrated with electronic access control; Emergency exit doors without external ironmongery, fitted with door contacts and position monitoring; Loading bay and service entrance doors security-rated",
+      "eff": 3,
+      "conf": 3
+    },
+    "11": {
+      "desc": "Sprinkler or suppression system; Fire compartmentation to limit spread; Fire detection system covering all areas including voids and risers",
+      "eff": 3,
+      "conf": 3
+    },
+    "12": {
+      "desc": "Pre-employment vetting and ongoing security screening",
+      "eff": 3,
+      "conf": 3
+    },
+    "13": {
+      "desc": "External CCTV covering perimeter, entries, recessed areas and service bays; Electronic access control at all external entry points with audit trail",
+      "eff": 3,
+      "conf": 3
+    },
+    "14": {
+      "desc": "",
+      "eff": 3,
+      "conf": 3
+    },
+    "15": {
+      "desc": "External CCTV with wide-area coverage and recording; Clear pedestrian routes and defined public/private boundaries",
+      "eff": 3,
+      "conf": 3
+    },
+    "16": {
+      "desc": "CPTED principles — natural surveillance, defined ownership, active maintenance regime; Robust, securely fixed street furniture and hard landscaping",
+      "eff": 3,
+      "conf": 3
+    },
+    "17": {
+      "desc": "CPTED principles — natural surveillance, defined ownership, active maintenance regime; Robust, securely fixed street furniture and hard landscaping",
+      "eff": 3,
+      "conf": 3
+    },
+    "18": {
+      "desc": "Loading bay and service entrance doors security-rated; Ground floor and accessible windows security-tested with laminated glass and internal beading; Electronic access control preventing unauthorised internal movement; Stair core and lift lobby access control at each level; Security-tested external doorsets integrated with electronic access control; Emergency exit doors without external ironmongery, fitted with door contacts and position monitoring",
+      "eff": 3,
+      "conf": 3
+    }
+  },
+  "tx": {
+    "1": "Reduce",
+    "2": "Reduce",
+    "3": "Reduce",
+    "4": "Reduce",
+    "5": "Reduce",
+    "6": "Reduce",
+    "7": "Transfer",
+    "8": "Reduce",
+    "9": "Reduce",
+    "10": "Reduce",
+    "11": "Transfer",
+    "12": "Reduce",
+    "13": "Reduce",
+    "14": "Reduce",
+    "15": "Reduce",
+    "16": "Reduce",
+    "17": "Reduce",
+    "18": "Reduce"
+  },
+  "rs": {
+    "1": {
+      "l": 3,
+      "i": 3
+    },
+    "2": {
+      "i": 4,
+      "l": 2
+    },
+    "3": {
+      "l": 2,
+      "i": 4
+    },
+    "4": {
+      "l": 3,
+      "i": 3
+    },
+    "5": {
+      "i": 4,
+      "l": 2
+    },
+    "6": {
+      "i": 3,
+      "l": 3
+    },
+    "7": {
+      "l": 4,
+      "i": 2
+    },
+    "8": {
+      "i": 3,
+      "l": 3
+    },
+    "9": {
+      "l": 2,
+      "i": 3
+    },
+    "10": {
+      "l": 3,
+      "i": 2
+    },
+    "11": {
+      "i": 3,
+      "l": 2
+    },
+    "12": {
+      "l": 2,
+      "i": 2
+    },
+    "13": {
+      "l": 2,
+      "i": 2
+    },
+    "14": {
+      "l": 3,
+      "i": 2
+    },
+    "15": {
+      "i": 3,
+      "l": 3
+    },
+    "16": {
+      "l": 2,
+      "i": 2
+    },
+    "17": {
+      "l": 3,
+      "i": 2
+    },
+    "18": {
+      "l": 4,
+      "i": 1
+    }
+  },
+  "acc": {},
+  "meetings": [
+    {
+      "id": 1774418355264,
+      "date": "2026-03-05",
+      "desc": "DOCO RIBA 2 Consultation",
+      "attendees": "Robert.Palin@met.police.uk (DOCO) Paul Taylor (Bridgemont – Client) James Norman (AECOM Security) Josh Hooker (AECOM Security) Thom Kilvert (Hopkins – Architects) Nona Jones (DP9 – Planning) Oscar Mansfield-Jones (DP9 – Planning)"
+    }
+  ],
+  "pois": [
+    {
+      "id": 1774448092257,
+      "name": "Charing Cross Station Forecourt:",
+      "desc": "The current vehicle-dominated space will be transformed to prioritise pedestrians. The monument will be reframed by a new pocket garden featuring kiosks and informal seating.",
+      "location": "",
+      "threats": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "id": 1774958104751,
+      "name": "Embankment Gardens",
+      "desc": "The boundary with Victoria Embankment Gardens will be reshaped",
+      "location": "",
+      "threats": [
+        4,
+        5,
+        6,
+        8,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "id": 1774958135036,
+      "name": "Embankment Place Underpass",
+      "desc": "The route connecting Villiers Street to Northumberland Avenue",
+      "location": "",
+      "threats": [
+        8,
+        9,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "id": 1774958208993,
+      "name": "The Concourse",
+      "desc": "The transient space connecting the station to Hungerford Bridge ",
+      "location": "",
+      "threats": [
+        8,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "id": 1774958300075,
+      "name": "Service Tunnel",
+      "desc": "For deliveries, waste and servicing",
+      "location": "",
+      "threats": [
+        1,
+        5,
+        4,
+        6,
+        14,
+        16
+      ]
+    },
+    {
+      "id": 1774958331951,
+      "name": "Structural Columns ",
+      "desc": "Any accessible columb assessable by Vehicles",
+      "location": "",
+      "threats": [
+        1
+      ]
+    }
+  ],
+  "activeAssetPreset": "Commercial",
+  "activeThreatPreset": "Commercial",
+  "assetsLocked": true,
+  "threatsLocked": false,
+  "critDescs": {
+    "disruption": "Level of impact on day-to-day activities and business operations",
+    "fatalities": "Potential for injuries, casualties or loss of life",
+    "reputation": "Effect on stakeholder confidence, brand, and public perception",
+    "financial": "Direct and indirect financial losses including remediation costs",
+    "property": "Physical damage to buildings, infrastructure, and assets",
+    "visibility": "Public profile, branding, and prominence of the site",
+    "status": "Association with prominent corporate, political, or religious entities",
+    "access": "Ease with which threat actors can access the site and its assets",
+    "collateral": "Proximity to higher-profile or iconic targets nearby",
+    "crime": "Defined crime patterns and trends in the local area",
+    "history": "History of the site or similar sites being targeted",
+    "vuln": "Overall susceptibility of the site to the identified threat",
+    "opImpact": "Effect on operations if this asset is compromised",
+    "dependencies": "Degree to which other assets/systems depend on this asset",
+    "impactPeople": "Consequences for people if this asset is compromised",
+    "impactEnv": "Environmental consequences if this asset is compromised",
+    "effectiveness": "How well the existing control reduces the threat",
+    "confidence": "How proven, tested, and reliable the control is"
+  },
+  "scales": {
+    "disruption": {
+      "1": "No impact on operations",
+      "2": "Minor disruption, quickly resolved",
+      "3": "Operations suspended short-term",
+      "4": "Major disruption, extended recovery",
+      "5": "Operations cease entirely"
+    },
+    "fatalities": {
+      "1": "No injuries",
+      "2": "Minor injuries, treatable on-site",
+      "3": "Injuries requiring hospital treatment",
+      "4": "Loss of life possible, multiple injuries",
+      "5": "Extensive casualties, mass fatalities"
+    },
+    "reputation": {
+      "1": "No reputational effect",
+      "2": "Localised criticism, quickly forgotten",
+      "3": "Stakeholder concerns raised",
+      "4": "Grave stakeholder concerns, media coverage",
+      "5": "Complete loss of confidence, sustained media"
+    },
+    "financial": {
+      "1": "No financial impact",
+      "2": "Minor losses, within budget tolerance",
+      "3": "Moderate losses, budget impact",
+      "4": "Significant losses, major budget overrun",
+      "5": "Severe losses, potential insolvency"
+    },
+    "property": {
+      "1": "No property damage",
+      "2": "Minor cosmetic damage",
+      "3": "Moderate damage, repairable",
+      "4": "Significant structural/system damage",
+      "5": "Total loss or destruction"
+    },
+    "visibility": {
+      "1": "No public profile",
+      "2": "Limited local profile",
+      "3": "Moderate profile, some recognition",
+      "4": "Clear public profile, well-known",
+      "5": "Highly visible, national/international profile"
+    },
+    "status": {
+      "1": "No prominent associations",
+      "2": "Minor association with known entities",
+      "3": "Some association with prominent groups",
+      "4": "Linked to high-profile organisations",
+      "5": "Strongly linked to political/religious/corporate entities"
+    },
+    "access": {
+      "1": "Strictly controlled, very hard to reach",
+      "2": "Strong access controls, restricted",
+      "3": "Some controls, moderate access difficulty",
+      "4": "Limited controls, relatively accessible",
+      "5": "No controls, assets freely accessible"
+    },
+    "collateral": {
+      "1": "No nearby high-profile targets",
+      "2": "Few low-profile targets nearby",
+      "3": "Some targets in wider area",
+      "4": "Multiple targets in proximity",
+      "5": "Adjacent to iconic/high-profile targets"
+    },
+    "crime": {
+      "1": "No defined crime pattern",
+      "2": "Low crime, isolated incidents",
+      "3": "Moderate crime, some patterns",
+      "4": "Defined crime pattern, frequent activity",
+      "5": "Major crime issue, serious/violent crime present"
+    },
+    "history": {
+      "1": "No history of being targeted",
+      "2": "Rare isolated incidents historically",
+      "3": "Some precedence for targeting",
+      "4": "Frequent targeting of similar sites",
+      "5": "Strong defined history of crime/terrorism"
+    },
+    "vuln": {
+      "1": "Highly resistant, robust controls",
+      "2": "Resistant, minor weaknesses",
+      "3": "Some vulnerability, partial controls",
+      "4": "Limited resistance, significant gaps",
+      "5": "Little or no resistance, highly vulnerable"
+    },
+    "opImpact": {
+      "1": "No operational effect",
+      "2": "Minor disruption, quickly recoverable",
+      "3": "Moderate disruption, manageable",
+      "4": "Major disruption, significant effect",
+      "5": "Operational failure"
+    },
+    "dependencies": {
+      "1": "No dependencies",
+      "2": "Few minor dependencies",
+      "3": "Some systems depend on this asset",
+      "4": "Many systems critically depend on this",
+      "5": "Total dependency, single point of failure"
+    },
+    "impactPeople": {
+      "1": "No consequence for people",
+      "2": "Minor inconvenience",
+      "3": "Moderate welfare impact",
+      "4": "Significant harm to people",
+      "5": "Severe harm, potential loss of life"
+    },
+    "impactEnv": {
+      "1": "No environmental consequence",
+      "2": "Minor localised impact",
+      "3": "Moderate environmental impact",
+      "4": "Significant environmental damage",
+      "5": "Severe, widespread environmental harm"
+    },
+    "capability": {
+      "1": "No known capability — no resources, expertise, or materials available to threat actors locally",
+      "2": "Limited capability — minimal resources, rudimentary expertise, significant barriers to execution",
+      "3": "Moderate capability — some resources and expertise exist locally/regionally, attack feasible with effort",
+      "4": "Strong capability — resources, expertise, and materials readily available, proven attack methods exist",
+      "5": "Very strong capability — sophisticated resources, extensive expertise, materials easily obtained, attacks executed elsewhere"
+    },
+    "intent": {
+      "1": "No known intent — no evidence of motivation, no ideological/financial drivers, site has no symbolic value",
+      "2": "Low intent — minimal motivation, site not a preferred target type, no intelligence indicating interest",
+      "3": "Moderate intent — some motivation exists, site type has been targeted elsewhere, general threat group activity in region",
+      "4": "High intent — clear motivation, site type actively targeted, intelligence suggests interest in similar targets",
+      "5": "Very high intent — strong ideological/financial drivers, specific intelligence, site type is a priority target for active groups"
+    },
+    "effectiveness": {
+      "1": "No controls in place",
+      "2": "Rudimentary, significant gaps",
+      "3": "Controls exist but inconsistent",
+      "4": "Operational and generally effective",
+      "5": "Proven, independently tested, effective"
+    },
+    "confidence": {
+      "1": "Unproven, no evidence",
+      "2": "Limited evidence, untested",
+      "3": "Some evidence, not fully tested",
+      "4": "Good evidence, generally reliable",
+      "5": "Independently verified, fully tested"
+    },
+    "residual": {
+      "1": "Very Unlikely / Negligible",
+      "2": "Unlikely / Minor",
+      "3": "Possible / Moderate",
+      "4": "Likely / Severe",
+      "5": "Very Likely / Catastrophic"
+    },
+    "threat": {
+      "1": "Very Low — extremely unlikely locally",
+      "2": "Low — unlikely locally, limited resources",
+      "3": "Medium — may exist locally/regionally",
+      "4": "High — likely locally, resources available",
+      "5": "Very High — multiple sources, readily available"
+    }
+  },
+  "areaCriteria": [
+    {
+      "id": "roads",
+      "label": "Local Roads & Access",
+      "prompt": "Describe the local road network, major routes (A-roads, motorways), access points, and any traffic considerations within half a mile"
+    },
+    {
+      "id": "adjacencies",
+      "label": "Building & Park Adjacencies",
+      "prompt": "Describe adjacent buildings, land uses, parks, open spaces, and neighbouring properties within half a mile"
+    },
+    {
+      "id": "transport",
+      "label": "Local Transport Hubs",
+      "prompt": "Identify railway stations, bus stations, underground/metro stops, cycle hire docks, and taxi ranks within half a mile"
+    },
+    {
+      "id": "landmarks",
+      "label": "Local Landmarks & Points of Interest",
+      "prompt": "Identify notable landmarks, places of worship, government buildings, embassies, monuments, and tourist attractions within half a mile"
+    },
+    {
+      "id": "crime_history",
+      "label": "Historic Crime & Terrorism Incidents",
+      "prompt": "Describe any significant crime incidents, terrorism events, protests, public disorder, or security incidents that have occurred within half a mile in the past 5 years"
+    },
+    {
+      "id": "developments",
+      "label": "Planned Future Developments",
+      "prompt": "Identify any planned or ongoing major construction, regeneration schemes, transport projects, or significant developments within half a mile, excluding the subject project"
+    }
+  ],
+  "areaAnalysis": {
+    "roads": "1 Embankment Place is bounded by Villiers Street to the west, a heavily pedestrianised route, and Victoria Embankment (A3211) to the south, a major arterial road along the River Thames. The Strand (A4) lies just to the north, serving as a primary east-west traffic and bus corridor. The site sits within the London Congestion Charge and Ultra Low Emission Zones, with vehicular access and loading tightly constrained by high pedestrian footfall.",
+    "adjacencies": "The subject property is an air-rights development built directly over Charing Cross Railway Station, which forms its primary structural adjacency. To the immediate east lies Victoria Embankment Gardens, a public park that attracts significant daytime foot traffic. The surrounding half-mile radius is densely developed with mixed-use commercial offices, retail, hospitality venues, and the pedestrian walkways of the Golden Jubilee Bridges.",
+    "transport": "The site benefits from exceptional public transport links, sitting directly above Charing Cross Station (National Rail) and adjacent to Embankment Underground Station (Bakerloo, Northern, Circle, and District lines). Numerous high-frequency bus routes operate along the Strand (A4) less than 0.1 miles away. Additionally, Embankment Pier offers river bus services, and several Santander Cycles hire docking stations are located within a five-minute walk.",
+    "landmarks": "Trafalgar Square, a major tourist destination and frequent gathering point, is located approximately 0.2 miles to the northwest. Key government buildings and ministries along Whitehall are situated roughly 0.3 miles to the southwest. Other notable points of interest within a half-mile include the National Gallery, the Savoy Hotel, and Cleopatra's Needle on the Victoria Embankment.",
+    "crime_history": "The immediate vicinity experiences high volumes of petty crime, particularly pickpocketing and mobile phone snatching, driven by the dense tourist and commuter populations around Charing Cross. Trafalgar Square and Whitehall, both within half a mile, are historic and regular focal points for large-scale protests, including environmental and political demonstrations that occasionally cause public disorder. While no major terrorist attacks have occurred at this specific address in the past five years, the area's prominence and proximity to government infrastructure mean it remains at a high theoretical risk in line with the broader UK threat level.",
+    "developments": "The surrounding Westminster and North Bank areas are subject to continuous commercial refurbishments and public realm improvements, such as the recently completed Strand Aldwych pedestrianisation to the northeast. Across the River Thames, within a half-mile radius, the redevelopment of 72 Upper Ground (former ITV Studios) into a massive commercial complex is a significant ongoing project. Excluding the subject site's own planned major retrofit, future local developments primarily consist of high-end office modernisations and sustainability upgrades."
+  },
+  "chargeWeights": {
+    "VBIED": {
+      "kg": 500,
+      "desc": "Vehicle-borne — typically 100-2000kg depending on vehicle type"
+    },
+    "PBIED": {
+      "kg": 25,
+      "desc": "Person-borne — typically 5-30kg body-worn or carried"
+    },
+    "IED": {
+      "kg": 50,
+      "desc": "Improvised device — varies widely, 1-100kg typically"
+    },
+    "IED-Drone": {
+      "kg": 5,
+      "desc": "Drone-delivered — typically 1-10kg payload limited by drone capacity"
+    },
+    "Mail/Parcel Threat": {
+      "kg": 1,
+      "desc": "Postal device — typically 0.1-2kg limited by packaging"
+    }
+  },
+  "treatmentMeasures": {
+    "1": {
+      "4": [
+        "Hostile reconnaissance awareness training",
+        "Emergency communication system",
+        "Invacuation routes and safe havens within building core",
+        "Security control room with ergonomic layout",
+        "Territorial demarcation — landscaping and paving to define ownership",
+        "Vehicle impact protection to vulnerable frontages",
+        "Ground floor glazing to enhanced security rating",
+        "SIA-licensed security officers",
+        "Blast-resilient construction to reception and entrance lobbies"
+      ],
+      "11": [
+        "Invacuation routes and safe havens within building core",
+        "Lockdown procedures and rehearsal programme",
+        "Hostile reconnaissance awareness training",
+        "SIA-licensed security operatives",
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "CPTED principles — natural surveillance, defined public/private space, clear sight lines",
+        "Regular review of security systems and procedures",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Dedicated security monitoring in secure area with UPS backup",
+        "Visitor management — all visitors identified, signed in and issued passes",
+        "Main entrance controlled with electronic access control, intercom and lockdown",
+        "Window film or sacrificial glazing to reduce fragmentation",
+        "Blast-resilient construction to reception and entrance lobbies",
+        "Laminated anti-blast glazing to facades facing vehicle approaches",
+        "Explosive Consequence analysis",
+        "Delivery vehicle inspection and verification protocols"
+      ],
+      "17": [
+        "Conform to SIDOS - Security in Design of Stations",
+        "CCTV covering all vehicle approaches and perimeter",
+        "Blast analysis and standoff distance modelling to inform perimeter layout",
+        "Speed reduction measures on approach — chicanes, raised tables, surface changes",
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance"
+      ],
+      "18": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "CPTED principles — natural surveillance, defined public/private space, clear sight lines",
+        "Uniform dusk-to-dawn external lighting coordinated with CCTV at building shell and entries",
+        "Vandal-resistant light fittings with colour-rendering lamps supporting identification",
+        "Regular review of security systems and procedures",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Dedicated security monitoring in secure area with "
+      ],
+      "20": [
+        "Reinforced collision/blast jackets to structural columns within vehicle reach",
+        "Vandal-resistant light fittings with colour-rendering lamps supporting identification",
+        "Vehicle access barriers rated for hostile vehicle mitigation at perimeter",
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance"
+      ],
+      "poi_1774448092257": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Speed reduction measures on approach — chicanes, raised tables, surface changes",
+        "Blast analysis and standoff distance modelling to inform perimeter layout",
+        "ANPR at vehicle access points for identification and audit",
+        "CCTV covering all vehicle approaches and perimeter",
+        "CPTED principles — natural surveillance, defined public/private space, clear sight lines",
+        "Vehicle access barriers rated for hostile vehicle mitigation at perimeter",
+        "Adherence to SIDOS, may require 25m standoff"
+      ],
+      "poi_1774958300075": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance"
+      ],
+      "poi_1002": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Reinforced collision/blast jackets to structural columns within vehicle reach",
+        "CCTV covering all vehicle approaches and perimeter",
+        "Uniform dusk-to-dawn external lighting coordinated with CCTV at building shell and entries",
+        "Vandal-resistant light fittings with colour-rendering lamps supporting identification",
+        "Vehicle access barriers rated for hostile vehicle mitigation at perimeter"
+      ],
+      "poi_1003": [
+        "Anti-ram rated barriers at all vehicular entry points integrated with access control",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures"
+      ],
+      "poi_1774958331951": [
+        "Reinforced collision/blast jackets to structural columns within vehicle reach"
+      ]
+    },
+    "2": {
+      "1": [
+        "Emergency communication system",
+        "Hostile reconnaissance awareness training",
+        "Invacuation routes and safe havens within building core",
+        "Lockdown procedures and rehearsal programme",
+        "Dedicated delivery receiving room secured and monitored",
+        "SIA-licensed security operatives"
+      ],
+      "4": [
+        "Hostile reconnaissance detection through CCTV analytics and trained security personnel",
+        "Clear external areas with minimal concealment for device placement",
+        "Bag search policy and/or weapons/explosives detection at main entrances",
+        "Internal CCTV coverage of all public-facing areas and circulation",
+        "Visitor management — identification, sign-in, temporary pass, escort policy",
+        "Staff trained to identify suspicious behaviour and unattended items",
+        "Suspicious item/package response procedures",
+        "Evacuation and invacuation drills specific to blast scenarios"
+      ],
+      "17": [
+        ""
+      ],
+      "poi_1774448092257": [
+        "Clear external areas with minimal concealment for device placement",
+        "Hostile reconnaissance detection through CCTV analytics and trained security personnel",
+        "Staff trained to identify suspicious behaviour and unattended items",
+        "Suspicious item/package response procedures",
+        "Evacuation and invacuation drills specific to blast scenarios"
+      ]
+    },
+    "3": {
+      "1": [
+        "Perimeter security preventing unauthorised access to building shell and service areas",
+        "CCTV analytics for detection of suspicious items and unattended packages",
+        "Monitoring of airspace above site for unauthorised drone activity"
+      ],
+      "4": [
+        "Perimeter security preventing unauthorised access to building shell and service areas",
+        "CCTV analytics for detection of suspicious items and unattended packages",
+        "Dedicated mail/post room physically separated from occupied areas",
+        "Receiving room with independent ventilation",
+        "Secure delivery holding area for parcels awaiting screening",
+        "Mail screening equipment (X-ray) appropriate to threat level"
+      ],
+      "poi_1774448092257": [
+        "CCTV analytics for detection of suspicious items and unattended packages",
+        "Response procedures for suspect packages"
+      ]
+    },
+    "4": {
+      "1": [
+        "Clear sight lines across all external areas for early detection of hostile approach",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "5": [
+        "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Weapons detection screening at main entry points",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "11": [
+        "Clear sight lines across all external areas for early detection of hostile approach",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "External CCTV ",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "SIA-licensed security operatives during occupied hours",
+        "Communication cascade for rapid alert during an incident",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Emergency communication system linking security, management and emergency services",
+        "Hostile reconnaissance awareness training for all building users"
+      ],
+      "poi_1774448092257": [
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "poi_1774958104751": [
+        "External CCTV ",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "poi_1774958300075": [
+        "Emergency communication system linking security, management and emergency services",
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "External CCTV ",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "Clear sight lines across all external areas for early detection of hostile approach"
+      ]
+    },
+    "5": {
+      "1": [
+        "Clear sight lines across all external areas for early detection of hostile approach",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter",
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "4": [
+        "Clear sight lines across all external areas for early detection of hostile approach",
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "External CCTV ",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter",
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Weapons detection screening at main entry points",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "11": [
+        "External CCTV ",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "SIA-licensed security operatives during occupied hours",
+        "Communication cascade for rapid alert during an incident",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "poi_1774448092257": [
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services",
+        "Hostile reconnaissance awareness training for all building users",
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "External CCTV ",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "Clear sight lines across all external areas for early detection of hostile approach"
+      ],
+      "poi_1774958104751": [
+        "External CCTV ",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ],
+      "poi_1774958300075": [
+        "External CCTV ",
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking",
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "SIA-licensed security operatives during occupied hours",
+        "Communication cascade for rapid alert during an incident",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Emergency communication system linking security, management and emergency services"
+      ]
+    },
+    "6": {
+      "1": [
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "CCTV covering all vehicle approaches and perimeter"
+      ],
+      "4": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures"
+      ],
+      "11": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Regular review of security systems and procedures"
+      ],
+      "poi_1774448092257": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Anti-ram rated barriers at all vehicular entry points integrated with access control",
+        "Speed reduction measures on approach — chicanes, raised tables, surface changes",
+        "VSS Analytics",
+        "Regular review of security systems and procedures",
+        "Staff training on security policies, evacuation and invacuation",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Blast analysis and standoff distance modelling to inform perimeter layout"
+      ],
+      "poi_1774958104751": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Anti-ram rated barriers at all vehicular entry points integrated with access control",
+        "CCTV covering all vehicle approaches and perimeter",
+        "VSS Analytics"
+      ],
+      "poi_1774958300075": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "ANPR at vehicle access points for identification and audit",
+        "CCTV covering all vehicle approaches and perimeter",
+        "VSS Analytics",
+        "Incident recording, reporting and lessons-learned procedures"
+      ]
+    },
+    "7": {
+      "6": [
+        "Security-rated doorsets to server rooms, MER/SER and data storage",
+        "Access control to IT infrastructure with full audit trail",
+        "Environmental monitoring in server rooms",
+        "Network segmentation isolating security, BMS and corporate networks",
+        "Intrusion detection and prevention systems",
+        "Encrypted storage and transmission for sensitive data",
+        "Endpoint protection with managed detection and response",
+        "Regular penetration testing and vulnerability assessments",
+        "Patch management for all systems including IoT and OT",
+        "Mobile device management and removable media controls",
+        "Staff cyber awareness training with phishing simulations",
+        "Cyber incident response plan",
+        "Backup and disaster recovery tested regularly"
+      ],
+      "13": [
+        "Access control to IT infrastructure with full audit trail",
+        "Environmental monitoring in server rooms",
+        "Intrusion detection and prevention systems",
+        "Endpoint protection with managed detection and response",
+        "Encrypted storage and transmission for sensitive data",
+        "Mobile device management and removable media controls",
+        "Regular penetration testing and vulnerability assessments",
+        "Patch management for all systems including IoT and OT"
+      ],
+      "14": [
+        "Endpoint protection with managed detection and response",
+        "Encrypted storage and transmission for sensitive data",
+        "Regular penetration testing and vulnerability assessments",
+        "Patch management for all systems including IoT and OT",
+        "Mobile device management and removable media controls"
+      ]
+    },
+    "8": {
+      "1": [
+        "Well-lit external areas with no concealment opportunities",
+        "Natural surveillance from occupied spaces to external areas",
+        "CCTV covering all pedestrian routes, entrances and car parks",
+        "Internal CCTV in corridors, stair cores and isolated areas",
+        "Panic buttons at reception and public-facing positions",
+        "Controlled access preventing unauthorised individuals reaching occupied areas",
+        "Staff trained on conflict de-escalation and personal safety",
+        "Lone worker policy and monitoring procedures",
+        "Incident recording and pattern analysis"
+      ],
+      "poi_1774958104751": [
+        "Staff trained on conflict de-escalation and personal safety",
+        "Lone worker policy and monitoring procedures",
+        "Incident recording and pattern analysis",
+        "CCTV covering all pedestrian routes, entrances and car parks",
+        "Well-lit external areas with no concealment opportunities",
+        "Natural surveillance from occupied spaces to external areas"
+      ],
+      "poi_1774958135036": [
+        "CCTV covering all pedestrian routes"
+      ],
+      "poi_1774958208993": [
+        "Well-lit external areas with no concealment opportunities",
+        "Natural surveillance from occupied spaces to external areas",
+        "CCTV covering all pedestrian routes, entrances ",
+        "Internal CCTV in corridors, stair cores and isolated areas",
+        "Staff trained on conflict de-escalation and personal safety",
+        "Incident recording and pattern analysis"
+      ]
+    },
+    "15": {
+      "1": [
+        "External CCTV with wide-area coverage and recording",
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption"
+      ],
+      "4": [
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "External CCTV with wide-area coverage and recording",
+        "Business continuity plan for access disruption"
+      ],
+      "15": [
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption"
+      ],
+      "poi_1774448092257": [
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption",
+        "Clear pedestrian routes and defined public/private boundaries",
+        "External CCTV with wide-area coverage and recording",
+        "HVM measures that also control crowd movement"
+      ],
+      "poi_1774958104751": [
+        "Clear pedestrian routes and defined public/private boundaries",
+        "External CCTV with wide-area coverage and recording",
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption"
+      ],
+      "poi_1774958208993": [
+        "External CCTV with wide-area coverage and recording",
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption"
+      ]
+    },
+    "17": {
+      "12": [
+        "Intruder alarm covering all external openings and sensitive internal areas, monitored 24/7 by alarm receiving centre",
+        "Incident recording, reporting and lessons-learned procedures",
+        "Regular review of security systems and procedures"
+      ],
+      "poi_1003": [
+        "Security lighting (BS 5489)",
+        "Rapid repair/response procedures",
+        "HVM rated gate for access (optional)"
+      ],
+      "poi_1774448092257": [
+        "CPTED principles — natural surveillance, defined ownership, active maintenance regime",
+        "Robust, securely fixed street furniture and hard landscaping",
+        "Anti-graffiti coating on vulnerable external surfaces",
+        "Dusk-to-dawn lighting with vandal-resistant fittings at height",
+        "External CCTV with recording for evidence and deterrence",
+        "Regular review of security systems and procedures",
+        "Incident recording, reporting and lessons-learned procedures"
+      ]
+    }
+  },
+  "residualJustifications": {},
+  "treatOptional": {
+    "1": {
+      "4": {
+        "8": true
+      },
+      "11": {
+        "4": true,
+        "12": true,
+        "13": true,
+        "14": true
+      },
+      "poi_1003": {
+        "0": true
+      },
+      "poi_1774958300075": {
+        "0": true
+      }
+    },
+    "2": {
+      "4": {
+        "2": true
+      }
+    },
+    "3": {
+      "4": {
+        "5": true
+      }
+    },
+    "4": {
+      "1": {
+        "10": true
+      },
+      "5": {
+        "3": true,
+        "11": true
+      }
+    },
+    "6": {
+      "1": {
+        "2": true
+      },
+      "4": {
+        "0": true
+      },
+      "11": {
+        "0": true
+      },
+      "poi_1774958300075": {
+        "0": true
+      }
+    },
+    "17": {
+      "poi_1003": {
+        "2": true
+      }
+    }
+  },
+  "threatDB": [
+    {
+      "id": "td_vbied",
+      "label": "VBIED / VAAW",
+      "category": "Terrorism",
+      "description": "Vehicle-borne improvised explosive device (VBIED) or vehicle used as a weapon (VAAW). Encompasses car/van bombs and deliberate vehicle ramming attacks against people or structures.",
+      "keywords": [
+        "vbied",
+        "vaaw",
+        "vehicle bomb"
+      ],
+      "linkedTreatmentIds": [
+        "vbied_vaaw"
+      ]
+    },
+    {
+      "id": "td_mta",
+      "label": "Marauding Terrorist Attack (MTA / MTFA)",
+      "category": "Terrorism",
+      "description": "Coordinated attack by one or more individuals using bladed weapons, firearms, or improvised weapons to cause mass casualties while moving through a location.",
+      "keywords": [
+        "mta",
+        "mtfa",
+        "marauding"
+      ],
+      "linkedTreatmentIds": [
+        "mta_mtfa"
+      ]
+    },
+    {
+      "id": "td_pbied",
+      "label": "PBIED",
+      "category": "Terrorism",
+      "description": "Person-borne improvised explosive device — a concealed explosive device carried or worn by an attacker, typically detonated in a crowded space.",
+      "keywords": [
+        "pbied",
+        "person borne"
+      ],
+      "linkedTreatmentIds": [
+        "pbied"
+      ]
+    },
+    {
+      "id": "td_ied",
+      "label": "IED / Drone / Mail Threat",
+      "category": "Terrorism",
+      "description": "Improvised explosive devices placed or delivered by hand, drone, or postal/courier service. Includes suspect packages and small unmanned aerial system (UAS) threats.",
+      "keywords": [
+        "ied",
+        "drone",
+        "mail",
+        "parcel"
+      ],
+      "linkedTreatmentIds": [
+        "ied"
+      ]
+    },
+    {
+      "id": "td_cbr",
+      "label": "CBR / CBRN Attack",
+      "category": "Terrorism",
+      "description": "Chemical, biological, radiological, or nuclear attack using toxic agents, pathogens, or radioactive material to cause harm, contamination, or mass disruption.",
+      "keywords": [
+        "cbr",
+        "cbrn",
+        "chemical",
+        "biological",
+        "radiological"
+      ],
+      "linkedTreatmentIds": [
+        "cbr"
+      ]
+    },
+    {
+      "id": "td_burglary",
+      "label": "Burglary",
+      "category": "Crime",
+      "description": "Unlawful entry into premises with intent to steal, commit criminal damage, or cause harm. Includes forced entry, opportunistic access, and distraction techniques.",
+      "keywords": [
+        "burglary",
+        "break-in",
+        "unlawful entry"
+      ],
+      "linkedTreatmentIds": [
+        "burglary"
+      ],
+      "linkedAssetSets": []
+    },
+    {
+      "id": "td_theft",
+      "label": "Theft",
+      "category": "Crime",
+      "description": "Deprivation of assets without consent. Includes shoplifting, employee theft, and theft of high-value or CRAVED (Concealable, Removable, Available, Valuable, Enjoyable, Disposable) items.",
+      "keywords": [
+        "theft",
+        "stealing",
+        "shoplifting"
+      ],
+      "linkedTreatmentIds": [
+        "theft"
+      ]
+    },
+    {
+      "id": "td_vehicle_crime",
+      "label": "Vehicle Crime",
+      "category": "Crime",
+      "description": "Theft of vehicles, theft from vehicles, or criminal damage to vehicles. Includes carjacking, catalytic converter theft, and fuel theft.",
+      "keywords": [
+        "vehicle crime",
+        "car theft",
+        "van theft"
+      ],
+      "linkedTreatmentIds": [
+        "vehicle_crime"
+      ]
+    },
+    {
+      "id": "td_arson",
+      "label": "Arson",
+      "category": "Crime",
+      "description": "Deliberate ignition of fire to destroy property, cause harm, or create disruption. May be opportunistic or targeted.",
+      "keywords": [
+        "arson",
+        "deliberate fire",
+        "fire setting"
+      ],
+      "linkedTreatmentIds": [
+        "arson"
+      ]
+    },
+    {
+      "id": "td_trespass",
+      "label": "Trespass",
+      "category": "Crime",
+      "description": "Unauthorised entry onto land or into buildings without permission. Ranges from opportunistic to deliberate (protest, reconnaissance, squatting).",
+      "keywords": [
+        "trespass",
+        "unauthorised access",
+        "squatting"
+      ],
+      "linkedTreatmentIds": [
+        "trespass"
+      ]
+    },
+    {
+      "id": "td_asb",
+      "label": "ASB / Criminal Damage",
+      "category": "Crime",
+      "description": "Anti-social behaviour, nuisance, intimidation, and deliberate damage to property. May escalate or create secondary risks.",
+      "keywords": [
+        "asb",
+        "anti-social",
+        "criminal damage",
+        "vandalism"
+      ],
+      "linkedTreatmentIds": [
+        "asb"
+      ]
+    },
+    {
+      "id": "td_public_order",
+      "label": "Public Order / Protest",
+      "category": "Crime",
+      "description": "Protests, demonstrations, riots, or direct action that may disrupt operations, damage property, or endanger people.",
+      "keywords": [
+        "public order",
+        "protest",
+        "riot",
+        "demonstration"
+      ],
+      "linkedTreatmentIds": [
+        "public_order"
+      ]
+    },
+    {
+      "id": "td_violence",
+      "label": "Violence / Sexual Offences",
+      "category": "Crime",
+      "description": "Physical assault, domestic violence, threats of violence, and sexual offences on or near the premises.",
+      "keywords": [
+        "violence",
+        "assault",
+        "sexual offence",
+        "harassment"
+      ],
+      "linkedTreatmentIds": [
+        "violence"
+      ]
+    },
+    {
+      "id": "td_cybercrime",
+      "label": "Cybercrime",
+      "category": "Crime",
+      "description": "Attacks on IT, OT, and IoT systems including ransomware, phishing, DDoS, network intrusion, and operational technology compromise.",
+      "keywords": [
+        "cyber",
+        "ransomware",
+        "phishing",
+        "hacking",
+        "it attack"
+      ],
+      "linkedTreatmentIds": [
+        "cybercrime"
+      ]
+    },
+    {
+      "id": "td_info_theft",
+      "label": "Information Theft",
+      "category": "Crime",
+      "description": "Theft or unauthorised disclosure of confidential, commercially sensitive, or personal data. Includes document theft, covert photography, and data exfiltration.",
+      "keywords": [
+        "information theft",
+        "data theft",
+        "espionage",
+        "data breach"
+      ],
+      "linkedTreatmentIds": [
+        "info_theft"
+      ]
+    },
+    {
+      "id": "td_insider",
+      "label": "Insider Threat",
+      "category": "Crime",
+      "description": "Malicious or negligent actions by employees, contractors, or trusted individuals with authorised access. Includes sabotage, fraud, and data theft.",
+      "keywords": [
+        "insider",
+        "staff misconduct",
+        "disgruntled employee"
+      ],
+      "linkedTreatmentIds": [
+        "insider"
+      ]
+    },
+    {
+      "id": "td_soc",
+      "label": "Serious Organised Crime",
+      "category": "Crime",
+      "description": "Organised criminal activity including drug supply, human trafficking, money laundering, and professional theft gangs targeting premises.",
+      "keywords": [
+        "soc",
+        "organised crime",
+        "gang",
+        "trafficking"
+      ],
+      "linkedTreatmentIds": [
+        "soc"
+      ]
+    },
+    {
+      "id": "td_kre",
+      "label": "Kidnap, Ransom & Extortion",
+      "category": "Crime",
+      "description": "Threats to individuals or organisations including kidnapping, ransom demands, product contamination threats, and extortion via digital or physical means.",
+      "keywords": [
+        "kidnap",
+        "ransom",
+        "extortion",
+        "hostage"
+      ],
+      "linkedTreatmentIds": [
+        "kre"
+      ]
+    }
+  ],
+  "treatmentDB": [
+    {
+      "id": "vbied_vaaw",
+      "label": "VBIED / VAAW",
+      "keywords": [
+        "vbied",
+        "vaaw"
+      ],
+      "narrative": "The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation.",
+      "ext_physical": [
+        "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+        "Anti-ram rated barriers at all vehicular entry points integrated with access control",
+        "Speed reduction measures on approach — chicanes, raised tables, surface changes",
+        "Vehicle search/inspection area at safe standoff with overwatch position",
+        "Reinforced collision/blast jackets to structural columns within vehicle reach",
+        "Laminated anti-blast glazing to facades facing vehicle approaches",
+        "Window film or sacrificial glazing to reduce fragmentation"
+      ],
+      "ext_electronic": [
+        "ANPR at vehicle access points for identification and audit",
+        "CCTV covering all vehicle approaches and perimeter",
+        "VSS Analytics"
+      ],
+      "int_physical": [
+        "Blast-resilient construction to reception and entrance lobbies"
+      ],
+      "int_electronic": [],
+      "procedures": [
+        "Blast analysis and standoff distance modelling to inform perimeter layout"
+      ]
+    },
+    {
+      "id": "mta_mtfa",
+      "label": "MTA / MTFA",
+      "keywords": [
+        "mta",
+        "mtfa"
+      ],
+      "narrative": "Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants.",
+      "ext_physical": [
+        "Clear sight lines across all external areas for early detection of hostile approach",
+        "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+        "Hostile Vehicle Mitigation if the threat involves vehicle approach"
+      ],
+      "ext_electronic": [
+        "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+        "External CCTV "
+      ],
+      "int_physical": [
+        "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+        "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter"
+      ],
+      "int_electronic": [
+        "Lockdown capability activated from reception, security control room and distributed panic buttons",
+        "Weapons detection screening at main entry points",
+        "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking"
+      ],
+      "procedures": [
+        "Invacuation routes and designated safe havens within the building core",
+        "Lockdown procedures with regular rehearsal and testing programme",
+        "Hostile reconnaissance awareness training for all building users",
+        "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+        "Communication cascade for rapid alert during an incident",
+        "SIA-licensed security operatives during occupied hours",
+        "Emergency communication system linking security, management and emergency services"
+      ]
+    },
+    {
+      "id": "pbied",
+      "label": "PBIED",
+      "keywords": [
+        "pbied"
+      ],
+      "narrative": "Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building.",
+      "ext_physical": [
+        "Clear external areas with minimal concealment for device placement",
+        "Search and screening regime at building entry points"
+      ],
+      "ext_electronic": [
+        "Hostile reconnaissance detection through CCTV analytics and trained security personnel"
+      ],
+      "int_physical": [
+        "Blast-resilient construction to reception and entrance lobby",
+        "Laminated glazing to entrance areas to reduce fragmentation"
+      ],
+      "int_electronic": [
+        "Bag search policy and/or weapons/explosives detection at main entrances",
+        "Internal CCTV coverage of all public-facing areas and circulation",
+        "Visitor management — identification, sign-in, temporary pass, escort policy"
+      ],
+      "procedures": [
+        "Staff trained to identify suspicious behaviour and unattended items",
+        "Suspicious item/package response procedures",
+        "Evacuation and invacuation drills specific to blast scenarios"
+      ]
+    },
+    {
+      "id": "ied",
+      "label": "IED / Drone / Mail",
+      "keywords": [
+        "ied",
+        "mail",
+        "parcel",
+        "drone"
+      ],
+      "narrative": "IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities.",
+      "ext_physical": [
+        "Perimeter security preventing unauthorised access to building shell and service areas"
+      ],
+      "ext_electronic": [
+        "CCTV analytics for detection of suspicious items and unattended packages",
+        "Counter-UAS detection and mitigation measures where drone delivery risk is assessed",
+        "Monitoring of airspace above site for unauthorised drone activity"
+      ],
+      "int_physical": [
+        "Dedicated mail/post room physically separated from occupied areas",
+        "Receiving room with independent ventilation",
+        "Secure delivery holding area for parcels awaiting screening"
+      ],
+      "int_electronic": [
+        "Mail screening equipment (X-ray) appropriate to threat level"
+      ],
+      "procedures": [
+        "Mail screening procedures and trained personnel",
+        "Suspicious mail identification training for all staff handling deliveries",
+        "Delivery vehicle inspection and verification protocols",
+        "Response procedures for suspect packages"
+      ]
+    },
+    {
+      "id": "cbr",
+      "label": "CBR",
+      "keywords": [
+        "cbr"
+      ],
+      "narrative": "CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation.",
+      "ext_physical": [
+        "Air intakes elevated and protected from ground-level interference",
+        "Perimeter controls preventing access to MEP infrastructure"
+      ],
+      "ext_electronic": [
+        "CCTV coverage of building air intakes and ventilation access points"
+      ],
+      "int_physical": [
+        "Sealed post room with independent ventilation"
+      ],
+      "int_electronic": [
+        "HVAC zoning with rapid isolation and shutdown capability",
+        "CBR detection at air handling units where threat assessment requires"
+      ],
+      "procedures": [
+        "CBR incident response procedures including shelter-in-place",
+        "Staff awareness training on recognising CBR indicators",
+        "Emergency services liaison on CBR response protocols"
+      ]
+    },
+    {
+      "id": "burglary",
+      "label": "Burglary",
+      "keywords": [
+        "burglary"
+      ],
+      "narrative": "Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry.",
+      "ext_physical": [
+        "Security-rated perimeter fencing/walls at consistent height",
+        "Security-rated pedestrian boundary gates with self-closing mechanism",
+        "Dusk-to-dawn external lighting at all entries, service areas and parking",
+        "Defensive planting beneath windows and along vulnerable boundaries",
+        "Landscape maintained for sight lines — canopies above 2.2m, shrubs below 1m"
+      ],
+      "ext_electronic": [
+        "External CCTV covering perimeter, entries, recessed areas and service bays"
+      ],
+      "int_physical": [
+        "Security-tested external doorsets with multi-point locking and access control integration",
+        "Enhanced security glazing to all ground floor and accessible windows",
+        "Laminated glass with internal beading preventing external removal",
+        "Window opening restrictors on accessible windows",
+        "Fire escape doors alarmed, without external ironmongery"
+      ],
+      "int_electronic": [
+        "Electronic access control at all external entry points with audit trail",
+        "Intruder alarm system with panic buttons and 24/7 monitoring",
+        "Door contacts with forced/left-open/tamper alarms on perimeter doors"
+      ],
+      "procedures": []
+    },
+    {
+      "id": "theft",
+      "label": "Theft",
+      "keywords": [
+        "theft"
+      ],
+      "narrative": "Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity.",
+      "ext_physical": [
+        "Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures",
+        "E-bike/e-scooter storage in fire-rated enclosure separated from building"
+      ],
+      "ext_electronic": [],
+      "int_physical": [
+        "Secure storage for high-value portable equipment"
+      ],
+      "int_electronic": [
+        "CCTV in stair cores, lift lobbies and circulation areas",
+        "Access control preventing unauthorised floor-to-floor movement"
+      ],
+      "procedures": []
+    },
+    {
+      "id": "vehicle_crime",
+      "label": "Vehicle Crime",
+      "keywords": [
+        "vehicle crime"
+      ],
+      "narrative": "Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building.",
+      "ext_physical": [
+        "Well-lit parking with uniform illumination and no dark spots",
+        "Natural surveillance from occupied rooms into parking areas"
+      ],
+      "ext_electronic": [
+        "Car park CCTV at all entry/exit points, aisles and pedestrian routes",
+        "ANPR at car park barriers"
+      ],
+      "int_physical": [],
+      "int_electronic": [],
+      "procedures": []
+    },
+    {
+      "id": "arson",
+      "label": "Arson",
+      "keywords": [
+        "arson"
+      ],
+      "narrative": "Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation.",
+      "ext_physical": [
+        "Refuse/bin storage lockable and positioned away from building exterior",
+        "External lighting to rear and service areas",
+        "No combustible material stored against building exterior walls"
+      ],
+      "ext_electronic": [],
+      "int_physical": [
+        "Fire detection system covering all areas including voids and risers",
+        "Sprinkler or suppression system",
+        "Fire compartmentation to limit spread",
+        "Smoke ventilation to protect escape routes",
+        "Letterbox fire protection where letter slots exist"
+      ],
+      "int_electronic": [],
+      "procedures": []
+    },
+    {
+      "id": "trespass",
+      "label": "Trespass",
+      "keywords": [
+        "trespass"
+      ],
+      "narrative": "Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence.",
+      "ext_physical": [
+        "Perimeter demarcation through fencing, walls, landscaping and signage",
+        "Consistent perimeter boundary height",
+        "Clear 2m zone either side of boundary for surveillance"
+      ],
+      "ext_electronic": [
+        "CCTV with out-of-hours intrusion detection analytics"
+      ],
+      "int_physical": [],
+      "int_electronic": [
+        "Electronic access control preventing unauthorised internal movement",
+        "Stair core and lift lobby access control at each level"
+      ],
+      "procedures": []
+    },
+    {
+      "id": "asb",
+      "label": "ASB / Criminal Damage",
+      "keywords": [
+        "asb",
+        "criminal damage"
+      ],
+      "narrative": "ASB and criminal damage treatment applies CPTED principles outside the building — surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour.",
+      "ext_physical": [
+        "CPTED principles — natural surveillance, defined ownership, active maintenance regime",
+        "Robust, securely fixed street furniture and hard landscaping",
+        "Anti-graffiti coating on vulnerable external surfaces",
+        "Dusk-to-dawn lighting with vandal-resistant fittings at height"
+      ],
+      "ext_electronic": [
+        "External CCTV with recording for evidence and deterrence"
+      ],
+      "int_physical": [],
+      "int_electronic": [],
+      "procedures": []
+    },
+    {
+      "id": "public_order",
+      "label": "Public Order",
+      "keywords": [
+        "public order"
+      ],
+      "narrative": "Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity.",
+      "ext_physical": [
+        "HVM measures that also control crowd movement",
+        "Clear pedestrian routes and defined public/private boundaries"
+      ],
+      "ext_electronic": [
+        "External CCTV with wide-area coverage and recording"
+      ],
+      "int_physical": [],
+      "int_electronic": [],
+      "procedures": [
+        "Public order response plan coordinated with police",
+        "Escalation procedures for protest or demonstration activity",
+        "Business continuity plan for access disruption"
+      ]
+    },
+    {
+      "id": "violence",
+      "label": "Violence / Sexual Offences",
+      "keywords": [
+        "violence"
+      ],
+      "narrative": "Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building.",
+      "ext_physical": [
+        "Well-lit external areas with no concealment opportunities",
+        "Natural surveillance from occupied spaces to external areas"
+      ],
+      "ext_electronic": [
+        "CCTV covering all pedestrian routes, entrances and car parks"
+      ],
+      "int_physical": [],
+      "int_electronic": [
+        "Internal CCTV in corridors, stair cores and isolated areas",
+        "Panic buttons at reception and public-facing positions",
+        "Controlled access preventing unauthorised individuals reaching occupied areas"
+      ],
+      "procedures": [
+        "Staff trained on conflict de-escalation and personal safety",
+        "Lone worker policy and monitoring procedures",
+        "Incident recording and pattern analysis"
+      ]
+    },
+    {
+      "id": "cybercrime",
+      "label": "Cybercrime",
+      "keywords": [
+        "cyber"
+      ],
+      "narrative": "Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences.",
+      "ext_physical": [],
+      "ext_electronic": [],
+      "int_physical": [
+        "Security-rated doorsets to server rooms, MER/SER and data storage"
+      ],
+      "int_electronic": [
+        "Access control to IT infrastructure with full audit trail",
+        "Environmental monitoring in server rooms",
+        "Network segmentation isolating security, BMS and corporate networks",
+        "Intrusion detection and prevention systems",
+        "Encrypted storage and transmission for sensitive data",
+        "Endpoint protection with managed detection and response",
+        "Regular penetration testing and vulnerability assessments",
+        "Patch management for all systems including IoT and OT",
+        "Mobile device management and removable media controls"
+      ],
+      "procedures": [
+        "Staff cyber awareness training with phishing simulations",
+        "Cyber incident response plan",
+        "Backup and disaster recovery tested regularly"
+      ]
+    },
+    {
+      "id": "info_theft",
+      "label": "Information Theft",
+      "keywords": [
+        "info"
+      ],
+      "narrative": "Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally.",
+      "ext_physical": [],
+      "ext_electronic": [],
+      "int_physical": [
+        "Security-rated doorsets to areas storing/processing sensitive information",
+        "Clear desk policy with secure document storage",
+        "Secure print-release preventing uncollected documents",
+        "Shredding facilities for confidential waste"
+      ],
+      "int_electronic": [
+        "Access logging with anomaly detection",
+        "Data loss prevention on email and file transfer"
+      ],
+      "procedures": [
+        "Data classification and handling policy",
+        "Encrypted storage and transmission",
+        "Secure media disposal procedures",
+        "Third-party data processing agreements",
+        "Regular information asset audit"
+      ]
+    },
+    {
+      "id": "insider",
+      "label": "Insider Threat",
+      "keywords": [
+        "insider"
+      ],
+      "narrative": "Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally.",
+      "ext_physical": [],
+      "ext_electronic": [],
+      "int_physical": [
+        "Key management via secure electronic cabinet with audit"
+      ],
+      "int_electronic": [
+        "Access control zoning restricting individuals to role-required areas only",
+        "CCTV in sensitive areas with recording"
+      ],
+      "procedures": [
+        "Pre-employment vetting and ongoing security screening",
+        "Joiners/movers/leavers access process — immediate revocation on departure",
+        "Whistleblowing and confidential reporting policy",
+        "Regular access rights reviews enforcing least privilege",
+        "User behaviour monitoring and anomaly detection",
+        "Clear desk and screen policy enforcement",
+        "Security clearance for sensitive roles",
+        "Separation of duties for critical processes"
+      ]
+    },
+    {
+      "id": "soc",
+      "label": "Serious Organised Crime",
+      "keywords": [
+        "soc"
+      ],
+      "narrative": "Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally.",
+      "ext_physical": [],
+      "ext_electronic": [],
+      "int_physical": [
+        "Security-rated doorsets to high-value areas"
+      ],
+      "int_electronic": [
+        "CCTV at all access points to valuable assets and cash handling"
+      ],
+      "procedures": [
+        "Background screening for staff and contractors in positions of trust",
+        "Supply chain due diligence and third-party risk assessment",
+        "Fraud prevention controls with segregation of duties",
+        "Anomaly detection in financial and access systems",
+        "Organised crime threat briefings",
+        "Whistleblowing and confidential reporting"
+      ]
+    },
+    {
+      "id": "kre",
+      "label": "Kidnap, Ransom & Extortion",
+      "keywords": [
+        "kre"
+      ],
+      "narrative": "Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally.",
+      "ext_physical": [],
+      "ext_electronic": [],
+      "int_physical": [
+        "Controlled access to areas occupied by at-risk individuals"
+      ],
+      "int_electronic": [
+        "CCTV at entrances capturing identification-quality images"
+      ],
+      "procedures": [
+        "Travel security procedures for at-risk personnel",
+        "Personal security risk assessments for key individuals",
+        "Secure communication channels",
+        "Kidnap/ransom/extortion incident response plan",
+        "Close liaison with police and specialist advisors"
+      ]
+    }
+  ],
+  "sbdCompliance": {
+    "commercial|External Doorsets|0": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|1": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|2": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|3": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|4": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|5": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|6": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|7": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|8": {
+      "status": "Compliant"
+    },
+    "commercial|External Doorsets|9": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|0": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|1": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|2": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|3": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|4": {
+      "status": "Compliant"
+    },
+    "commercial|Internal Secure Doors|5": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|0": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|1": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|2": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|3": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|4": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|5": {
+      "status": "Compliant"
+    },
+    "commercial|Windows & Glazing|6": {
+      "status": "Compliant"
+    },
+    "commercial|Perimeter & Boundary|0": {
+      "status": "N/A"
+    },
+    "commercial|Perimeter & Boundary|1": {
+      "status": "N/A"
+    },
+    "commercial|Perimeter & Boundary|2": {
+      "status": "Gap"
+    },
+    "commercial|Perimeter & Boundary|3": {
+      "status": "N/A"
+    },
+    "commercial|Perimeter & Boundary|4": {
+      "status": "N/A"
+    },
+    "commercial|External Lighting|0": {
+      "status": "Compliant"
+    },
+    "commercial|External Lighting|1": {
+      "status": "Compliant"
+    },
+    "commercial|External Lighting|2": {
+      "status": "Compliant"
+    },
+    "commercial|External Lighting|3": {
+      "status": "Compliant"
+    },
+    "commercial|External Lighting|4": {
+      "status": "Compliant"
+    },
+    "commercial|External Lighting|5": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|0": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|1": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|2": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|3": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|4": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|5": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|6": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|7": {
+      "status": "N/A"
+    },
+    "commercial|CCTV System|9": {
+      "status": "Compliant"
+    },
+    "commercial|CCTV System|8": {
+      "status": "N/A"
+    },
+    "commercial|Access Control System|0": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|1": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|2": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|3": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|4": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|5": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|6": {
+      "status": "Compliant"
+    },
+    "commercial|Access Control System|7": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|0": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|1": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|2": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|3": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|4": {
+      "status": "Compliant"
+    },
+    "commercial|Intruder Detection & Alarms|5": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|0": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|1": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|2": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|3": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|4": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|5": {
+      "status": "Compliant"
+    },
+    "commercial|Security Control Room & Personnel|6": {
+      "status": "Compliant"
+    },
+    "commercial|Cycle & Vehicle Parking|0": {
+      "status": "Compliant"
+    },
+    "commercial|Cycle & Vehicle Parking|1": {
+      "status": "Compliant"
+    },
+    "commercial|Cycle & Vehicle Parking|2": {
+      "status": "Compliant"
+    },
+    "commercial|Cycle & Vehicle Parking|3": {
+      "status": "Gap",
+      "notes": "Manned guarding is planned"
+    }
+  },
+  "_v": "1.974",
+  "_date": "2026-04-01T17:41:54.695Z"
+}
