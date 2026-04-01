@@ -513,9 +513,10 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Attractiveness, Vulnerability & Likelihood",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
   {id:"register",l:"Risk Register",n:"9"},{id:"residual",l:"Residual Risk & Treatments",n:"10"},
-  {id:"dashboard",l:"Summary",n:"11"},
-  {id:"sbd",l:"SBD Requirements",n:"12"},
-  {id:"methodology",l:"Methodology",n:"13"},{id:"settings",l:"Settings",n:"14"}];
+  {id:"treatdb",l:"Treatment Database",n:"11"},
+  {id:"dashboard",l:"Summary",n:"12"},
+  {id:"sbd",l:"SBD Requirements",n:"13"},
+  {id:"methodology",l:"Methodology",n:"14"},{id:"settings",l:"Settings",n:"15"}];
 
 
 // ============================================================
@@ -645,7 +646,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.962";
+  const VERSION="1.963";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -759,6 +760,8 @@ function App(){
   const[treatOptional,setTreatOptional]=useState({});
   const[treatmentDB,setTreatmentDB]=useState(DEFAULT_TREATMENT_DB);
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
+  const[dbExpandedCats,setDbExpandedCats]=useState({});
+  const dragRef=useRef(null);
   const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
@@ -4176,6 +4179,242 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         })
       ),
 
+      // TREATMENT DATABASE TAB
+      tab==="treatdb"&&React.createElement("div",null,
+        React.createElement("h2",{className:"section-title"},"Treatment Measures Database"),
+        React.createElement("p",{className:"section-sub"},"Manage treatment measures for each threat type. Drag items to reorder, edit inline, copy between categories, and add or remove items. Changes apply to all assessments."),
+
+        // Summary bar
+        React.createElement("div",{style:{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}},
+          React.createElement("div",{style:{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:8,padding:"10px 16px",flex:1,minWidth:160}},
+            React.createElement("div",{style:{fontSize:11,color:"#0369a1",fontWeight:600}},"THREAT TYPES"),
+            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#0c4a6e"}},treatmentDB.length)
+          ),
+          React.createElement("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:"10px 16px",flex:1,minWidth:160}},
+            React.createElement("div",{style:{fontSize:11,color:"#15803d",fontWeight:600}},"TOTAL MEASURES"),
+            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#14532d"}},treatmentDB.reduce(function(t,e){return t+(e.ext_physical||[]).length+(e.ext_electronic||[]).length+(e.int_physical||[]).length+(e.int_electronic||[]).length+(e.procedures||[]).length},0))
+          ),
+          React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
+              onClick:function(){
+                var id="custom_"+Date.now();
+                var newEntry={id:id,label:"New Threat Type",keywords:[],narrative:"",ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:[]};
+                setTreatmentDB(function(p){return[...p,newEntry]});
+                setDbEditThreatId(id);
+                showToast("New threat type added");
+              }
+            },"+ Add Threat Type"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
+              onClick:function(){
+                if(confirm("Reset the entire database to defaults? All custom edits will be lost.")){
+                  setTreatmentDB(DEFAULT_TREATMENT_DB);setDbEditThreatId(null);setDbExpandedCats({});
+                  showToast("Database reset to defaults");
+                }
+              }
+            },"Reset All to Defaults"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
+              onClick:function(){
+                var allOpen={};treatmentDB.forEach(function(e){allOpen[e.id]=true});
+                var anyOpen=Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]});
+                if(anyOpen)setDbExpandedCats({});else setDbExpandedCats(allOpen);
+              }
+            },Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]})?"Collapse All":"Expand All")
+          )
+        ),
+
+        // Threat type cards
+        React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
+          treatmentDB.map(function(entry,entryIdx){
+            var isExpanded=!!dbExpandedCats[entry.id];
+            var isEditing=dbEditThreatId===entry.id;
+            var totalItems=(entry.ext_physical||[]).length+(entry.ext_electronic||[]).length+(entry.int_physical||[]).length+(entry.int_electronic||[]).length+(entry.procedures||[]).length;
+            var CATS=[
+              {key:"ext_physical",label:"External Physical",icon:"\ud83c\udfd7\ufe0f",color:"#dbeafe",bg:"#eff6ff",accent:"#1e40af",hdr:"#1e3a5f"},
+              {key:"ext_electronic",label:"External Electronic",icon:"\ud83d\udcf6",color:"#bfdbfe",bg:"#eff6ff",accent:"#1d4ed8",hdr:"#1e3a5f"},
+              {key:"int_physical",label:"Internal Physical",icon:"\ud83d\udee1\ufe0f",color:"#fde68a",bg:"#fffbeb",accent:"#92400e",hdr:"#78350f"},
+              {key:"int_electronic",label:"Internal Electronic",icon:"\ud83d\udcbb",color:"#ddd6fe",bg:"#f5f3ff",accent:"#5b21b6",hdr:"#3b0764"},
+              {key:"procedures",label:"Procedures",icon:"\u2699\ufe0f",color:"#e2e8f0",bg:"#f8fafc",accent:"#475569",hdr:"#1e293b"}
+            ];
+
+            function updateEntry(updater){
+              setTreatmentDB(function(prev){var n=[...prev];var eIdx=n.findIndex(function(x){return x.id===entry.id});if(eIdx===-1)return prev;n[eIdx]={...n[eIdx],...updater(n[eIdx])};return n});
+            }
+
+            return React.createElement("div",{key:entry.id,className:"card",style:{overflow:"visible",border:isEditing?"2px solid #1B2A4A":"1px solid #e2e8f0"}},
+              // Card header — clickable to expand/collapse
+              React.createElement("div",{
+                style:{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",background:isExpanded?"#f8fafc":"#fff",borderBottom:isExpanded?"1px solid #e2e8f0":"none",userSelect:"none"},
+                onClick:function(){setDbExpandedCats(function(p){var n={...p};n[entry.id]=!n[entry.id];return n})}
+              },
+                React.createElement("span",{style:{fontSize:16,transform:isExpanded?"rotate(90deg)":"rotate(0deg)",transition:"transform 0.15s",display:"inline-block"}},"\u25B6"),
+                React.createElement("div",{style:{flex:1}},
+                  React.createElement("span",{style:{fontWeight:700,fontSize:14,color:"#1e293b"}},entry.label),
+                  React.createElement("span",{style:{fontSize:11,color:"#94a3b8",marginLeft:8}},totalItems+" measure"+(totalItems!==1?"s":""))
+                ),
+                React.createElement("div",{style:{display:"flex",gap:4,flexWrap:"wrap"}},
+                  (entry.keywords||[]).slice(0,5).map(function(kw){
+                    return React.createElement("span",{key:kw,style:{fontSize:9,padding:"1px 6px",borderRadius:3,background:"#f1f5f9",color:"#64748b",border:"1px solid #e2e8f0"}},kw);
+                  })
+                ),
+                // Action buttons (stop propagation)
+                React.createElement("div",{style:{display:"flex",gap:4},onClick:function(e){e.stopPropagation()}},
+                  React.createElement("button",{title:"Edit threat type details",
+                    style:{fontSize:11,padding:"4px 8px",borderRadius:4,border:"1px solid "+(isEditing?"#1B2A4A":"#cbd5e1"),background:isEditing?"#1B2A4A":"#fff",color:isEditing?"#fff":"#475569",cursor:"pointer",fontFamily:"inherit"},
+                    onClick:function(){setDbEditThreatId(isEditing?null:entry.id);if(!isExpanded)setDbExpandedCats(function(p){var n={...p};n[entry.id]=true;return n})}
+                  },isEditing?"Done Editing":"Edit"),
+                  React.createElement("button",{title:"Duplicate this threat type",
+                    style:{fontSize:11,padding:"4px 8px",borderRadius:4,border:"1px solid #cbd5e1",background:"#fff",color:"#475569",cursor:"pointer",fontFamily:"inherit"},
+                    onClick:function(){
+                      var id="copy_"+Date.now();
+                      var copy={...entry,id:id,label:entry.label+" (Copy)",keywords:[...(entry.keywords||[])],
+                        ext_physical:[...(entry.ext_physical||[])],ext_electronic:[...(entry.ext_electronic||[])],
+                        int_physical:[...(entry.int_physical||[])],int_electronic:[...(entry.int_electronic||[])],
+                        procedures:[...(entry.procedures||[])]};
+                      setTreatmentDB(function(p){var n=[...p];n.splice(entryIdx+1,0,copy);return n});
+                      showToast("Duplicated: "+entry.label);
+                    }
+                  },"Duplicate"),
+                  React.createElement("button",{title:"Delete this threat type",
+                    style:{fontSize:11,padding:"4px 8px",borderRadius:4,border:"1px solid #fecaca",background:"#fff",color:"#dc2626",cursor:"pointer",fontFamily:"inherit"},
+                    onClick:function(){
+                      if(confirm("Delete \""+entry.label+"\" from the database?")){
+                        setTreatmentDB(function(p){return p.filter(function(e){return e.id!==entry.id})});
+                        if(dbEditThreatId===entry.id)setDbEditThreatId(null);
+                        showToast("Deleted: "+entry.label);
+                      }
+                    }
+                  },"Delete")
+                )
+              ),
+
+              // Edit panel for threat metadata (shown when editing)
+              isEditing&&React.createElement("div",{style:{padding:"12px 16px",background:"#fefce8",borderBottom:"1px solid #fde68a"}},
+                React.createElement("div",{style:{display:"flex",gap:12,flexWrap:"wrap",marginBottom:8}},
+                  React.createElement("div",{style:{flex:"1 1 200px"}},
+                    React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Threat Label"),
+                    React.createElement("input",{className:"input",value:entry.label,style:{fontWeight:600},
+                      onChange:function(e){var v=e.target.value;updateEntry(function(){return{label:v}})},
+                      placeholder:"e.g. VBIED / VAAW"})
+                  ),
+                  React.createElement("div",{style:{flex:"1 1 250px"}},
+                    React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Match Keywords (comma-separated, used to match threat names)"),
+                    React.createElement("input",{className:"input",value:(entry.keywords||[]).join(", "),
+                      onChange:function(e){var kws=e.target.value.split(",").map(function(k){return k.trim().toLowerCase()}).filter(Boolean);updateEntry(function(){return{keywords:kws}})},
+                      placeholder:"e.g. vbied, vaaw, vehicle"})
+                  )
+                ),
+                React.createElement("div",null,
+                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Narrative (displayed above treatment suggestions in assessments)"),
+                  React.createElement("textarea",{className:"input",style:{width:"100%",minHeight:60,fontSize:11,resize:"vertical"},
+                    value:entry.narrative||"",placeholder:"Treatment context narrative...",
+                    onChange:function(e){var v=e.target.value;updateEntry(function(){return{narrative:v}})}
+                  })
+                ),
+                React.createElement("div",{style:{marginTop:8,display:"flex",gap:6}},
+                  (function(){var def=DEFAULT_TREATMENT_DB.find(function(d){return d.id===entry.id});
+                    return def?React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+                      onClick:function(){
+                        if(confirm("Reset \""+entry.label+"\" to factory defaults?")){
+                          setTreatmentDB(function(p){var n=[...p];var i=n.findIndex(function(x){return x.id===entry.id});if(i!==-1)n[i]={...def};return n});
+                          showToast("Reset to defaults");
+                        }
+                      }
+                    },"Reset to Default"):null;
+                  })()
+                )
+              ),
+
+              // Expanded category panels
+              isExpanded&&React.createElement("div",{style:{padding:"12px 16px"}},
+                React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(380px,1fr))",gap:12}},
+                  CATS.map(function(cat){
+                    var items=entry[cat.key]||[];
+                    return React.createElement("div",{key:cat.key,style:{borderRadius:8,border:"1px solid "+cat.color,overflow:"hidden",background:"#fff"}},
+                      // Category header
+                      React.createElement("div",{style:{padding:"8px 12px",background:cat.bg,borderBottom:"1px solid "+cat.color,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+                        React.createElement("span",{style:{fontSize:12,fontWeight:700,color:cat.hdr}},cat.icon+" "+cat.label),
+                        React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
+                          React.createElement("span",{style:{fontSize:10,color:cat.accent,fontWeight:600}},items.length+" item"+(items.length!==1?"s":"")),
+                          React.createElement("button",{title:"Add new measure",
+                            style:{fontSize:14,lineHeight:"18px",width:22,height:22,borderRadius:4,border:"1px solid "+cat.color,background:"#fff",color:cat.accent,cursor:"pointer",fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"},
+                            onClick:function(){updateEntry(function(en){var arr=[...(en[cat.key]||[]),""];var obj={};obj[cat.key]=arr;return obj})}
+                          },"+")
+                        )
+                      ),
+                      // Items list with drag-and-drop
+                      React.createElement("div",{style:{padding:items.length>0?"6px 8px":"12px 8px",minHeight:40}},
+                        items.length===0?
+                          React.createElement("div",{style:{textAlign:"center",color:"#94a3b8",fontSize:11,fontStyle:"italic",padding:8}},"No measures yet. Click + to add."):
+                          items.map(function(item,idx){
+                            return React.createElement("div",{key:entry.id+"_"+cat.key+"_"+idx,
+                              draggable:true,
+                              onDragStart:function(e){
+                                dragRef.current={threatId:entry.id,catKey:cat.key,idx:idx,text:item};
+                                e.dataTransfer.effectAllowed="copyMove";
+                                e.target.style.opacity="0.4";
+                              },
+                              onDragEnd:function(e){e.target.style.opacity="1";dragRef.current=null},
+                              onDragOver:function(e){
+                                e.preventDefault();e.dataTransfer.dropEffect="move";
+                                e.currentTarget.style.borderTop="2px solid "+cat.accent;
+                              },
+                              onDragLeave:function(e){e.currentTarget.style.borderTop="none"},
+                              onDrop:function(e){
+                                e.preventDefault();e.currentTarget.style.borderTop="none";
+                                var src=dragRef.current;if(!src)return;
+                                var dropThreatId=entry.id;var dropCatKey=cat.key;var dropIdx=idx;
+                                // Same threat, same category — reorder
+                                if(src.threatId===dropThreatId&&src.catKey===dropCatKey){
+                                  if(src.idx===dropIdx)return;
+                                  setTreatmentDB(function(prev){
+                                    var n=[...prev];var eI=n.findIndex(function(x){return x.id===dropThreatId});if(eI===-1)return prev;
+                                    var arr=[...n[eI][dropCatKey]];var moved=arr.splice(src.idx,1)[0];
+                                    var insertAt=dropIdx>src.idx?dropIdx-1:dropIdx;
+                                    arr.splice(insertAt,0,moved);
+                                    n[eI]={...n[eI]};n[eI][dropCatKey]=arr;return n;
+                                  });
+                                }
+                                // Different category or threat — copy the item
+                                else{
+                                  setTreatmentDB(function(prev){
+                                    var n=[...prev];var eI=n.findIndex(function(x){return x.id===dropThreatId});if(eI===-1)return prev;
+                                    var arr=[...(n[eI][dropCatKey]||[])];arr.splice(dropIdx,0,src.text);
+                                    n[eI]={...n[eI]};n[eI][dropCatKey]=arr;return n;
+                                  });
+                                  showToast("Copied measure to "+cat.label);
+                                }
+                              },
+                              style:{display:"flex",gap:6,alignItems:"center",padding:"4px 4px",marginBottom:2,borderRadius:4,background:idx%2===0?"#fff":"#fafbfc",cursor:"grab",transition:"border-top 0.1s"}
+                            },
+                              React.createElement("span",{style:{cursor:"grab",color:"#cbd5e1",fontSize:12,flexShrink:0,userSelect:"none"},title:"Drag to reorder or copy to another category"},"\u2261"),
+                              React.createElement("span",{style:{fontSize:10,color:cat.accent,fontWeight:700,width:18,flexShrink:0,textAlign:"center"}},(idx+1)+"."),
+                              React.createElement("input",{className:"input",
+                                style:{flex:1,fontSize:11,padding:"3px 6px",border:"1px solid transparent",background:"transparent",borderRadius:4},
+                                value:item,placeholder:"Type treatment measure...",
+                                onFocus:function(e){e.target.style.border="1px solid "+cat.color;e.target.style.background="#fff"},
+                                onBlur:function(e){e.target.style.border="1px solid transparent";e.target.style.background="transparent"},
+                                onChange:function(e){var v=e.target.value;updateEntry(function(en){var arr=[...(en[cat.key]||[])];arr[idx]=v;var obj={};obj[cat.key]=arr;return obj})}
+                              }),
+                              React.createElement("button",{title:"Duplicate this measure",
+                                style:{fontSize:10,padding:"2px 4px",borderRadius:3,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontFamily:"inherit",flexShrink:0},
+                                onClick:function(){updateEntry(function(en){var arr=[...(en[cat.key]||[])];arr.splice(idx+1,0,item);var obj={};obj[cat.key]=arr;return obj});showToast("Duplicated")}
+                              },"\u2398"),
+                              React.createElement("button",{title:"Remove this measure",
+                                style:{fontSize:14,padding:"0 4px",borderRadius:3,border:"none",background:"transparent",color:"#dc2626",cursor:"pointer",fontFamily:"inherit",flexShrink:0,fontWeight:700},
+                                onClick:function(){updateEntry(function(en){var arr=(en[cat.key]||[]).filter(function(_,i){return i!==idx});var obj={};obj[cat.key]=arr;return obj})}
+                              },"\u00d7")
+                            );
+                          })
+                      )
+                    );
+                  })
+                )
+              )
+            );
+          })
+        )
+      ),
+
       // DASHBOARD
       tab==="dashboard"&&React.createElement("div",{id:"exec-summary-section"},
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
@@ -5039,134 +5278,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
               setAreaCriteria(defaultAreaCriteria);showToast("Area criteria reset to defaults")
             }},"Reset to Defaults")
-          )
-        ),
-
-        // Treatment Measures Database Editor
-        React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
-          React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"TREATMENT MEASURES DATABASE"),
-          React.createElement("p",{style:{fontSize:12,color:"#94a3b8",marginBottom:12}},"Edit, add or remove treatment measures for each threat type. Changes here affect all assessments permanently. Five categories: External Physical, External Electronic, Internal Physical, Internal Electronic, and Procedures."),
-          // Threat selector
-          React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}},
-            treatmentDB.map(function(entry){
-              var active=dbEditThreatId===entry.id;
-              return React.createElement("button",{key:entry.id,
-                style:{fontSize:11,padding:"4px 10px",borderRadius:4,fontWeight:active?700:400,
-                  border:"1px solid "+(active?"#1B2A4A":"#cbd5e1"),
-                  background:active?"#1B2A4A":"#f8fafc",color:active?"#fff":"#1e293b",cursor:"pointer",fontFamily:"inherit"},
-                onClick:function(){setDbEditThreatId(active?null:entry.id)}
-              },entry.label);
-            }),
-            React.createElement("button",{
-              style:{fontSize:11,padding:"4px 10px",borderRadius:4,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit"},
-              onClick:function(){
-                var id="custom_"+Date.now();
-                var newEntry={id:id,label:"New Threat Type",keywords:[],narrative:"",ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:[]};
-                setTreatmentDB(function(p){return[...p,newEntry]});
-                setDbEditThreatId(id);
-              }
-            },"+ Add Threat Type")
-          ),
-          // Editor panel for selected threat
-          (function(){
-            if(!dbEditThreatId)return React.createElement("div",{style:{fontSize:12,color:"#94a3b8",fontStyle:"italic"}},"Select a threat type above to edit its treatment measures.");
-            var entryIdx=treatmentDB.findIndex(function(e){return e.id===dbEditThreatId});
-            if(entryIdx===-1)return null;
-            var entry=treatmentDB[entryIdx];
-            function updateEntry(updater){
-              setTreatmentDB(function(prev){var n=[...prev];n[entryIdx]={...n[entryIdx],...updater(n[entryIdx])};return n});
-            }
-            var cats=[
-              {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",color:"#dbeafe"},
-              {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",color:"#bfdbfe"},
-              {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",color:"#fde68a"},
-              {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",color:"#ddd6fe"},
-              {key:"procedures",label:"\u2699\ufe0f Procedures",color:"#e2e8f0"}
-            ];
-            return React.createElement("div",{style:{background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0",padding:16}},
-              // Threat name + keywords
-              React.createElement("div",{style:{display:"flex",gap:10,marginBottom:12,alignItems:"flex-start"}},
-                React.createElement("div",{style:{flex:1}},
-                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Threat Label"),
-                  React.createElement("input",{className:"input",value:entry.label,
-                    onChange:function(e){var v=e.target.value;updateEntry(function(en){return{label:v}})},
-                    placeholder:"e.g. VBIED / VAAW"})
-                ),
-                React.createElement("div",{style:{flex:1}},
-                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Keywords (comma-separated, lowercase)"),
-                  React.createElement("input",{className:"input",value:(entry.keywords||[]).join(", "),
-                    onChange:function(e){var kws=e.target.value.split(",").map(function(k){return k.trim().toLowerCase()}).filter(Boolean);updateEntry(function(){return{keywords:kws}})},
-                    placeholder:"e.g. vbied, vaaw, vehicle"})
-                ),
-                React.createElement("div",null,
-                  React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Actions"),
-                  React.createElement("button",{className:"btn btn-outline btn-sm",
-                    style:{fontSize:11,color:"#dc2626",borderColor:"#fecaca"},
-                    onClick:function(){
-                      if(confirm("Delete this threat type from the database?")){
-                        setTreatmentDB(function(p){return p.filter(function(e){return e.id!==dbEditThreatId})});
-                        setDbEditThreatId(null);
-                      }
-                    }},"Delete")
-                )
-              ),
-              // Narrative
-              React.createElement("div",{style:{marginBottom:12}},
-                React.createElement("label",{style:{fontSize:11,fontWeight:700,color:"#1e293b",display:"block",marginBottom:3}},"Narrative / Context"),
-                React.createElement("textarea",{className:"input",style:{width:"100%",minHeight:50,fontSize:11,resize:"vertical"},
-                  value:entry.narrative||"",
-                  placeholder:"Optional narrative text shown above treatment measures...",
-                  onChange:function(e){var v=e.target.value;updateEntry(function(){return{narrative:v}})}
-                })
-              ),
-              // 5-category editors
-              React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
-                cats.map(function(cat){
-                  var items=entry[cat.key]||[];
-                  return React.createElement("div",{key:cat.key,style:{padding:10,background:"#fff",borderRadius:6,border:"1px solid "+cat.color}},
-                    React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#1B2A4A",marginBottom:6}},cat.label),
-                    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4}},
-                      items.map(function(item,idx){
-                        return React.createElement("div",{key:idx,style:{display:"flex",gap:4,alignItems:"center"}},
-                          React.createElement("input",{className:"input",style:{flex:1,fontSize:11},value:item,
-                            onChange:function(e){var v=e.target.value;updateEntry(function(en){var arr=[...en[cat.key]];arr[idx]=v;var obj={};obj[cat.key]=arr;return obj})},
-                            placeholder:"Treatment measure..."
-                          }),
-                          React.createElement("button",{className:"btn-x",style:{fontSize:12,flexShrink:0},
-                            onClick:function(){updateEntry(function(en){var arr=en[cat.key].filter(function(_,i){return i!==idx});var obj={};obj[cat.key]=arr;return obj})}
-                          },"×")
-                        );
-                      }),
-                      React.createElement("button",{
-                        style:{fontSize:11,padding:"3px 8px",borderRadius:4,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",alignSelf:"flex-start"},
-                        onClick:function(){updateEntry(function(en){var arr=[...en[cat.key],""];var obj={};obj[cat.key]=arr;return obj})}
-                      },"+ Add item")
-                    )
-                  );
-                })
-              ),
-              React.createElement("div",{style:{marginTop:12,display:"flex",gap:8}},
-                React.createElement("button",{className:"btn btn-outline btn-sm",
-                  onClick:function(){
-                    var def=DEFAULT_TREATMENT_DB.find(function(e){return e.id===dbEditThreatId});
-                    if(!def){showToast("No default found for this threat type");return;}
-                    if(confirm("Reset this threat type to defaults? All edits will be lost.")){
-                      setTreatmentDB(function(p){var n=[...p];n[entryIdx]={...def};return n});
-                      showToast("Reset to defaults");
-                    }
-                  }},"Reset This Threat to Default")
-              )
-            );
-          })(),
-          React.createElement("div",{style:{marginTop:12,display:"flex",gap:8}},
-            React.createElement("button",{className:"btn btn-outline btn-sm",
-              onClick:function(){
-                if(confirm("Reset the entire Treatment Measures Database to defaults? All custom edits will be lost.")){
-                  setTreatmentDB(DEFAULT_TREATMENT_DB);
-                  setDbEditThreatId(null);
-                  showToast("Treatment database reset to defaults");
-                }
-              }},"Reset Entire Database to Defaults")
           )
         ),
 
