@@ -645,7 +645,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.961";
+  const VERSION="1.962";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1790,7 +1790,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         (r.targets||[]).forEach(tid=>{
           const a=assets.find(a2=>a2.id===tid);
           const arr=(m[tid]||[]).filter(v=>v);
-          if(a&&arr.length>0)html+=`<tr><td class="tl" style="width:200pt;vertical-align:top"><b>${a.cat}</b><br/>${a.desc||""}</td><td class="tl" style="font-size:8pt">${arr.map((v,vi)=>(vi+1)+". "+v).join("<br/>")}</td></tr>`;
+          if(a&&a.cat&&arr.length>0)html+=`<tr><td class="tl" style="width:200pt;vertical-align:top"><b>${a.cat}</b><br/>${a.desc||""}</td><td class="tl" style="font-size:8pt">${arr.map((v,vi)=>(vi+1)+". "+v).join("<br/>")}</td></tr>`;
         });
         html+=`</table>`;
       });
@@ -3804,7 +3804,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               var c2=cd[r.id]||{};var sc2=c2.eff&&c2.conf?Math.round((c2.eff+c2.conf)/2*10)/10:null;
               var gap2=sc2>=4?"Adequate":sc2>=3?"Partial":sc2>=1?"Insufficient":"";
               var m=treatmentMeasures[r.id]||{};
-              var tgtAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+              var tgtAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(function(a){return a&&a.cat});
               var hasMeas=false;tgtAssets.forEach(function(a){if((m[a.id]||[]).some(function(v){return v}))hasMeas=true;});
               var just=residualJustifications[r.id];
               // Risk header bar
@@ -3882,7 +3882,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         cRisks.filter(r=>r.n).map((r,i)=>{
           const rsc=rs[r.id]||{};
           const isHigh=r.rat==="High"||r.rat==="Very High";
-          const targetedAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(Boolean);
+          const targetedAssets=(r.targets||[]).map(function(tid){return assets.find(function(a){return a.id===tid})}).filter(function(a){return a&&a.cat});
           const measures=treatmentMeasures[r.id]||{};
           // Controls gap for this threat
           const ctrl=cd[r.id]||{};
@@ -4226,7 +4226,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   (r.targets||[]).forEach(function(tid){
                     var a=assets.find(function(a){return a.id===tid});
                     var arr=(m[tid]||[]).filter(function(v){return v});
-                    if(a&&arr.length>0)h+="<tr><td><b>"+a.cat+"</b><br/>"+a.desc+"</td><td>"+arr.map(function(v,i){return(i+1)+". "+v}).join("<br/>")+"</td></tr>";
+                    if(a&&a.cat&&arr.length>0)h+="<tr><td><b>"+a.cat+"</b><br/>"+a.desc+"</td><td>"+arr.map(function(v,i){return(i+1)+". "+v}).join("<br/>")+"</td></tr>";
                   });
                   h+="</table>";
                 });
@@ -4312,7 +4312,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               (r.targets||[]).forEach(function(tid){
                 var a=assets.find(function(a){return a.id===tid});
                 var arr=(measures[tid]||[]).filter(function(v){return v});
-                if(a&&arr.length>0)allM.push({asset:a.cat,items:arr});
+                if(a&&a.cat&&arr.length>0)allM.push({asset:a.cat,items:arr});
               });
               // POI measures too
               var poiM=[];
