@@ -672,7 +672,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.972";
+  const VERSION="1.973";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -5756,7 +5756,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   style:{fontSize:11,padding:"4px 12px",borderRadius:6,border:"1px solid "+catBorder,background:catBg,color:catColor,cursor:"pointer",fontFamily:"inherit",fontWeight:600,transition:"all 0.15s"},
                   onClick:function(){
                     var id="td_custom_"+Date.now();
-                    setThreatDB(function(p){return[...p,{id:id,label:"New "+cat+" Threat",category:cat,description:"",keywords:[],linkedTreatmentIds:[]}]});
+                    setThreatDB(function(p){return[...p,{id:id,label:"New "+cat+" Threat",category:cat,description:"",keywords:[],linkedTreatmentIds:[],linkedAssetSets:[]}]});
                     setTlEditing(id);setTlExpanded(function(p){return{...p,[id]:true}});
                     showToast("New "+cat.toLowerCase()+" threat added");
                   }
@@ -5767,6 +5767,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   var isExpanded=!!tlExpanded[threat.id];
                   var isEditing=tlEditing===threat.id;
                   var linkedCount=(threat.linkedTreatmentIds||[]).length;
+                  var linkedAssetCount=(threat.linkedAssetSets||[]).length;
 
                   function updateThreat(patch){
                     setThreatDB(function(prev){return prev.map(function(t){return t.id===threat.id?{...t,...patch}:t})});
@@ -5780,6 +5781,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       React.createElement("span",{style:{fontSize:14,transform:isExpanded?"rotate(90deg)":"rotate(0)",transition:"transform 0.15s",display:"inline-block",color:catColor}},"\u25B6"),
                       React.createElement("span",{style:{fontWeight:700,fontSize:13,color:"#1e293b",flex:1}},threat.label),
                       React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:catBg,color:catColor,border:"1px solid "+catBorder,fontWeight:600,marginRight:4}},cat),
+                      linkedAssetCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600,marginRight:4}},linkedAssetCount+" asset set"+(linkedAssetCount>1?"s":"")),
                       linkedCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedCount+" treatment set"+(linkedCount>1?"s":"")),
                       React.createElement("div",{style:{display:"flex",gap:4},onClick:function(e){e.stopPropagation()}},
                         React.createElement("button",{
@@ -5830,6 +5832,37 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       ),
                       // Description (read-only when not editing)
                       !isEditing&&threat.description&&React.createElement("p",{style:{fontSize:12,color:"#475569",marginBottom:10,lineHeight:1.6}},threat.description),
+                      // Asset Set Assignment
+                      React.createElement("div",{style:{marginBottom:12}},
+                        React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:6,display:"flex",alignItems:"center",gap:8}},
+                          "\ud83c\udfe2 Linked Asset Sets",
+                          React.createElement("span",{style:{fontSize:10,color:"#94a3b8",fontWeight:400}},"Select which asset categories this threat applies to")
+                        ),
+                        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:6}},
+                          Object.keys(ASSET_PRESETS).map(function(presetName){
+                            var linked=(threat.linkedAssetSets||[]).includes(presetName);
+                            return React.createElement("label",{key:presetName,style:{
+                              display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:6,cursor:"pointer",
+                              border:"1px solid "+(linked?catBorder:"#e2e8f0"),
+                              background:linked?catBg:"#fff",transition:"all 0.12s"
+                            }},
+                              React.createElement("input",{type:"checkbox",checked:linked,style:{width:14,height:14,cursor:"pointer",accentColor:catColor},
+                                onChange:function(e){
+                                  var sets=[...(threat.linkedAssetSets||[])];
+                                  if(e.target.checked){if(!sets.includes(presetName))sets.push(presetName)}
+                                  else{sets=sets.filter(function(s){return s!==presetName})}
+                                  updateThreat({linkedAssetSets:sets});
+                                }
+                              }),
+                              React.createElement("div",{style:{flex:1,minWidth:0}},
+                                React.createElement("div",{style:{fontSize:12,fontWeight:linked?700:400,color:linked?catColor:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},presetName),
+                                React.createElement("div",{style:{fontSize:9,color:"#94a3b8"}},ASSET_PRESETS[presetName].length+" assets")
+                              ),
+                              linked&&React.createElement("span",{style:{color:catColor,fontSize:14,flexShrink:0}},"\u2713")
+                            );
+                          })
+                        )
+                      ),
                       // Treatment Set Assignment
                       React.createElement("div",null,
                         React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:6,display:"flex",alignItems:"center",gap:8}},
