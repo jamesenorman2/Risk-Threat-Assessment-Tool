@@ -672,7 +672,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.971";
+  const VERSION="1.972";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4337,6 +4337,16 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               h+="<h1>Treatment Summary \u2014 "+(ctx.project||"Assessment")+"</h1>";
               h+="<p><b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
 
+              // Build category lookup from treatment DB
+              var mCatLookup={};
+              treatmentDB.forEach(function(entry){
+                (entry.ext_physical||[]).forEach(function(m){if(m)mCatLookup[m.trim().toLowerCase()]="Physical"});
+                (entry.ext_electronic||[]).forEach(function(m){if(m)mCatLookup[m.trim().toLowerCase()]="Electronic"});
+                (entry.int_physical||[]).forEach(function(m){if(m)mCatLookup[m.trim().toLowerCase()]="Physical"});
+                (entry.int_electronic||[]).forEach(function(m){if(m)mCatLookup[m.trim().toLowerCase()]="Electronic"});
+                (entry.procedures||[]).forEach(function(m){if(m)mCatLookup[m.trim().toLowerCase()]="Procedural"});
+              });
+
               // Build per-asset deduplicated measures
               var assetMeasures={};
               assets.forEach(function(a){if(a.cat)assetMeasures[a.id]={cat:a.cat,desc:a.desc,items:[],threats:[]}});
@@ -4351,7 +4361,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var isOpt=!!optMap[vi];
                     var key=v.trim().toLowerCase();
                     if(!assetMeasures[tid].items.some(function(x){return x.key===key})){
-                      assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key});
+                      assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key,cat:mCatLookup[key]||"Other"});
                     }
                   });
                   if(!assetMeasures[tid].threats.includes(r.n))assetMeasures[tid].threats.push(r.n);
@@ -4359,6 +4369,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
 
               var assetKeys=Object.keys(assetMeasures).filter(function(k){return assetMeasures[k].items.length>0});
+              var gcfgWord=[{key:"Physical",label:"Physical Measures"},{key:"Electronic",label:"Electronic Measures"},{key:"Procedural",label:"Procedural Measures"},{key:"Other",label:"Other Measures"}];
               if(assetKeys.length>0){
                 h+="<h2>Treatment Measures by Asset</h2>";
                 assetKeys.forEach(function(aid){
@@ -4366,11 +4377,17 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   h+="<h3>"+a.cat+"</h3>";
                   if(a.desc)h+="<p style='font-size:9pt;color:#64748b;margin-bottom:4pt'>"+a.desc+"</p>";
                   h+="<p style='font-size:8pt;color:#94a3b8'>Applicable threats: "+a.threats.join(", ")+"</p>";
-                  h+="<ol>";
-                  a.items.forEach(function(item){
-                    h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                  var groups={Physical:[],Electronic:[],Procedural:[],Other:[]};
+                  a.items.forEach(function(item){(groups[item.cat]||groups.Other).push(item)});
+                  gcfgWord.forEach(function(g){
+                    if(groups[g.key].length===0)return;
+                    h+="<p style='font-size:9pt;font-weight:bold;color:#1B2A4A;margin:8pt 0 2pt'>"+g.label+"</p>";
+                    h+="<ol>";
+                    groups[g.key].forEach(function(item){
+                      h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                    });
+                    h+="</ol>";
                   });
-                  h+="</ol>";
                 });
               }
 
@@ -4388,7 +4405,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var isOpt=!!optMap[vi];
                     var key=v.trim().toLowerCase();
                     if(!poiMeasures[poi.id].items.some(function(x){return x.key===key})){
-                      poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key});
+                      poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key,cat:mCatLookup[key]||"Other"});
                     }
                   });
                   if(!poiMeasures[poi.id].threats.includes(r.n))poiMeasures[poi.id].threats.push(r.n);
@@ -4400,14 +4417,20 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 h+="<h2>Treatment Measures by Point of Interest</h2>";
                 poiKeys.forEach(function(pid){
                   var p=poiMeasures[pid];
-                  h+="<h3>"+( p.name||"POI")+"</h3>";
+                  h+="<h3>"+(p.name||"POI")+"</h3>";
                   if(p.desc||p.location)h+="<p style='font-size:9pt;color:#64748b;margin-bottom:4pt'>"+[p.desc,p.location].filter(Boolean).join(" \u2014 ")+"</p>";
                   h+="<p style='font-size:8pt;color:#94a3b8'>Applicable threats: "+p.threats.join(", ")+"</p>";
-                  h+="<ol>";
-                  p.items.forEach(function(item){
-                    h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                  var groups={Physical:[],Electronic:[],Procedural:[],Other:[]};
+                  p.items.forEach(function(item){(groups[item.cat]||groups.Other).push(item)});
+                  gcfgWord.forEach(function(g){
+                    if(groups[g.key].length===0)return;
+                    h+="<p style='font-size:9pt;font-weight:bold;color:#1B2A4A;margin:8pt 0 2pt'>"+g.label+"</p>";
+                    h+="<ol>";
+                    groups[g.key].forEach(function(item){
+                      h+="<li>"+(item.isOpt?"<span class='opt'>"+item.v+" [OPTIONAL]</span>":item.v)+"</li>";
+                    });
+                    h+="</ol>";
                   });
-                  h+="</ol>";
                 });
               }
 
@@ -4427,6 +4450,16 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // Render the summary content
         (function(){
+          // Build category lookup from treatment DB
+          var measureCatLookup={};
+          treatmentDB.forEach(function(entry){
+            (entry.ext_physical||[]).forEach(function(m){if(m)measureCatLookup[m.trim().toLowerCase()]="Physical"});
+            (entry.ext_electronic||[]).forEach(function(m){if(m)measureCatLookup[m.trim().toLowerCase()]="Electronic"});
+            (entry.int_physical||[]).forEach(function(m){if(m)measureCatLookup[m.trim().toLowerCase()]="Physical"});
+            (entry.int_electronic||[]).forEach(function(m){if(m)measureCatLookup[m.trim().toLowerCase()]="Electronic"});
+            (entry.procedures||[]).forEach(function(m){if(m)measureCatLookup[m.trim().toLowerCase()]="Procedural"});
+          });
+
           // Build per-asset deduplicated measures
           var assetMeasures={};
           assets.forEach(function(a){if(a.cat)assetMeasures[a.id]={cat:a.cat,desc:a.desc,items:[],threats:[]}});
@@ -4441,7 +4474,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var isOpt=!!optMap[vi];
                 var key=v.trim().toLowerCase();
                 if(!assetMeasures[tid].items.some(function(x){return x.key===key})){
-                  assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key});
+                  assetMeasures[tid].items.push({v:v,isOpt:isOpt,key:key,cat:measureCatLookup[key]||"Other"});
                 }
               });
               if(!assetMeasures[tid].threats.includes(r.n))assetMeasures[tid].threats.push(r.n);
@@ -4462,7 +4495,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var isOpt=!!optMap[vi];
                 var key=v.trim().toLowerCase();
                 if(!poiMeasures[poi.id].items.some(function(x){return x.key===key})){
-                  poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key});
+                  poiMeasures[poi.id].items.push({v:v,isOpt:isOpt,key:key,cat:measureCatLookup[key]||"Other"});
                 }
               });
               if(!poiMeasures[poi.id].threats.includes(r.n))poiMeasures[poi.id].threats.push(r.n);
@@ -4515,13 +4548,29 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     ),
                     React.createElement("div",{style:{padding:"8px 14px"}},
                       React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginBottom:6}},"Applicable threats: "+a.threats.join(", ")),
-                      a.items.map(function(item,idx){
-                        return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:4,marginBottom:3,lineHeight:1.5}},
-                          React.createElement("span",{style:{color:"#1B2A4A",fontWeight:600,flexShrink:0,width:22,textAlign:"right"}},(idx+1)+"."),
-                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
-                        );
-                      })
+                      (function(){
+                        var groups={Physical:[],Electronic:[],Procedural:[],Other:[]};
+                        a.items.forEach(function(item){(groups[item.cat]||groups.Other).push(item)});
+                        var GCFG=[{key:"Physical",icon:"\ud83d\udee1\ufe0f",color:"#1e40af",bg:"#eff6ff",border:"#bfdbfe"},
+                          {key:"Electronic",icon:"\ud83d\udcbb",color:"#7c3aed",bg:"#f5f3ff",border:"#ddd6fe"},
+                          {key:"Procedural",icon:"\u2699\ufe0f",color:"#b45309",bg:"#fffbeb",border:"#fde68a"},
+                          {key:"Other",icon:"\ud83d\udccb",color:"#475569",bg:"#f8fafc",border:"#e2e8f0"}];
+                        return GCFG.filter(function(g){return groups[g.key].length>0}).map(function(g){
+                          return React.createElement("div",{key:g.key,style:{marginBottom:10}},
+                            React.createElement("div",{style:{fontSize:10,fontWeight:700,color:g.color,textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:4,display:"flex",alignItems:"center",gap:4}},
+                              g.icon+" "+g.key,
+                              React.createElement("span",{style:{fontSize:9,fontWeight:500,color:"#94a3b8",textTransform:"none",letterSpacing:0}},groups[g.key].length+" measure"+(groups[g.key].length!==1?"s":""))
+                            ),
+                            groups[g.key].map(function(item,idx){
+                              return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:8,marginBottom:3,lineHeight:1.5}},
+                                React.createElement("span",{style:{color:g.color,fontWeight:600,flexShrink:0,width:18,textAlign:"right",fontSize:10}},(idx+1)+"."),
+                                React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                              );
+                            })
+                          );
+                        });
+                      })()
                     )
                   );
                 })
@@ -4548,13 +4597,29 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     ),
                     React.createElement("div",{style:{padding:"8px 14px"}},
                       React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginBottom:6}},"Applicable threats: "+p.threats.join(", ")),
-                      p.items.map(function(item,idx){
-                        return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:4,marginBottom:3,lineHeight:1.5}},
-                          React.createElement("span",{style:{color:"#7f1d1d",fontWeight:600,flexShrink:0,width:22,textAlign:"right"}},(idx+1)+"."),
-                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
-                        );
-                      })
+                      (function(){
+                        var groups={Physical:[],Electronic:[],Procedural:[],Other:[]};
+                        p.items.forEach(function(item){(groups[item.cat]||groups.Other).push(item)});
+                        var GCFG=[{key:"Physical",icon:"\ud83d\udee1\ufe0f",color:"#1e40af",bg:"#eff6ff",border:"#bfdbfe"},
+                          {key:"Electronic",icon:"\ud83d\udcbb",color:"#7c3aed",bg:"#f5f3ff",border:"#ddd6fe"},
+                          {key:"Procedural",icon:"\u2699\ufe0f",color:"#b45309",bg:"#fffbeb",border:"#fde68a"},
+                          {key:"Other",icon:"\ud83d\udccb",color:"#475569",bg:"#f8fafc",border:"#e2e8f0"}];
+                        return GCFG.filter(function(g){return groups[g.key].length>0}).map(function(g){
+                          return React.createElement("div",{key:g.key,style:{marginBottom:10}},
+                            React.createElement("div",{style:{fontSize:10,fontWeight:700,color:g.color,textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:4,display:"flex",alignItems:"center",gap:4}},
+                              g.icon+" "+g.key,
+                              React.createElement("span",{style:{fontSize:9,fontWeight:500,color:"#94a3b8",textTransform:"none",letterSpacing:0}},groups[g.key].length+" measure"+(groups[g.key].length!==1?"s":""))
+                            ),
+                            groups[g.key].map(function(item,idx){
+                              return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:8,marginBottom:3,lineHeight:1.5}},
+                                React.createElement("span",{style:{color:g.color,fontWeight:600,flexShrink:0,width:18,textAlign:"right",fontSize:10}},(idx+1)+"."),
+                                React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                              );
+                            })
+                          );
+                        });
+                      })()
                     )
                   );
                 })
