@@ -646,7 +646,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.963";
+  const VERSION="1.964";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -753,6 +753,7 @@ function App(){
   const[autoSaveEnabled,setAutoSaveEnabled]=useState(false);
   const[ghConfig,setGhConfig]=useState({token:"",repo:"",owner:"",enabled:true});
   const[ghBrowser,setGhBrowser]=useState({open:false,files:[],loading:false,path:"projects"});
+  const[treatDBSync,setTreatDBSync]=useState({status:"idle",lastSaved:null,lastLoaded:null});
   const[comparisonData,setComparisonData]=useState(null);
   const[compLoading,setCompLoading]=useState(false);
   const[showAddThreat,setShowAddThreat]=useState(false);
@@ -762,6 +763,7 @@ function App(){
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[dbExpandedCats,setDbExpandedCats]=useState({});
   const dragRef=useRef(null);
+  const treatDBAutoFetched=useRef(false);
   const[sbdCompliance,setSbdCompliance]=useState({});
 
   // Fetch live UK threat level
@@ -805,6 +807,14 @@ function App(){
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,treatmentDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,treatmentDB,sbdCompliance]);
+
+  // Auto-load shared treatment DB from GitHub once on startup when config is ready
+  useEffect(()=>{
+    if(treatDBAutoFetched.current)return;
+    if(!ghConfig.enabled||!ghConfig.owner||!ghConfig.repo)return;
+    treatDBAutoFetched.current=true;
+    loadTreatmentDBFromGitHub(true);
+  },[ghConfig.owner,ghConfig.repo,ghConfig.enabled]);
 
   // Auto-sync SBD type from development type preset
   useEffect(()=>{
@@ -965,6 +975,56 @@ function App(){
       showToast("Error loading file from back-ups");
     }
   };
+  const TREAT_DB_PATH="shared/treatment-db.json";
+
+  const saveTreatmentDBToGitHub=async(db)=>{
+    if(!ghConfig.enabled||!ghConfig.token||!ghConfig.repo||!ghConfig.owner){
+      showToast("Configure GitHub (owner, repo, token) in Settings to sync");return;
+    }
+    setTreatDBSync(p=>({...p,status:"saving"}));
+    try{
+      var headers={"Authorization":"Bearer "+ghConfig.token,"Accept":"application/vnd.github.v3+json"};
+      var sha=null;
+      try{
+        var chk=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+TREAT_DB_PATH,{headers:headers});
+        if(chk.ok){var d=await chk.json();sha=d.sha}
+      }catch(e){}
+      var payload={message:"Update treatment database — "+new Date().toLocaleString(),content:btoa(unescape(encodeURIComponent(JSON.stringify(db,null,2))))};
+      if(sha)payload.sha=sha;
+      var res=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+TREAT_DB_PATH,{
+        method:"PUT",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify(payload)
+      });
+      if(res.ok){
+        var ts=new Date().toLocaleTimeString();
+        setTreatDBSync({status:"saved",lastSaved:ts,lastLoaded:null});
+        showToast("Treatment database saved to GitHub ✓");
+      }else{
+        setTreatDBSync(p=>({...p,status:"error"}));
+        showToast("Failed to save to GitHub");
+      }
+    }catch(e){setTreatDBSync(p=>({...p,status:"error"}));showToast("Error saving to GitHub");}
+  };
+
+  const loadTreatmentDBFromGitHub=async(silent)=>{
+    if(!ghConfig.enabled||!ghConfig.repo||!ghConfig.owner)return;
+    if(!silent)setTreatDBSync(p=>({...p,status:"loading"}));
+    try{
+      var headers={"Accept":"application/vnd.github.v3+json"};
+      if(ghConfig.token)headers["Authorization"]="Bearer "+ghConfig.token;
+      var res=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo+"/contents/"+TREAT_DB_PATH,{headers:headers});
+      if(!res.ok){if(!silent)showToast("No shared treatment database found in repository");setTreatDBSync(p=>({...p,status:"idle"}));return;}
+      var data=await res.json();
+      var content=decodeURIComponent(escape(atob(data.content.replace(/\n/g,""))));
+      var parsed=JSON.parse(content);
+      if(Array.isArray(parsed)){
+        setTreatmentDB(parsed);
+        var ts=new Date().toLocaleTimeString();
+        setTreatDBSync({status:"loaded",lastSaved:null,lastLoaded:ts});
+        if(!silent)showToast("Treatment database loaded from GitHub ✓");
+      }
+    }catch(e){if(!silent){setTreatDBSync(p=>({...p,status:"error"}));showToast("Error loading treatment database from GitHub");}}
+  };
+
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
     setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentDB(DEFAULT_TREATMENT_DB);setSbdCompliance({});
@@ -4184,8 +4244,37 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("h2",{className:"section-title"},"Treatment Measures Database"),
         React.createElement("p",{className:"section-sub"},"Manage treatment measures for each threat type. Drag items to reorder, edit inline, copy between categories, and add or remove items. Changes apply to all assessments."),
 
+        // GitHub sync banner
+        ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{
+          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:8,marginBottom:12,
+          background:treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"#f0fdf4":treatDBSync.status==="error"?"#fef2f2":"#f0f9ff",
+          border:"1px solid "+(treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"#bbf7d0":treatDBSync.status==="error"?"#fecaca":"#bae6fd")
+        }},
+          React.createElement("span",{style:{fontSize:16}},treatDBSync.status==="saving"||treatDBSync.status==="loading"?"\u23f3":treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"\u2705":treatDBSync.status==="error"?"\u274c":"\u2601\ufe0f"),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},
+              treatDBSync.status==="saving"?"Saving to GitHub...":
+              treatDBSync.status==="loading"?"Loading from GitHub...":
+              treatDBSync.status==="saved"?"Saved to GitHub at "+treatDBSync.lastSaved:
+              treatDBSync.status==="loaded"?"Loaded from GitHub at "+treatDBSync.lastLoaded:
+              treatDBSync.status==="error"?"Sync error — check Settings":
+              "GitHub sync available"
+            ),
+            React.createElement("div",{style:{fontSize:10,color:"#64748b"}},ghConfig.owner+"/"+ghConfig.repo+" \u2192 shared/treatment-db.json")
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
+            onClick:function(){saveTreatmentDBToGitHub(treatmentDB)}
+          },"\u2191 Save to GitHub"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
+            onClick:function(){loadTreatmentDBFromGitHub(false)}
+          },"\u2193 Load from GitHub")
+        ),
+        !ghConfig.enabled||!ghConfig.owner||!ghConfig.repo?React.createElement("div",{style:{padding:"10px 14px",borderRadius:8,marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",fontSize:12,color:"#92400e"}},"To enable shared sync: configure your GitHub repository owner and name in Settings \u2192 Back-ups. Once set, all team members loading the same repo will automatically receive your database updates."):null,
+
         // Summary bar
-        React.createElement("div",{style:{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}},
+        React.createElement("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
           React.createElement("div",{style:{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:8,padding:"10px 16px",flex:1,minWidth:160}},
             React.createElement("div",{style:{fontSize:11,color:"#0369a1",fontWeight:600}},"THREAT TYPES"),
             React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#0c4a6e"}},treatmentDB.length)
@@ -4194,7 +4283,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{style:{fontSize:11,color:"#15803d",fontWeight:600}},"TOTAL MEASURES"),
             React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#14532d"}},treatmentDB.reduce(function(t,e){return t+(e.ext_physical||[]).length+(e.ext_electronic||[]).length+(e.int_physical||[]).length+(e.int_electronic||[]).length+(e.procedures||[]).length},0))
           ),
-          React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+          React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}},
             React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
               onClick:function(){
                 var id="custom_"+Date.now();
