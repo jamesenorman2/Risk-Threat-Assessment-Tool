@@ -672,7 +672,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.965";
+  const VERSION="1.966";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4416,13 +4416,18 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               var allM=[];
               (r.targets||[]).forEach(function(tid){
                 var a=assets.find(function(a){return a.id===tid});
-                var arr=(measures[tid]||[]).filter(function(v){return v});
+                var rawArr=measures[tid]||[];
+                var optMap=(treatOptional[r.id]&&treatOptional[r.id][tid])||{};
+                var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
                 if(a&&a.cat&&arr.length>0)allM.push({asset:a.cat,items:arr});
               });
               // POI measures too
               var poiM=[];
               pois.filter(function(p){return p.threats.includes(r.id)}).forEach(function(poi){
-                var arr=(measures["poi_"+poi.id]||[]).filter(function(v){return v});
+                var poiKey="poi_"+poi.id;
+                var rawArr=measures[poiKey]||[];
+                var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
+                var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
                 if(arr.length>0)poiM.push({poi:poi.name||"POI",items:arr});
               });
               return React.createElement("div",{key:r.id,style:{marginBottom:10,border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa"),borderRadius:8,overflow:"hidden"}},
@@ -4441,20 +4446,28 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   allM.length>0?React.createElement("div",null,
                     React.createElement("div",{style:{fontWeight:700,color:"#1e293b",fontSize:11,marginBottom:4}},"Planned Treatment Measures:"),
                     allM.map(function(g,gi){
-                      return React.createElement("div",{key:gi,style:{marginBottom:4,paddingLeft:8}},
-                        React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#1B2A4A"}},g.asset),
-                        g.items.map(function(m,mi){
-                          return React.createElement("div",{key:mi,style:{fontSize:11,color:"#475569",paddingLeft:12}},(mi+1)+". "+m);
+                      return React.createElement("div",{key:gi,style:{marginBottom:6,paddingLeft:8}},
+                        React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#1B2A4A",marginBottom:2}},g.asset),
+                        g.items.map(function(item,mi){
+                          return React.createElement("div",{key:mi,style:{display:"flex",alignItems:"baseline",gap:4,fontSize:11,paddingLeft:12,marginBottom:1}},
+                            React.createElement("span",{style:{color:"#475569",flexShrink:0}},(mi+1)+"."),
+                            React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#475569",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                            item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                          );
                         })
                       );
                     }),
                     poiM.length>0&&React.createElement("div",{style:{marginTop:4}},
                       React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d",marginBottom:2}},"POI Measures:"),
                       poiM.map(function(g,gi){
-                        return React.createElement("div",{key:gi,style:{marginBottom:4,paddingLeft:8}},
-                          React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d"}},g.poi),
-                          g.items.map(function(m,mi){
-                            return React.createElement("div",{key:mi,style:{fontSize:11,color:"#475569",paddingLeft:12}},(mi+1)+". "+m);
+                        return React.createElement("div",{key:gi,style:{marginBottom:6,paddingLeft:8}},
+                          React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d",marginBottom:2}},g.poi),
+                          g.items.map(function(item,mi){
+                            return React.createElement("div",{key:mi,style:{display:"flex",alignItems:"baseline",gap:4,fontSize:11,paddingLeft:12,marginBottom:1}},
+                              React.createElement("span",{style:{color:"#475569",flexShrink:0}},(mi+1)+"."),
+                              React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#475569",fontStyle:item.isOpt?"italic":"normal"}},item.v),
+                              item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                            );
                           })
                         );
                       })
