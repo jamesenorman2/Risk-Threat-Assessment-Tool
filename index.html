@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.976";
+  const VERSION="1.977";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4730,30 +4730,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 });
                 h+="</table>";
               }
-              // Treatment measures for all risks that have them
-              var allRisksWithM=cRisks.filter(function(r){var m=treatmentMeasures[r.id]||{};return Object.values(m).some(function(arr){return arr&&arr.some(function(v){return v})})});
-              if(allRisksWithM.length>0){
-                h+="<h2>Treatment Measures</h2>";
-                allRisksWithM.forEach(function(r){
-                  var m=treatmentMeasures[r.id]||{};
-                  h+="<h3>R"+(cRisks.indexOf(r)+1)+". "+r.n+" ("+r.rat+" \u2014 "+(r.treat||"Reduce")+")</h3>";
-                  h+="<table><tr><th>Asset / POI</th><th>Treatment Measures</th></tr>";
-                  (r.targets||[]).forEach(function(tid){
-                    var a=assets.find(function(a2){return a2.id===tid});
-                    var rawArr=m[tid]||[];
-                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][tid])||{};
-                    var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
-                    if(a&&a.cat&&arr.length>0)h+="<tr><td><b>"+a.cat+"</b></td><td>"+arr.map(function(item,mi){return(mi+1)+". "+item.v+(item.isOpt?" [OPTIONAL]":"")}).join("<br/>")+"</td></tr>";
-                  });
-                  pois.filter(function(p){return p.threats.includes(r.id)}).forEach(function(poi){
-                    var poiKey="poi_"+poi.id;var rawArr=m[poiKey]||[];
-                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
-                    var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
-                    if(arr.length>0)h+="<tr><td><b>POI: "+(poi.name||"POI")+"</b></td><td>"+arr.map(function(item,mi){return(mi+1)+". "+item.v+(item.isOpt?" [OPTIONAL]":"")}).join("<br/>")+"</td></tr>";
-                  });
-                  h+="</table>";
-                });
-              }
               // Residual risk
               var resScored=cRisks.filter(function(r){return r.resRat});
               if(resScored.length>0){
@@ -5032,68 +5008,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )
         ),
-
-        // ── ALL TREATMENT MEASURES ──
-        (function(){
-          var allRisksWithMeasures=cRisks.filter(function(r){
-            var m=treatmentMeasures[r.id]||{};
-            return Object.values(m).some(function(arr){return arr&&arr.some(function(v){return v})});
-          });
-          if(allRisksWithMeasures.length===0)return null;
-          return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A",marginBottom:10}},"TREATMENT MEASURES"),
-            allRisksWithMeasures.map(function(r){
-              var idx=cRisks.indexOf(r)+1;
-              var measures=treatmentMeasures[r.id]||{};
-              return React.createElement("div",{key:r.id,style:{marginBottom:12,borderRadius:8,border:"1px solid #e2e8f0",overflow:"hidden"}},
-                React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center",padding:"8px 12px",background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}},
-                  React.createElement("span",{style:{fontWeight:700,fontSize:12}},"R"+idx),
-                  React.createElement("span",{style:{fontWeight:700,fontSize:12,flex:1}},r.n),
-                  React.createElement("span",{style:{fontSize:10,fontWeight:600,background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"2px 8px",borderRadius:4}},r.cat),
-                  React.createElement(Badge,{rating:r.rat}),
-                  React.createElement("span",{style:{fontSize:11,color:"#475569"}},r.treat||"\u2014")
-                ),
-                React.createElement("div",{style:{padding:"8px 12px"}},
-                  (r.targets||[]).map(function(tid){
-                    var a=assets.find(function(x){return x.id===tid});
-                    var rawArr=measures[tid]||[];
-                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][tid])||{};
-                    var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
-                    if(!a||!a.cat||arr.length===0)return null;
-                    return React.createElement("div",{key:tid,style:{marginBottom:6}},
-                      React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#1B2A4A",marginBottom:2}},a.cat),
-                      arr.map(function(item,mi){
-                        return React.createElement("div",{key:mi,style:{display:"flex",alignItems:"baseline",gap:4,fontSize:11,paddingLeft:12,marginBottom:1}},
-                          React.createElement("span",{style:{color:"#475569",flexShrink:0}},(mi+1)+"."),
-                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#475569",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
-                        );
-                      })
-                    );
-                  }),
-                  // POI measures
-                  pois.filter(function(p){return p.threats.includes(r.id)}).map(function(poi){
-                    var poiKey="poi_"+poi.id;
-                    var rawArr=measures[poiKey]||[];
-                    var optMap=(treatOptional[r.id]&&treatOptional[r.id][poiKey])||{};
-                    var arr=rawArr.map(function(v,vi){return{v:v,isOpt:!!optMap[vi]}}).filter(function(x){return x.v});
-                    if(arr.length===0)return null;
-                    return React.createElement("div",{key:poiKey,style:{marginBottom:6}},
-                      React.createElement("div",{style:{fontSize:11,fontWeight:600,color:"#7f1d1d",marginBottom:2}},"\u26a0 POI: "+(poi.name||"POI")),
-                      arr.map(function(item,mi){
-                        return React.createElement("div",{key:mi,style:{display:"flex",alignItems:"baseline",gap:4,fontSize:11,paddingLeft:12,marginBottom:1}},
-                          React.createElement("span",{style:{color:"#475569",flexShrink:0}},(mi+1)+"."),
-                          React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#475569",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                          item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
-                        );
-                      })
-                    );
-                  })
-                )
-              );
-            })
-          );
-        })(),
 
         // ── RISK MATRICES SIDE BY SIDE ──
         React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
