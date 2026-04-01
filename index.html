@@ -531,24 +531,24 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // THREAT LIBRARY — reference database of threat types
 // ============================================================
 const DEFAULT_THREAT_DB=[
-  {id:"td_vbied",label:"VBIED / VAAW",category:"Terrorism",description:"Vehicle-borne improvised explosive device (VBIED) or vehicle used as a weapon (VAAW). Encompasses car/van bombs and deliberate vehicle ramming attacks against people or structures.",keywords:["vbied","vaaw","vehicle bomb"],linkedTreatmentIds:["vbied_vaaw"]},
-  {id:"td_mta",label:"Marauding Terrorist Attack (MTA / MTFA)",category:"Terrorism",description:"Coordinated attack by one or more individuals using bladed weapons, firearms, or improvised weapons to cause mass casualties while moving through a location.",keywords:["mta","mtfa","marauding"],linkedTreatmentIds:["mta_mtfa"]},
-  {id:"td_pbied",label:"PBIED",category:"Terrorism",description:"Person-borne improvised explosive device — a concealed explosive device carried or worn by an attacker, typically detonated in a crowded space.",keywords:["pbied","person borne"],linkedTreatmentIds:["pbied"]},
-  {id:"td_ied",label:"IED / Drone / Mail Threat",category:"Terrorism",description:"Improvised explosive devices placed or delivered by hand, drone, or postal/courier service. Includes suspect packages and small unmanned aerial system (UAS) threats.",keywords:["ied","drone","mail","parcel"],linkedTreatmentIds:["ied"]},
-  {id:"td_cbr",label:"CBR / CBRN Attack",category:"Terrorism",description:"Chemical, biological, radiological, or nuclear attack using toxic agents, pathogens, or radioactive material to cause harm, contamination, or mass disruption.",keywords:["cbr","cbrn","chemical","biological","radiological"],linkedTreatmentIds:["cbr"]},
-  {id:"td_burglary",label:"Burglary",category:"Crime",description:"Unlawful entry into premises with intent to steal, commit criminal damage, or cause harm. Includes forced entry, opportunistic access, and distraction techniques.",keywords:["burglary","break-in","unlawful entry"],linkedTreatmentIds:["burglary"]},
-  {id:"td_theft",label:"Theft",category:"Crime",description:"Deprivation of assets without consent. Includes shoplifting, employee theft, and theft of high-value or CRAVED (Concealable, Removable, Available, Valuable, Enjoyable, Disposable) items.",keywords:["theft","stealing","shoplifting"],linkedTreatmentIds:["theft"]},
-  {id:"td_vehicle_crime",label:"Vehicle Crime",category:"Crime",description:"Theft of vehicles, theft from vehicles, or criminal damage to vehicles. Includes carjacking, catalytic converter theft, and fuel theft.",keywords:["vehicle crime","car theft","van theft"],linkedTreatmentIds:["vehicle_crime"]},
-  {id:"td_arson",label:"Arson",category:"Crime",description:"Deliberate ignition of fire to destroy property, cause harm, or create disruption. May be opportunistic or targeted.",keywords:["arson","deliberate fire","fire setting"],linkedTreatmentIds:["arson"]},
-  {id:"td_trespass",label:"Trespass",category:"Crime",description:"Unauthorised entry onto land or into buildings without permission. Ranges from opportunistic to deliberate (protest, reconnaissance, squatting).",keywords:["trespass","unauthorised access","squatting"],linkedTreatmentIds:["trespass"]},
-  {id:"td_asb",label:"ASB / Criminal Damage",category:"Crime",description:"Anti-social behaviour, nuisance, intimidation, and deliberate damage to property. May escalate or create secondary risks.",keywords:["asb","anti-social","criminal damage","vandalism"],linkedTreatmentIds:["asb"]},
-  {id:"td_public_order",label:"Public Order / Protest",category:"Crime",description:"Protests, demonstrations, riots, or direct action that may disrupt operations, damage property, or endanger people.",keywords:["public order","protest","riot","demonstration"],linkedTreatmentIds:["public_order"]},
-  {id:"td_violence",label:"Violence / Sexual Offences",category:"Crime",description:"Physical assault, domestic violence, threats of violence, and sexual offences on or near the premises.",keywords:["violence","assault","sexual offence","harassment"],linkedTreatmentIds:["violence"]},
-  {id:"td_cybercrime",label:"Cybercrime",category:"Crime",description:"Attacks on IT, OT, and IoT systems including ransomware, phishing, DDoS, network intrusion, and operational technology compromise.",keywords:["cyber","ransomware","phishing","hacking","it attack"],linkedTreatmentIds:["cybercrime"]},
-  {id:"td_info_theft",label:"Information Theft",category:"Crime",description:"Theft or unauthorised disclosure of confidential, commercially sensitive, or personal data. Includes document theft, covert photography, and data exfiltration.",keywords:["information theft","data theft","espionage","data breach"],linkedTreatmentIds:["info_theft"]},
-  {id:"td_insider",label:"Insider Threat",category:"Crime",description:"Malicious or negligent actions by employees, contractors, or trusted individuals with authorised access. Includes sabotage, fraud, and data theft.",keywords:["insider","staff misconduct","disgruntled employee"],linkedTreatmentIds:["insider"]},
-  {id:"td_soc",label:"Serious Organised Crime",category:"Crime",description:"Organised criminal activity including drug supply, human trafficking, money laundering, and professional theft gangs targeting premises.",keywords:["soc","organised crime","gang","trafficking"],linkedTreatmentIds:["soc"]},
-  {id:"td_kre",label:"Kidnap, Ransom & Extortion",category:"Crime",description:"Threats to individuals or organisations including kidnapping, ransom demands, product contamination threats, and extortion via digital or physical means.",keywords:["kidnap","ransom","extortion","hostage"],linkedTreatmentIds:["kre"]}
+  {id:"td_vbied",label:"VBIED / VAAW",category:"Terrorism",description:"Vehicle-borne improvised explosive device (VBIED) or vehicle used as a weapon (VAAW). Encompasses car/van bombs and deliberate vehicle ramming attacks against people or structures.",keywords:["vbied","vaaw","vehicle bomb"],linkedTreatmentIds:["vbied_vaaw"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
+  {id:"td_mta",label:"Marauding Terrorist Attack (MTA / MTFA)",category:"Terrorism",description:"Coordinated attack by one or more individuals using bladed weapons, firearms, or improvised weapons to cause mass casualties while moving through a location.",keywords:["mta","mtfa","marauding"],linkedTreatmentIds:["mta_mtfa"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Transport","Mixed-Use"]},
+  {id:"td_pbied",label:"PBIED",category:"Terrorism",description:"Person-borne improvised explosive device — a concealed explosive device carried or worn by an attacker, typically detonated in a crowded space.",keywords:["pbied","person borne"],linkedTreatmentIds:["pbied"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Transport","Mixed-Use"]},
+  {id:"td_ied",label:"IED / Drone / Mail Threat",category:"Terrorism",description:"Improvised explosive devices placed or delivered by hand, drone, or postal/courier service. Includes suspect packages and small unmanned aerial system (UAS) threats.",keywords:["ied","drone","mail","parcel"],linkedTreatmentIds:["ied"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
+  {id:"td_cbr",label:"CBR / CBRN Attack",category:"Terrorism",description:"Chemical, biological, radiological, or nuclear attack using toxic agents, pathogens, or radioactive material to cause harm, contamination, or mass disruption.",keywords:["cbr","cbrn","chemical","biological","radiological"],linkedTreatmentIds:["cbr"],linkedAssetSets:["Commercial","Government","Industrial","Transport"]},
+  {id:"td_burglary",label:"Burglary",category:"Crime",description:"Unlawful entry into premises with intent to steal, commit criminal damage, or cause harm. Includes forced entry, opportunistic access, and distraction techniques.",keywords:["burglary","break-in","unlawful entry"],linkedTreatmentIds:["burglary"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
+  {id:"td_theft",label:"Theft",category:"Crime",description:"Deprivation of assets without consent. Includes shoplifting, employee theft, and theft of high-value or CRAVED (Concealable, Removable, Available, Valuable, Enjoyable, Disposable) items.",keywords:["theft","stealing","shoplifting"],linkedTreatmentIds:["theft"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
+  {id:"td_vehicle_crime",label:"Vehicle Crime",category:"Crime",description:"Theft of vehicles, theft from vehicles, or criminal damage to vehicles. Includes carjacking, catalytic converter theft, and fuel theft.",keywords:["vehicle crime","car theft","van theft"],linkedTreatmentIds:["vehicle_crime"],linkedAssetSets:["Residential","Commercial","Retail","Healthcare","Industrial","Transport","Mixed-Use"]},
+  {id:"td_arson",label:"Arson",category:"Crime",description:"Deliberate ignition of fire to destroy property, cause harm, or create disruption. May be opportunistic or targeted.",keywords:["arson","deliberate fire","fire setting"],linkedTreatmentIds:["arson"],linkedAssetSets:["Residential","Commercial","Retail","Education","Industrial","Mixed-Use"]},
+  {id:"td_trespass",label:"Trespass",category:"Crime",description:"Unauthorised entry onto land or into buildings without permission. Ranges from opportunistic to deliberate (protest, reconnaissance, squatting).",keywords:["trespass","unauthorised access","squatting"],linkedTreatmentIds:["trespass"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
+  {id:"td_asb",label:"ASB / Criminal Damage",category:"Crime",description:"Anti-social behaviour, nuisance, intimidation, and deliberate damage to property. May escalate or create secondary risks.",keywords:["asb","anti-social","criminal damage","vandalism"],linkedTreatmentIds:["asb"],linkedAssetSets:["Residential","Commercial","Retail","Education","Transport","Mixed-Use"]},
+  {id:"td_public_order",label:"Public Order / Protest",category:"Crime",description:"Protests, demonstrations, riots, or direct action that may disrupt operations, damage property, or endanger people.",keywords:["public order","protest","riot","demonstration"],linkedTreatmentIds:["public_order"],linkedAssetSets:["Commercial","Retail","Government","Transport","Mixed-Use"]},
+  {id:"td_violence",label:"Violence / Sexual Offences",category:"Crime",description:"Physical assault, domestic violence, threats of violence, and sexual offences on or near the premises.",keywords:["violence","assault","sexual offence","harassment"],linkedTreatmentIds:["violence"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Transport","Mixed-Use"]},
+  {id:"td_cybercrime",label:"Cybercrime",category:"Crime",description:"Attacks on IT, OT, and IoT systems including ransomware, phishing, DDoS, network intrusion, and operational technology compromise.",keywords:["cyber","ransomware","phishing","hacking","it attack"],linkedTreatmentIds:["cybercrime"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
+  {id:"td_info_theft",label:"Information Theft",category:"Crime",description:"Theft or unauthorised disclosure of confidential, commercially sensitive, or personal data. Includes document theft, covert photography, and data exfiltration.",keywords:["information theft","data theft","espionage","data breach"],linkedTreatmentIds:["info_theft"],linkedAssetSets:["Commercial","Government","Healthcare","Industrial"]},
+  {id:"td_insider",label:"Insider Threat",category:"Crime",description:"Malicious or negligent actions by employees, contractors, or trusted individuals with authorised access. Includes sabotage, fraud, and data theft.",keywords:["insider","staff misconduct","disgruntled employee"],linkedTreatmentIds:["insider"],linkedAssetSets:["Commercial","Government","Healthcare","Industrial"]},
+  {id:"td_soc",label:"Serious Organised Crime",category:"Crime",description:"Organised criminal activity including drug supply, human trafficking, money laundering, and professional theft gangs targeting premises.",keywords:["soc","organised crime","gang","trafficking"],linkedTreatmentIds:["soc"],linkedAssetSets:["Commercial","Retail","Industrial","Transport","Mixed-Use"]},
+  {id:"td_kre",label:"Kidnap, Ransom & Extortion",category:"Crime",description:"Threats to individuals or organisations including kidnapping, ransom demands, product contamination threats, and extortion via digital or physical means.",keywords:["kidnap","ransom","extortion","hostage"],linkedTreatmentIds:["kre"],linkedAssetSets:["Commercial","Government","Retail"]}
 ];
 
 // ============================================================
@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.974";
+  const VERSION="1.975";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -792,7 +792,7 @@ function App(){
   const[showAddThreat,setShowAddThreat]=useState(false);
   const[residualJustifications,setResidualJustifications]=useState({});
   const[treatOptional,setTreatOptional]=useState({});
-  const[threatDB,setThreatDB]=useState(DEFAULT_THREAT_DB);
+  const[threatDB,setThreatDB]=useState(migrateLinkedAssets(DEFAULT_THREAT_DB));
   const[treatmentDB,setTreatmentDB]=useState(DEFAULT_TREATMENT_DB);
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[dbExpandedCats,setDbExpandedCats]=useState({});
@@ -1105,7 +1105,7 @@ function App(){
 
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(DEFAULT_THREAT_DB);setTreatmentDB(DEFAULT_TREATMENT_DB);setSbdCompliance({});
+    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(migrateLinkedAssets(DEFAULT_THREAT_DB));setTreatmentDB(DEFAULT_TREATMENT_DB);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
@@ -5624,11 +5624,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
       // DATABASE TAB — combined Assets, Threats, Treatments
       tab==="database"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Database"),
-        React.createElement("p",{className:"section-sub"},"Manage your asset library, threat library, and treatment measures. Link threats to treatment sets and manage all reference data in one place."),
 
         // Sub-navigation
-        React.createElement("div",{style:{display:"flex",gap:0,marginBottom:20,borderBottom:"2px solid #e2e8f0",position:"sticky",top:42,zIndex:50,background:"#fff"}},
+        React.createElement("div",{style:{display:"flex",gap:0,marginBottom:16,borderBottom:"2px solid #e2e8f0",position:"sticky",top:42,zIndex:50,background:"#fff"}},
           [{id:"assets",label:"Assets",icon:"\ud83c\udfe2",count:Object.keys(ASSET_PRESETS).reduce(function(t,k){return t+ASSET_PRESETS[k].length},0)+" presets"},
            {id:"threats",label:"Threats",icon:"\u26a0\ufe0f",count:threatDB.length+" types"},
            {id:"treatments",label:"Treatments",icon:"\ud83d\udee1\ufe0f",count:treatmentDB.length+" sets"}
@@ -5648,118 +5646,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           })
         ),
 
-        // Relationship Matrix toggle
-        React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",marginBottom:showRelMatrix?0:12}},
-          React.createElement("button",{
-            style:{fontSize:11,padding:"5px 14px",borderRadius:6,border:"1px solid "+(showRelMatrix?"#1B2A4A":"#e2e8f0"),background:showRelMatrix?"#1B2A4A":"#fff",color:showRelMatrix?"#fff":"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600,transition:"all 0.15s"},
-            onClick:function(){setShowRelMatrix(!showRelMatrix)}
-          },(showRelMatrix?"\u25B2 Hide":"\u25BC Show")+" Relationship Matrix")
-        ),
-
-        // Relationship Matrix Panel
-        showRelMatrix&&React.createElement("div",{style:{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden",background:"#fff"}},
-          // Mode toggle
-          React.createElement("div",{style:{display:"flex",background:"#f8fafc",borderBottom:"1px solid #e2e8f0",padding:"8px 12px",gap:8,alignItems:"center"}},
-            React.createElement("span",{style:{fontSize:11,fontWeight:600,color:"#475569",marginRight:4}},"View:"),
-            ["assets","treatments"].map(function(mode){
-              var active=relMatrixMode===mode;
-              return React.createElement("button",{key:mode,
-                style:{fontSize:11,padding:"4px 12px",borderRadius:6,border:"1px solid "+(active?"#1B2A4A":"#cbd5e1"),background:active?"#1B2A4A":"#fff",color:active?"#fff":"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:active?700:500,transition:"all 0.15s"},
-                onClick:function(){setRelMatrixMode(mode)}
-              },mode==="assets"?"Threats \u00d7 Assets":"Threats \u00d7 Treatments");
-            })
-          ),
-          // Matrix content
-          React.createElement("div",{style:{overflow:"auto",maxHeight:500,fontSize:10}},
-            relMatrixMode==="treatments"?
-            // ── Threats × Treatments matrix ──
-            React.createElement("table",{style:{borderCollapse:"collapse",minWidth:"100%"}},
-              React.createElement("thead",null,
-                React.createElement("tr",null,
-                  React.createElement("th",{style:{position:"sticky",left:0,zIndex:2,background:"#1B2A4A",color:"#fff",padding:"6px 10px",textAlign:"left",fontWeight:700,minWidth:140,fontSize:10,borderRight:"2px solid #fff"}},"Threat"),
-                  treatmentDB.map(function(ts){
-                    return React.createElement("th",{key:ts.id,style:{background:"#1B2A4A",color:"#fff",padding:"6px 4px",textAlign:"center",fontWeight:600,fontSize:8,minWidth:50,maxWidth:70,whiteSpace:"normal",lineHeight:1.2}},ts.label);
-                  })
-                )
-              ),
-              React.createElement("tbody",null,
-                threatDB.map(function(threat,ti){
-                  var isTerr=threat.category==="Terrorism";
-                  return React.createElement("tr",{key:threat.id,style:{background:ti%2===0?"#fff":"#fafbfc"}},
-                    React.createElement("td",{style:{position:"sticky",left:0,zIndex:1,background:isTerr?"#fef2f2":"#f0f9ff",padding:"5px 10px",fontWeight:600,fontSize:10,color:isTerr?"#dc2626":"#0369a1",borderRight:"2px solid #e2e8f0",whiteSpace:"nowrap"}},threat.label),
-                    treatmentDB.map(function(ts){
-                      var linked=(threat.linkedTreatmentIds||[]).includes(ts.id);
-                      return React.createElement("td",{key:ts.id,style:{textAlign:"center",padding:4,cursor:"pointer",borderRight:"1px solid #f1f5f9"},
-                        onClick:function(){
-                          setThreatDB(function(prev){return prev.map(function(t){
-                            if(t.id!==threat.id)return t;
-                            var ids=[...(t.linkedTreatmentIds||[])];
-                            if(linked)ids=ids.filter(function(x){return x!==ts.id});else ids.push(ts.id);
-                            return{...t,linkedTreatmentIds:ids};
-                          })});
-                        }
-                      },React.createElement("span",{style:{display:"inline-block",width:16,height:16,borderRadius:4,border:"1px solid "+(linked?"#16a34a":"#e2e8f0"),background:linked?"#16a34a":"#fff",color:"#fff",fontSize:10,lineHeight:"16px",textAlign:"center",transition:"all 0.1s"}},linked?"\u2713":""));
-                    })
-                  );
-                })
-              )
-            ):
-            // ── Threats × Assets matrix ──
-            React.createElement("table",{style:{borderCollapse:"collapse",minWidth:"100%"}},
-              React.createElement("thead",null,
-                React.createElement("tr",null,
-                  React.createElement("th",{style:{position:"sticky",left:0,zIndex:2,background:"#1B2A4A",color:"#fff",padding:"6px 10px",textAlign:"left",fontWeight:700,minWidth:140,fontSize:10,borderRight:"2px solid #fff"}},"Threat"),
-                  Object.keys(ASSET_PRESETS).map(function(presetName){
-                    return React.createElement("th",{key:presetName,colSpan:ASSET_PRESETS[presetName].length,style:{background:"#334155",color:"#fff",padding:"4px 6px",textAlign:"center",fontWeight:700,fontSize:9,borderLeft:"2px solid #1B2A4A"}},presetName);
-                  })
-                ),
-                React.createElement("tr",null,
-                  React.createElement("th",{style:{position:"sticky",left:0,zIndex:2,background:"#1B2A4A",borderRight:"2px solid #fff"}}),
-                  Object.keys(ASSET_PRESETS).map(function(presetName){
-                    return ASSET_PRESETS[presetName].map(function(a,ai){
-                      return React.createElement("th",{key:presetName+"_"+ai,style:{background:"#f8fafc",padding:"3px 2px",fontWeight:500,fontSize:7,color:"#475569",maxWidth:50,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",borderLeft:ai===0?"2px solid #e2e8f0":"1px solid #f1f5f9",writingMode:"vertical-rl",textOrientation:"mixed",height:80},title:a.cat},a.cat.replace(/^Physical - |^Human Assets - |^Information - |^Intangible - /,""));
-                    });
-                  })
-                )
-              ),
-              React.createElement("tbody",null,
-                threatDB.map(function(threat,ti){
-                  var isTerr=threat.category==="Terrorism";
-                  var linkedCats=threat.linkedAssetSets||[];
-                  return React.createElement("tr",{key:threat.id,style:{background:ti%2===0?"#fff":"#fafbfc"}},
-                    React.createElement("td",{style:{position:"sticky",left:0,zIndex:1,background:isTerr?"#fef2f2":"#f0f9ff",padding:"5px 10px",fontWeight:600,fontSize:10,color:isTerr?"#dc2626":"#0369a1",borderRight:"2px solid #e2e8f0",whiteSpace:"nowrap"}},threat.label),
-                    Object.keys(ASSET_PRESETS).map(function(presetName){
-                      return ASSET_PRESETS[presetName].map(function(a,ai){
-                        var linked=linkedCats.includes(a.cat);
-                        return React.createElement("td",{key:presetName+"_"+ai,style:{textAlign:"center",padding:2,cursor:"pointer",borderLeft:ai===0?"2px solid #e2e8f0":"1px solid #f1f5f9"},
-                          title:threat.label+" \u2194 "+a.cat,
-                          onClick:function(){
-                            setThreatDB(function(prev){return prev.map(function(t){
-                              if(t.id!==threat.id)return t;
-                              var sets=[...(t.linkedAssetSets||[])];
-                              if(linked)sets=sets.filter(function(x){return x!==a.cat});else sets.push(a.cat);
-                              return{...t,linkedAssetSets:sets};
-                            })});
-                          }
-                        },React.createElement("span",{style:{display:"inline-block",width:14,height:14,borderRadius:3,border:"1px solid "+(linked?"#0369a1":"#e2e8f0"),background:linked?"#0369a1":"#fff",color:"#fff",fontSize:8,lineHeight:"14px",textAlign:"center",transition:"all 0.1s"}},linked?"\u2713":""));
-                      });
-                    })
-                  );
-                })
-              )
-            )
-          )
-        ),
 
         // ═══════ ASSETS SECTION ═══════
         dbSection==="assets"&&React.createElement("div",null,
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontSize:16,fontWeight:700,color:"#1B2A4A"}},"Asset Library"),
-              React.createElement("div",{style:{fontSize:12,color:"#94a3b8"}},"Reference asset categories by development type. Click a preset to view its assets. Use these as templates when setting up your assessment.")
-            )
-          ),
-
           // Preset type selector
           React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}},
             Object.keys(ASSET_PRESETS).map(function(presetName){
@@ -5838,59 +5727,72 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // ═══════ THREATS SECTION ═══════
         dbSection==="threats"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Threat Library"),
-        React.createElement("p",{className:"section-sub"},"A reference database of standard threat types. Edit descriptions and keywords, then assign which Treatment Sets apply to each threat. Assignments drive suggestion chips in the Residual Risk tab."),
 
-        // GitHub sync banner
-        ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{
-          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:8,marginBottom:12,
-          background:threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"#f0fdf4":threatLibSync.status==="error"?"#fef2f2":"#f0f9ff",
-          border:"1px solid "+(threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"#bbf7d0":threatLibSync.status==="error"?"#fecaca":"#bae6fd")
-        }},
-          React.createElement("span",{style:{fontSize:16}},threatLibSync.status==="saving"||threatLibSync.status==="loading"?"\u23f3":threatLibSync.status==="saved"||threatLibSync.status==="loaded"?"\u2705":threatLibSync.status==="error"?"\u274c":"\u2601\ufe0f"),
-          React.createElement("div",{style:{flex:1}},
-            React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},
-              threatLibSync.status==="saving"?"Saving to GitHub...":threatLibSync.status==="loading"?"Loading from GitHub...":
-              threatLibSync.status==="saved"?"Saved to GitHub at "+threatLibSync.lastSaved:
-              threatLibSync.status==="loaded"?"Loaded from GitHub at "+threatLibSync.lastLoaded:
-              threatLibSync.status==="error"?"Sync error — check Settings":"GitHub sync available"),
-            React.createElement("div",{style:{fontSize:10,color:"#64748b"}},ghConfig.owner+"/"+ghConfig.repo+" \u2192 shared/threat-library.json")
+        // Compact toolbar
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}},
+          React.createElement("span",{style:{fontSize:12,color:"#475569"}},threatDB.filter(function(t){return t.category==="Terrorism"}).length+" terrorism, "+threatDB.filter(function(t){return t.category==="Crime"}).length+" crime"),
+          React.createElement("div",{style:{flex:1}}),
+          // GitHub sync (compact)
+          ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+              disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
+              onClick:function(){saveThreatLibToGitHub(threatDB)}},"\u2191 Save"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+              disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
+              onClick:function(){loadThreatLibFromGitHub(false)}},"\u2193 Load"),
+            threatLibSync.status!=="idle"&&React.createElement("span",{style:{fontSize:10,color:threatLibSync.status==="error"?"#dc2626":"#16a34a"}},
+              threatLibSync.status==="saving"||threatLibSync.status==="loading"?"\u23f3":threatLibSync.status==="error"?"\u274c":"\u2705")
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
-            disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
-            onClick:function(){saveThreatLibToGitHub(threatDB)}},"\u2191 Save to GitHub"),
+            onClick:function(){setShowRelMatrix(!showRelMatrix)}
+          },(showRelMatrix?"\u25B2 Hide":"\u25BC Show")+" Matrix"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
-            disabled:threatLibSync.status==="saving"||threatLibSync.status==="loading",
-            onClick:function(){loadThreatLibFromGitHub(false)}},"\u2193 Load from GitHub")
+            onClick:function(){
+              var anyOpen=Object.values(tlExpanded).some(Boolean);
+              if(anyOpen){setTlExpanded({})}else{var all={};threatDB.forEach(function(t){all[t.id]=true});setTlExpanded(all)}
+            }
+          },Object.values(tlExpanded).some(Boolean)?"Collapse All":"Expand All"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            onClick:function(){
+              if(confirm("Reset Threat Library to defaults?")){setThreatDB(migrateLinkedAssets(DEFAULT_THREAT_DB));setTlEditing(null);setTlExpanded({});showToast("Reset to defaults")}
+            }
+          },"Reset")
         ),
-        !ghConfig.enabled||!ghConfig.owner||!ghConfig.repo?React.createElement("div",{style:{padding:"10px 14px",borderRadius:8,marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",fontSize:12,color:"#92400e"}},"To enable shared sync: configure your GitHub repository in Settings \u2192 Back-ups."):null,
 
-        // Stats bar
-        React.createElement("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-          React.createElement("div",{style:{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"10px 16px",flex:1,minWidth:140}},
-            React.createElement("div",{style:{fontSize:11,color:"#dc2626",fontWeight:600}},"THREAT TYPES"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#7f1d1d"}},threatDB.length)
-          ),
-          React.createElement("div",{style:{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:8,padding:"10px 16px",flex:1,minWidth:140}},
-            React.createElement("div",{style:{fontSize:11,color:"#c2410c",fontWeight:600}},"TERRORISM THREATS"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#7c2d12"}},threatDB.filter(function(t){return t.category==="Terrorism"}).length)
-          ),
-          React.createElement("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:"10px 16px",flex:1,minWidth:140}},
-            React.createElement("div",{style:{fontSize:11,color:"#15803d",fontWeight:600}},"CRIME THREATS"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#14532d"}},threatDB.filter(function(t){return t.category==="Crime"}).length)
-          ),
-          React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
-            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
-              onClick:function(){
-                if(confirm("Reset Threat Library to defaults?")){setThreatDB(DEFAULT_THREAT_DB);setTlEditing(null);setTlExpanded({});showToast("Reset to defaults")}
-              }
-            },"Reset to Defaults"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
-              onClick:function(){
-                var anyOpen=Object.values(tlExpanded).some(Boolean);
-                if(anyOpen){setTlExpanded({})}else{var all={};threatDB.forEach(function(t){all[t.id]=true});setTlExpanded(all)}
-              }
-            },Object.values(tlExpanded).some(Boolean)?"Collapse All":"Expand All")
+        // Threats × Treatments Matrix (collapsible)
+        showRelMatrix&&React.createElement("div",{style:{marginBottom:12,border:"1px solid #e2e8f0",borderRadius:8,overflow:"hidden",background:"#fff"}},
+          React.createElement("div",{style:{overflow:"auto",maxHeight:400,fontSize:10}},
+            React.createElement("table",{style:{borderCollapse:"collapse",minWidth:"100%"}},
+              React.createElement("thead",null,
+                React.createElement("tr",null,
+                  React.createElement("th",{style:{position:"sticky",left:0,zIndex:2,background:"#1B2A4A",color:"#fff",padding:"6px 10px",textAlign:"left",fontWeight:700,minWidth:140,fontSize:10,borderRight:"2px solid #fff"}},"Threat"),
+                  treatmentDB.map(function(ts){
+                    return React.createElement("th",{key:ts.id,style:{background:"#1B2A4A",color:"#fff",padding:"6px 4px",textAlign:"center",fontWeight:600,fontSize:8,minWidth:50,maxWidth:70,whiteSpace:"normal",lineHeight:1.2}},ts.label);
+                  })
+                )
+              ),
+              React.createElement("tbody",null,
+                threatDB.map(function(threat,ti){
+                  var isTerr=threat.category==="Terrorism";
+                  return React.createElement("tr",{key:threat.id,style:{background:ti%2===0?"#fff":"#fafbfc"}},
+                    React.createElement("td",{style:{position:"sticky",left:0,zIndex:1,background:isTerr?"#fef2f2":"#f0f9ff",padding:"5px 10px",fontWeight:600,fontSize:10,color:isTerr?"#dc2626":"#0369a1",borderRight:"2px solid #e2e8f0",whiteSpace:"nowrap"}},threat.label),
+                    treatmentDB.map(function(ts){
+                      var linked=(threat.linkedTreatmentIds||[]).includes(ts.id);
+                      return React.createElement("td",{key:ts.id,style:{textAlign:"center",padding:4,cursor:"pointer",borderRight:"1px solid #f1f5f9"},
+                        onClick:function(){
+                          setThreatDB(function(prev){return prev.map(function(t){
+                            if(t.id!==threat.id)return t;
+                            var ids=[...(t.linkedTreatmentIds||[])];
+                            if(linked)ids=ids.filter(function(x){return x!==ts.id});else ids.push(ts.id);
+                            return{...t,linkedTreatmentIds:ids};
+                          })});
+                        }
+                      },React.createElement("span",{style:{display:"inline-block",width:16,height:16,borderRadius:4,border:"1px solid "+(linked?"#16a34a":"#e2e8f0"),background:linked?"#16a34a":"#fff",color:"#fff",fontSize:10,lineHeight:"16px",textAlign:"center",transition:"all 0.1s"}},linked?"\u2713":""));
+                    })
+                  );
+                })
+              )
+            )
           )
         ),
 
@@ -5919,7 +5821,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   var isExpanded=!!tlExpanded[threat.id];
                   var isEditing=tlEditing===threat.id;
                   var linkedCount=(threat.linkedTreatmentIds||[]).length;
-                  var linkedAssetCount=(threat.linkedAssetSets||[]).length;
+                  var linkedCats=threat.linkedAssetSets||[];
+                  var linkedPresetCount=Object.keys(ASSET_PRESETS).filter(function(p){return ASSET_PRESETS[p].every(function(a){return linkedCats.includes(a.cat)})}).length;
 
                   function updateThreat(patch){
                     setThreatDB(function(prev){return prev.map(function(t){return t.id===threat.id?{...t,...patch}:t})});
@@ -5933,7 +5836,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       React.createElement("span",{style:{fontSize:14,transform:isExpanded?"rotate(90deg)":"rotate(0)",transition:"transform 0.15s",display:"inline-block",color:catColor}},"\u25B6"),
                       React.createElement("span",{style:{fontWeight:700,fontSize:13,color:"#1e293b",flex:1}},threat.label),
                       React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:catBg,color:catColor,border:"1px solid "+catBorder,fontWeight:600,marginRight:4}},cat),
-                      linkedAssetCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600,marginRight:4},title:(threat.linkedAssetSets||[]).slice(0,5).join(", ")+((threat.linkedAssetSets||[]).length>5?" +"+((threat.linkedAssetSets||[]).length-5)+" more":"")},linkedAssetCount+" asset categor"+(linkedAssetCount>1?"ies":"y")),
+                      linkedPresetCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600,marginRight:4}},linkedPresetCount+" asset set"+(linkedPresetCount>1?"s":"")),
                       linkedCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedCount+" treatment set"+(linkedCount>1?"s":"")),
                       React.createElement("div",{style:{display:"flex",gap:4},onClick:function(e){e.stopPropagation()}},
                         React.createElement("button",{
@@ -5984,90 +5887,30 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       ),
                       // Description (read-only when not editing)
                       !isEditing&&threat.description&&React.createElement("p",{style:{fontSize:12,color:"#475569",marginBottom:10,lineHeight:1.6}},threat.description),
-                      // Asset Category Assignment
+                      // Linked Asset Sets — simple preset-level checkboxes
                       React.createElement("div",{style:{marginBottom:12}},
-                        React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:6,display:"flex",alignItems:"center",gap:8}},
-                          "\ud83c\udfe2 Linked Asset Categories",
-                          React.createElement("span",{style:{fontSize:10,color:"#94a3b8",fontWeight:400}},(threat.linkedAssetSets||[]).length+" of "+Object.keys(UNIQUE_ASSET_CATEGORIES).length+" categories selected")
-                        ),
-                        // Quick preset toggle buttons
-                        React.createElement("div",{style:{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}},
+                        React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:6}},"Linked Asset Sets"),
+                        React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
                           Object.keys(ASSET_PRESETS).map(function(presetName){
                             var presetCats=ASSET_PRESETS[presetName].map(function(a){return a.cat});
                             var linkedCats=threat.linkedAssetSets||[];
-                            var count=presetCats.filter(function(c){return linkedCats.includes(c)}).length;
-                            var allSel=count===presetCats.length;var partial=count>0&&!allSel;
-                            return React.createElement("button",{key:presetName,
-                              style:{fontSize:10,padding:"4px 10px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
-                                border:"1px solid "+(allSel?catBorder:partial?"#fde68a":"#e2e8f0"),
-                                background:allSel?catBg:partial?"#fffbeb":"#fff",
-                                color:allSel?catColor:partial?"#d97706":"#94a3b8",fontWeight:allSel||partial?700:400,transition:"all 0.15s"},
-                              title:allSel?"Deselect all "+presetName+" categories":"Select all "+presetName+" categories",
-                              onClick:function(){
-                                var sets=[...(threat.linkedAssetSets||[])];
-                                if(allSel){sets=sets.filter(function(s){return!presetCats.includes(s)})}
-                                else{presetCats.forEach(function(c){if(!sets.includes(c))sets.push(c)})}
-                                updateThreat({linkedAssetSets:sets});
-                              }
-                            },(allSel?"\u2713 ":partial?"~ ":"")+presetName+" ("+count+"/"+presetCats.length+")");
-                          })
-                        ),
-                        // Category checkboxes grouped by preset
-                        React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4}},
-                          Object.keys(ASSET_PRESETS).map(function(presetName){
-                            var presetCats=ASSET_PRESETS[presetName].map(function(a){return a.cat});
-                            var linkedCats=threat.linkedAssetSets||[];
-                            var count=presetCats.filter(function(c){return linkedCats.includes(c)}).length;
-                            if(count===0)return null;
-                            return React.createElement("div",{key:presetName,style:{borderRadius:6,border:"1px solid #e2e8f0",overflow:"hidden"}},
-                              React.createElement("div",{style:{padding:"6px 10px",background:"#f8fafc",fontSize:11,fontWeight:600,color:"#475569",display:"flex",alignItems:"center",justifyContent:"space-between"}},
-                                React.createElement("span",null,presetName),
-                                React.createElement("span",{style:{fontSize:9,color:catColor,fontWeight:700}},count+"/"+presetCats.length+" selected")
-                              ),
-                              React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:3,padding:"6px 8px"}},
-                                presetCats.filter(function(c){return linkedCats.includes(c)}).map(function(catName){
-                                  return React.createElement("span",{key:catName,style:{fontSize:9,padding:"2px 8px",borderRadius:4,background:catBg,color:catColor,border:"1px solid "+catBorder,fontWeight:600,cursor:"pointer"},
-                                    title:"Click to remove",
-                                    onClick:function(){var sets=linkedCats.filter(function(s){return s!==catName});updateThreat({linkedAssetSets:sets})}
-                                  },catName+" \u00d7");
-                                })
-                              )
+                            var allSel=presetCats.every(function(c){return linkedCats.includes(c)});
+                            return React.createElement("label",{key:presetName,style:{
+                              display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:6,cursor:"pointer",
+                              border:"1px solid "+(allSel?catBorder:"#e2e8f0"),
+                              background:allSel?catBg:"#fff",transition:"all 0.12s",fontSize:12
+                            }},
+                              React.createElement("input",{type:"checkbox",checked:allSel,style:{width:14,height:14,cursor:"pointer",accentColor:catColor},
+                                onChange:function(){
+                                  var sets=[...(threat.linkedAssetSets||[])];
+                                  if(allSel){sets=sets.filter(function(s){return!presetCats.includes(s)})}
+                                  else{presetCats.forEach(function(c){if(!sets.includes(c))sets.push(c)})}
+                                  updateThreat({linkedAssetSets:sets});
+                                }
+                              }),
+                              React.createElement("span",{style:{fontWeight:allSel?700:400,color:allSel?catColor:"#475569"}},presetName)
                             );
-                          }),
-                          // Unlinked presets — expandable to add categories
-                          React.createElement("div",{style:{marginTop:4}},
-                            React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginBottom:4,fontWeight:600}},"Add categories from:"),
-                            React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4}},
-                              Object.keys(ASSET_PRESETS).map(function(presetName){
-                                var presetCats=ASSET_PRESETS[presetName].map(function(a){return a.cat});
-                                var linkedCats=threat.linkedAssetSets||[];
-                                var unlinked=presetCats.filter(function(c){return!linkedCats.includes(c)});
-                                if(unlinked.length===0)return null;
-                                var isOpen=!!(tlExpanded["assetacc_"+threat.id+"_"+presetName]);
-                                return React.createElement("div",{key:presetName,style:{borderRadius:6,border:"1px solid #e2e8f0",overflow:"hidden"}},
-                                  React.createElement("div",{style:{padding:"5px 10px",background:"#fff",fontSize:11,color:"#64748b",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",userSelect:"none"},
-                                    onClick:function(){setTlExpanded(function(p){return{...p,["assetacc_"+threat.id+"_"+presetName]:!p["assetacc_"+threat.id+"_"+presetName]}})}
-                                  },
-                                    React.createElement("span",null,(isOpen?"\u25BC ":"\u25B6 ")+presetName+" ("+unlinked.length+" available)"),
-                                    React.createElement("span",{style:{fontSize:9,color:"#94a3b8"}},presetCats.length+" total")
-                                  ),
-                                  isOpen&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:3,padding:"6px 8px",background:"#fafbfc",borderTop:"1px solid #f1f5f9"}},
-                                    unlinked.map(function(catName){
-                                      return React.createElement("label",{key:catName,style:{display:"flex",alignItems:"center",gap:6,padding:"4px 6px",borderRadius:4,cursor:"pointer",fontSize:11,color:"#475569",transition:"all 0.1s"},
-                                        onMouseEnter:function(e){e.currentTarget.style.background="#f0f9ff"},
-                                        onMouseLeave:function(e){e.currentTarget.style.background="transparent"}
-                                      },
-                                        React.createElement("input",{type:"checkbox",checked:false,style:{width:12,height:12,cursor:"pointer",accentColor:catColor},
-                                          onChange:function(){var sets=[...(threat.linkedAssetSets||[])];sets.push(catName);updateThreat({linkedAssetSets:sets})}
-                                        }),
-                                        catName
-                                      );
-                                    })
-                                  )
-                                );
-                              })
-                            )
-                          )
+                          })
                         )
                       ),
                       // Treatment Set Assignment
@@ -6113,82 +5956,48 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // ═══════ TREATMENTS SECTION ═══════
         dbSection==="treatments"&&React.createElement("div",null,
-        React.createElement("h2",{className:"section-title"},"Treatment Measures Database"),
-        React.createElement("p",{className:"section-sub"},"Browse all treatment measures organised by category. Assign threats to each treatment set using the buttons below. Drag items to reorder, edit inline, and manage measures across all categories."),
 
-        // GitHub sync banner
-        ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{
-          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:8,marginBottom:12,
-          background:treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"#f0fdf4":treatDBSync.status==="error"?"#fef2f2":"#f0f9ff",
-          border:"1px solid "+(treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"#bbf7d0":treatDBSync.status==="error"?"#fecaca":"#bae6fd")
-        }},
-          React.createElement("span",{style:{fontSize:16}},treatDBSync.status==="saving"||treatDBSync.status==="loading"?"\u23f3":treatDBSync.status==="saved"||treatDBSync.status==="loaded"?"\u2705":treatDBSync.status==="error"?"\u274c":"\u2601\ufe0f"),
-          React.createElement("div",{style:{flex:1}},
-            React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},
-              treatDBSync.status==="saving"?"Saving to GitHub...":
-              treatDBSync.status==="loading"?"Loading from GitHub...":
-              treatDBSync.status==="saved"?"Saved to GitHub at "+treatDBSync.lastSaved:
-              treatDBSync.status==="loaded"?"Loaded from GitHub at "+treatDBSync.lastLoaded:
-              treatDBSync.status==="error"?"Sync error \u2014 check Settings":
-              "GitHub sync available"
-            ),
-            React.createElement("div",{style:{fontSize:10,color:"#64748b"}},ghConfig.owner+"/"+ghConfig.repo+" \u2192 shared/treatment-db.json")
+        // Compact toolbar
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}},
+          React.createElement("span",{style:{fontSize:12,color:"#475569"}},treatmentDB.length+" sets, "+treatmentDB.reduce(function(t,e){return t+(e.ext_physical||[]).length+(e.ext_electronic||[]).length+(e.int_physical||[]).length+(e.int_electronic||[]).length+(e.procedures||[]).length},0)+" measures"),
+          React.createElement("div",{style:{flex:1}}),
+          // GitHub sync (compact)
+          ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+              disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
+              onClick:function(){saveTreatmentDBToGitHub(treatmentDB)}
+            },"\u2191 Save"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+              disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
+              onClick:function(){loadTreatmentDBFromGitHub(false)}
+            },"\u2193 Load"),
+            treatDBSync.status!=="idle"&&React.createElement("span",{style:{fontSize:10,color:treatDBSync.status==="error"?"#dc2626":"#16a34a"}},
+              treatDBSync.status==="saving"||treatDBSync.status==="loading"?"\u23f3":treatDBSync.status==="error"?"\u274c":"\u2705")
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
-            disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
-            onClick:function(){saveTreatmentDBToGitHub(treatmentDB)}
-          },"\u2191 Save to GitHub"),
+            onClick:function(){
+              var id="custom_"+Date.now();
+              var newEntry={id:id,label:"New Treatment Set",keywords:[],narrative:"",ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:[]};
+              setTreatmentDB(function(p){return[...p,newEntry]});
+              setDbEditThreatId(id);setDbExpandedCats(function(p){var n={...p};n[id]=true;return n});
+              showToast("New treatment set added");
+            }
+          },"+ Add Set"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
-            disabled:treatDBSync.status==="saving"||treatDBSync.status==="loading",
-            onClick:function(){loadTreatmentDBFromGitHub(false)}
-          },"\u2193 Load from GitHub")
-        ),
-        !ghConfig.enabled||!ghConfig.owner||!ghConfig.repo?React.createElement("div",{style:{padding:"10px 14px",borderRadius:8,marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",fontSize:12,color:"#92400e"}},"To enable shared sync: configure your GitHub repository owner and name in Settings \u2192 Back-ups. Once set, all team members loading the same repo will automatically receive your database updates."):null,
-
-        // Summary stats bar
-        React.createElement("div",{style:{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}},
-          React.createElement("div",{style:{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
-            React.createElement("div",{style:{fontSize:11,color:"#0369a1",fontWeight:600}},"TREATMENT SETS"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#0c4a6e"}},treatmentDB.length)
-          ),
-          React.createElement("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
-            React.createElement("div",{style:{fontSize:11,color:"#15803d",fontWeight:600}},"TOTAL MEASURES"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#14532d"}},treatmentDB.reduce(function(t,e){return t+(e.ext_physical||[]).length+(e.ext_electronic||[]).length+(e.int_physical||[]).length+(e.int_electronic||[]).length+(e.procedures||[]).length},0))
-          ),
-          React.createElement("div",{style:{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
-            React.createElement("div",{style:{fontSize:11,color:"#dc2626",fontWeight:600}},"TERRORISM"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#7f1d1d"}},threatDB.filter(function(t){return t.category==="Terrorism"}).length+" threats")
-          ),
-          React.createElement("div",{style:{background:"#EBF1F8",border:"1px solid #D6E4F0",borderRadius:8,padding:"10px 16px",flex:1,minWidth:120}},
-            React.createElement("div",{style:{fontSize:11,color:"#4472C4",fontWeight:600}},"CRIME"),
-            React.createElement("div",{style:{fontSize:22,fontWeight:700,color:"#1e3a5f"}},threatDB.filter(function(t){return t.category==="Crime"}).length+" threats")
-          ),
-          React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}},
-            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
-              onClick:function(){
-                var id="custom_"+Date.now();
-                var newEntry={id:id,label:"New Treatment Set",keywords:[],narrative:"",ext_physical:[],ext_electronic:[],int_physical:[],int_electronic:[],procedures:[]};
-                setTreatmentDB(function(p){return[...p,newEntry]});
-                setDbEditThreatId(id);setDbExpandedCats(function(p){var n={...p};n[id]=true;return n});
-                showToast("New treatment set added");
+            onClick:function(){
+              var allOpen={};treatmentDB.forEach(function(e){allOpen[e.id]=true});
+              var anyOpen=Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]});
+              if(anyOpen)setDbExpandedCats({});else setDbExpandedCats(allOpen);
+            }
+          },Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]})?"Collapse All":"Expand All"),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+            onClick:function(){
+              if(confirm("Reset the entire database to defaults? All custom edits will be lost.")){
+                setTreatmentDB(DEFAULT_TREATMENT_DB);setDbEditThreatId(null);setDbExpandedCats({});
+                showToast("Database reset to defaults");
               }
-            },"+ Add Treatment Set"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
-              onClick:function(){
-                if(confirm("Reset the entire database to defaults? All custom edits will be lost.")){
-                  setTreatmentDB(DEFAULT_TREATMENT_DB);setDbEditThreatId(null);setDbExpandedCats({});
-                  showToast("Database reset to defaults");
-                }
-              }
-            },"Reset All to Defaults"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:12},
-              onClick:function(){
-                var allOpen={};treatmentDB.forEach(function(e){allOpen[e.id]=true});
-                var anyOpen=Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]});
-                if(anyOpen)setDbExpandedCats({});else setDbExpandedCats(allOpen);
-              }
-            },Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]})?"Collapse All":"Expand All")
-          )
+            }
+          },"Reset")
         ),
 
         // Treatment set cards
