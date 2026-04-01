@@ -1,0 +1,472 @@
+[
+  {
+    "id": "vbied_vaaw",
+    "label": "VBIED / VAAW",
+    "keywords": [
+      "vbied",
+      "vaaw"
+    ],
+    "narrative": "The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation.",
+    "ext_physical": [
+      "Hostile Vehicle Mitigation (HVM) — bollards, planters or rated barriers at the perimeter to enforce standoff distance",
+      "Anti-ram rated barriers at all vehicular entry points integrated with access control",
+      "Speed reduction measures on approach — chicanes, raised tables, surface changes",
+      "Vehicle search/inspection area at safe standoff with overwatch position",
+      "Reinforced collision/blast jackets to structural columns within vehicle reach",
+      "Laminated anti-blast glazing to facades facing vehicle approaches",
+      "Window film or sacrificial glazing to reduce fragmentation"
+    ],
+    "ext_electronic": [
+      "ANPR at vehicle access points for identification and audit",
+      "CCTV covering all vehicle approaches and perimeter",
+      "VSS Analytics"
+    ],
+    "int_physical": [
+      "Blast-resilient construction to reception and entrance lobbies"
+    ],
+    "int_electronic": [],
+    "procedures": [
+      "Blast analysis and standoff distance modelling to inform perimeter layout"
+    ]
+  },
+  {
+    "id": "mta_mtfa",
+    "label": "MTA / MTFA",
+    "keywords": [
+      "mta",
+      "mtfa"
+    ],
+    "narrative": "Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants.",
+    "ext_physical": [
+      "Clear sight lines across all external areas for early detection of hostile approach",
+      "Removal of concealment opportunities in landscaping, furniture and recessed areas",
+      "Hostile Vehicle Mitigation if the threat involves vehicle approach"
+    ],
+    "ext_electronic": [
+      "External CCTV with behavioural analytics for loitering and hostile reconnaissance detection",
+      "External CCTV "
+    ],
+    "int_physical": [
+      "Internal compartmentalisation — security-rated doors enabling zones to be isolated during an attack",
+      "Offices and meeting rooms with thumb-turn lockable doors for immediate shelter"
+    ],
+    "int_electronic": [
+      "Lockdown capability activated from reception, security control room and distributed panic buttons",
+      "Weapons detection screening at main entry points",
+      "Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking"
+    ],
+    "procedures": [
+      "Invacuation routes and designated safe havens within the building core",
+      "Lockdown procedures with regular rehearsal and testing programme",
+      "Hostile reconnaissance awareness training for all building users",
+      "Collaboration with Counter Terrorism Security Advisors (CTSA)",
+      "Communication cascade for rapid alert during an incident",
+      "SIA-licensed security operatives during occupied hours",
+      "Emergency communication system linking security, management and emergency services"
+    ]
+  },
+  {
+    "id": "pbied",
+    "label": "PBIED",
+    "keywords": [
+      "pbied"
+    ],
+    "narrative": "Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building.",
+    "ext_physical": [
+      "Clear external areas with minimal concealment for device placement",
+      "Search and screening regime at building entry points"
+    ],
+    "ext_electronic": [
+      "Hostile reconnaissance detection through CCTV analytics and trained security personnel"
+    ],
+    "int_physical": [
+      "Blast-resilient construction to reception and entrance lobby",
+      "Laminated glazing to entrance areas to reduce fragmentation"
+    ],
+    "int_electronic": [
+      "Bag search policy and/or weapons/explosives detection at main entrances",
+      "Internal CCTV coverage of all public-facing areas and circulation",
+      "Visitor management — identification, sign-in, temporary pass, escort policy"
+    ],
+    "procedures": [
+      "Staff trained to identify suspicious behaviour and unattended items",
+      "Suspicious item/package response procedures",
+      "Evacuation and invacuation drills specific to blast scenarios"
+    ]
+  },
+  {
+    "id": "ied",
+    "label": "IED / Drone / Mail",
+    "keywords": [
+      "ied",
+      "mail",
+      "parcel",
+      "drone"
+    ],
+    "narrative": "IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities.",
+    "ext_physical": [
+      "Perimeter security preventing unauthorised access to building shell and service areas"
+    ],
+    "ext_electronic": [
+      "CCTV analytics for detection of suspicious items and unattended packages",
+      "Counter-UAS detection and mitigation measures where drone delivery risk is assessed",
+      "Monitoring of airspace above site for unauthorised drone activity"
+    ],
+    "int_physical": [
+      "Dedicated mail/post room physically separated from occupied areas",
+      "Receiving room with independent ventilation",
+      "Secure delivery holding area for parcels awaiting screening"
+    ],
+    "int_electronic": [
+      "Mail screening equipment (X-ray) appropriate to threat level"
+    ],
+    "procedures": [
+      "Mail screening procedures and trained personnel",
+      "Suspicious mail identification training for all staff handling deliveries",
+      "Delivery vehicle inspection and verification protocols",
+      "Response procedures for suspect packages"
+    ]
+  },
+  {
+    "id": "cbr",
+    "label": "CBR",
+    "keywords": [
+      "cbr"
+    ],
+    "narrative": "CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation.",
+    "ext_physical": [
+      "Air intakes elevated and protected from ground-level interference",
+      "Perimeter controls preventing access to MEP infrastructure"
+    ],
+    "ext_electronic": [
+      "CCTV coverage of building air intakes and ventilation access points"
+    ],
+    "int_physical": [
+      "Sealed post room with independent ventilation"
+    ],
+    "int_electronic": [
+      "HVAC zoning with rapid isolation and shutdown capability",
+      "CBR detection at air handling units where threat assessment requires"
+    ],
+    "procedures": [
+      "CBR incident response procedures including shelter-in-place",
+      "Staff awareness training on recognising CBR indicators",
+      "Emergency services liaison on CBR response protocols"
+    ]
+  },
+  {
+    "id": "burglary",
+    "label": "Burglary",
+    "keywords": [
+      "burglary"
+    ],
+    "narrative": "Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry.",
+    "ext_physical": [
+      "Security-rated perimeter fencing/walls at consistent height",
+      "Security-rated pedestrian boundary gates with self-closing mechanism",
+      "Dusk-to-dawn external lighting at all entries, service areas and parking",
+      "Defensive planting beneath windows and along vulnerable boundaries",
+      "Landscape maintained for sight lines — canopies above 2.2m, shrubs below 1m"
+    ],
+    "ext_electronic": [
+      "External CCTV covering perimeter, entries, recessed areas and service bays"
+    ],
+    "int_physical": [
+      "Security-tested external doorsets with multi-point locking and access control integration",
+      "Enhanced security glazing to all ground floor and accessible windows",
+      "Laminated glass with internal beading preventing external removal",
+      "Window opening restrictors on accessible windows",
+      "Fire escape doors alarmed, without external ironmongery"
+    ],
+    "int_electronic": [
+      "Electronic access control at all external entry points with audit trail",
+      "Intruder alarm system with panic buttons and 24/7 monitoring",
+      "Door contacts with forced/left-open/tamper alarms on perimeter doors"
+    ],
+    "procedures": []
+  },
+  {
+    "id": "theft",
+    "label": "Theft",
+    "keywords": [
+      "theft"
+    ],
+    "narrative": "Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity.",
+    "ext_physical": [
+      "Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures",
+      "E-bike/e-scooter storage in fire-rated enclosure separated from building"
+    ],
+    "ext_electronic": [],
+    "int_physical": [
+      "Secure storage for high-value portable equipment"
+    ],
+    "int_electronic": [
+      "CCTV in stair cores, lift lobbies and circulation areas",
+      "Access control preventing unauthorised floor-to-floor movement"
+    ],
+    "procedures": []
+  },
+  {
+    "id": "vehicle_crime",
+    "label": "Vehicle Crime",
+    "keywords": [
+      "vehicle crime"
+    ],
+    "narrative": "Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building.",
+    "ext_physical": [
+      "Well-lit parking with uniform illumination and no dark spots",
+      "Natural surveillance from occupied rooms into parking areas"
+    ],
+    "ext_electronic": [
+      "Car park CCTV at all entry/exit points, aisles and pedestrian routes",
+      "ANPR at car park barriers"
+    ],
+    "int_physical": [],
+    "int_electronic": [],
+    "procedures": []
+  },
+  {
+    "id": "arson",
+    "label": "Arson",
+    "keywords": [
+      "arson"
+    ],
+    "narrative": "Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation.",
+    "ext_physical": [
+      "Refuse/bin storage lockable and positioned away from building exterior",
+      "External lighting to rear and service areas",
+      "No combustible material stored against building exterior walls"
+    ],
+    "ext_electronic": [],
+    "int_physical": [
+      "Fire detection system covering all areas including voids and risers",
+      "Sprinkler or suppression system",
+      "Fire compartmentation to limit spread",
+      "Smoke ventilation to protect escape routes",
+      "Letterbox fire protection where letter slots exist"
+    ],
+    "int_electronic": [],
+    "procedures": []
+  },
+  {
+    "id": "trespass",
+    "label": "Trespass",
+    "keywords": [
+      "trespass"
+    ],
+    "narrative": "Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence.",
+    "ext_physical": [
+      "Perimeter demarcation through fencing, walls, landscaping and signage",
+      "Consistent perimeter boundary height",
+      "Clear 2m zone either side of boundary for surveillance"
+    ],
+    "ext_electronic": [
+      "CCTV with out-of-hours intrusion detection analytics"
+    ],
+    "int_physical": [],
+    "int_electronic": [
+      "Electronic access control preventing unauthorised internal movement",
+      "Stair core and lift lobby access control at each level"
+    ],
+    "procedures": []
+  },
+  {
+    "id": "asb",
+    "label": "ASB / Criminal Damage",
+    "keywords": [
+      "asb",
+      "criminal damage"
+    ],
+    "narrative": "ASB and criminal damage treatment applies CPTED principles outside the building — surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour.",
+    "ext_physical": [
+      "CPTED principles — natural surveillance, defined ownership, active maintenance regime",
+      "Robust, securely fixed street furniture and hard landscaping",
+      "Anti-graffiti coating on vulnerable external surfaces",
+      "Dusk-to-dawn lighting with vandal-resistant fittings at height"
+    ],
+    "ext_electronic": [
+      "External CCTV with recording for evidence and deterrence"
+    ],
+    "int_physical": [],
+    "int_electronic": [],
+    "procedures": []
+  },
+  {
+    "id": "public_order",
+    "label": "Public Order",
+    "keywords": [
+      "public order"
+    ],
+    "narrative": "Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity.",
+    "ext_physical": [
+      "HVM measures that also control crowd movement",
+      "Clear pedestrian routes and defined public/private boundaries"
+    ],
+    "ext_electronic": [
+      "External CCTV with wide-area coverage and recording"
+    ],
+    "int_physical": [],
+    "int_electronic": [],
+    "procedures": [
+      "Public order response plan coordinated with police",
+      "Escalation procedures for protest or demonstration activity",
+      "Business continuity plan for access disruption"
+    ]
+  },
+  {
+    "id": "violence",
+    "label": "Violence / Sexual Offences",
+    "keywords": [
+      "violence"
+    ],
+    "narrative": "Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building.",
+    "ext_physical": [
+      "Well-lit external areas with no concealment opportunities",
+      "Natural surveillance from occupied spaces to external areas"
+    ],
+    "ext_electronic": [
+      "CCTV covering all pedestrian routes, entrances and car parks"
+    ],
+    "int_physical": [],
+    "int_electronic": [
+      "Internal CCTV in corridors, stair cores and isolated areas",
+      "Panic buttons at reception and public-facing positions",
+      "Controlled access preventing unauthorised individuals reaching occupied areas"
+    ],
+    "procedures": [
+      "Staff trained on conflict de-escalation and personal safety",
+      "Lone worker policy and monitoring procedures",
+      "Incident recording and pattern analysis"
+    ]
+  },
+  {
+    "id": "cybercrime",
+    "label": "Cybercrime",
+    "keywords": [
+      "cyber"
+    ],
+    "narrative": "Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences.",
+    "ext_physical": [],
+    "ext_electronic": [],
+    "int_physical": [
+      "Security-rated doorsets to server rooms, MER/SER and data storage"
+    ],
+    "int_electronic": [
+      "Access control to IT infrastructure with full audit trail",
+      "Environmental monitoring in server rooms",
+      "Network segmentation isolating security, BMS and corporate networks",
+      "Intrusion detection and prevention systems",
+      "Encrypted storage and transmission for sensitive data",
+      "Endpoint protection with managed detection and response",
+      "Regular penetration testing and vulnerability assessments",
+      "Patch management for all systems including IoT and OT",
+      "Mobile device management and removable media controls"
+    ],
+    "procedures": [
+      "Staff cyber awareness training with phishing simulations",
+      "Cyber incident response plan",
+      "Backup and disaster recovery tested regularly"
+    ]
+  },
+  {
+    "id": "info_theft",
+    "label": "Information Theft",
+    "keywords": [
+      "info"
+    ],
+    "narrative": "Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally.",
+    "ext_physical": [],
+    "ext_electronic": [],
+    "int_physical": [
+      "Security-rated doorsets to areas storing/processing sensitive information",
+      "Clear desk policy with secure document storage",
+      "Secure print-release preventing uncollected documents",
+      "Shredding facilities for confidential waste"
+    ],
+    "int_electronic": [
+      "Access logging with anomaly detection",
+      "Data loss prevention on email and file transfer"
+    ],
+    "procedures": [
+      "Data classification and handling policy",
+      "Encrypted storage and transmission",
+      "Secure media disposal procedures",
+      "Third-party data processing agreements",
+      "Regular information asset audit"
+    ]
+  },
+  {
+    "id": "insider",
+    "label": "Insider Threat",
+    "keywords": [
+      "insider"
+    ],
+    "narrative": "Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally.",
+    "ext_physical": [],
+    "ext_electronic": [],
+    "int_physical": [
+      "Key management via secure electronic cabinet with audit"
+    ],
+    "int_electronic": [
+      "Access control zoning restricting individuals to role-required areas only",
+      "CCTV in sensitive areas with recording"
+    ],
+    "procedures": [
+      "Pre-employment vetting and ongoing security screening",
+      "Joiners/movers/leavers access process — immediate revocation on departure",
+      "Whistleblowing and confidential reporting policy",
+      "Regular access rights reviews enforcing least privilege",
+      "User behaviour monitoring and anomaly detection",
+      "Clear desk and screen policy enforcement",
+      "Security clearance for sensitive roles",
+      "Separation of duties for critical processes"
+    ]
+  },
+  {
+    "id": "soc",
+    "label": "Serious Organised Crime",
+    "keywords": [
+      "soc"
+    ],
+    "narrative": "Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally.",
+    "ext_physical": [],
+    "ext_electronic": [],
+    "int_physical": [
+      "Security-rated doorsets to high-value areas"
+    ],
+    "int_electronic": [
+      "CCTV at all access points to valuable assets and cash handling"
+    ],
+    "procedures": [
+      "Background screening for staff and contractors in positions of trust",
+      "Supply chain due diligence and third-party risk assessment",
+      "Fraud prevention controls with segregation of duties",
+      "Anomaly detection in financial and access systems",
+      "Organised crime threat briefings",
+      "Whistleblowing and confidential reporting"
+    ]
+  },
+  {
+    "id": "kre",
+    "label": "Kidnap, Ransom & Extortion",
+    "keywords": [
+      "kre"
+    ],
+    "narrative": "Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally.",
+    "ext_physical": [],
+    "ext_electronic": [],
+    "int_physical": [
+      "Controlled access to areas occupied by at-risk individuals"
+    ],
+    "int_electronic": [
+      "CCTV at entrances capturing identification-quality images"
+    ],
+    "procedures": [
+      "Travel security procedures for at-risk personnel",
+      "Personal security risk assessments for key individuals",
+      "Secure communication channels",
+      "Kidnap/ransom/extortion incident response plan",
+      "Close liaison with police and specialist advisors"
+    ]
+  }
+]
