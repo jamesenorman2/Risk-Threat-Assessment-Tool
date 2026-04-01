@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.975";
+  const VERSION="1.976";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -6045,10 +6045,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
                     React.createElement("span",{style:{fontWeight:700,fontSize:14,color:"#1e293b"}},entry.label),
                     React.createElement("span",{style:{fontSize:11,color:"#94a3b8"}},totalItems+" measure"+(totalItems!==1?"s":"")),
-                    linkedThreats.length>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedThreats.length+" threat"+(linkedThreats.length>1?"s":"")+" linked"),
-                    reachableAssetCount>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600},title:Array.from(reachableAssets).slice(0,5).join(", ")+(reachableAssetCount>5?" +"+( reachableAssetCount-5)+" more":"")},reachableAssetCount+" asset categor"+(reachableAssetCount>1?"ies":"y"))
-                  ),
-                  null
+                    linkedThreats.length>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedThreats.length+" threat"+(linkedThreats.length>1?"s":"")),
+                    (function(){var cp={};linkedThreats.forEach(function(t){(t.linkedAssetSets||[]).forEach(function(c){Object.keys(ASSET_PRESETS).forEach(function(p){if(ASSET_PRESETS[p].every(function(a){return(t.linkedAssetSets||[]).includes(a.cat)}))cp[p]=true})})});var pc=Object.keys(cp).length;return pc>0?React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600},title:Object.keys(cp).join(", ")},pc+" asset set"+(pc>1?"s":"")):null})()
+                  )
                 ),
                 // Action buttons
                 React.createElement("div",{style:{display:"flex",gap:4,flexShrink:0},onClick:function(e){e.stopPropagation()}},
@@ -6172,7 +6171,26 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       onClick:function(e){e.stopPropagation();toggleThreatLink(threat.id)}
                     },(isLinked?"\u2713 ":"")+threat.label);
                   })
-                )
+                ),
+                // Asset sets covered (derived through linked threats)
+                (function(){
+                  var coveredPresets={};
+                  linkedThreats.forEach(function(t){
+                    var cats=t.linkedAssetSets||[];
+                    Object.keys(ASSET_PRESETS).forEach(function(p){
+                      if(ASSET_PRESETS[p].every(function(a){return cats.includes(a.cat)})){
+                        coveredPresets[p]=true;
+                      }
+                    });
+                  });
+                  var presetNames=Object.keys(coveredPresets);
+                  return React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap",marginTop:8,paddingTop:8,borderTop:"1px solid #e2e8f0"}},
+                    React.createElement("span",{style:{fontSize:9,fontWeight:800,letterSpacing:0.5,color:"#0369a1",background:"#e0f2fe",padding:"3px 7px",borderRadius:4,flexShrink:0,minWidth:68,textAlign:"center"}},"ASSETS"),
+                    presetNames.length>0?presetNames.map(function(p){
+                      return React.createElement("span",{key:p,style:{fontSize:11,padding:"4px 10px",borderRadius:20,background:"#0369a1",color:"#fff",fontWeight:600}},p);
+                    }):React.createElement("span",{style:{fontSize:10,color:"#94a3b8",fontStyle:"italic"}},"No asset sets linked via threats")
+                  );
+                })()
               ),
 
               // ── Expanded content (measures + narrative) ────────────────────────
