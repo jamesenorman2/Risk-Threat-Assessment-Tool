@@ -517,9 +517,8 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"dashboard",l:"Dashboard",n:"12"},
   {id:"sbd",l:"SBD Requirements",n:"13"},
   {id:"methodology",l:"Methodology",n:"14"},
-  {id:"threatlib",l:"Threat Library",n:"15"},
-  {id:"treatdb",l:"Treatment Database",n:"16"},
-  {id:"settings",l:"Settings",n:"17"}];
+  {id:"database",l:"Database",n:"15"},
+  {id:"settings",l:"Settings",n:"16"}];
 
 
 // ============================================================
@@ -673,7 +672,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.970";
+  const VERSION="1.971";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -793,6 +792,7 @@ function App(){
   const[dbExpandedCats,setDbExpandedCats]=useState({});
   const[tlExpanded,setTlExpanded]=useState({});
   const[tlEditing,setTlEditing]=useState(null);
+  const[dbSection,setDbSection]=useState("assets");
   const dragRef=useRef(null);
   const treatDBAutoFetched=useRef(false);
   const threatLibAutoFetched=useRef(false);
@@ -5515,8 +5515,112 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         )
       ),
 
-      // THREAT LIBRARY TAB
-      tab==="threatlib"&&React.createElement("div",null,
+      // DATABASE TAB — combined Assets, Threats, Treatments
+      tab==="database"&&React.createElement("div",null,
+        React.createElement("h2",{className:"section-title"},"Database"),
+        React.createElement("p",{className:"section-sub"},"Manage your asset library, threat library, and treatment measures. Link threats to treatment sets and manage all reference data in one place."),
+
+        // Sub-navigation
+        React.createElement("div",{style:{display:"flex",gap:0,marginBottom:20,borderBottom:"2px solid #e2e8f0",position:"sticky",top:42,zIndex:50,background:"#fff"}},
+          [{id:"assets",label:"Assets",icon:"\ud83c\udfe2",count:Object.keys(ASSET_PRESETS).reduce(function(t,k){return t+ASSET_PRESETS[k].length},0)+" presets"},
+           {id:"threats",label:"Threats",icon:"\u26a0\ufe0f",count:threatDB.length+" types"},
+           {id:"treatments",label:"Treatments",icon:"\ud83d\udee1\ufe0f",count:treatmentDB.length+" sets"}
+          ].map(function(sec){
+            var active=dbSection===sec.id;
+            return React.createElement("button",{key:sec.id,
+              style:{
+                padding:"10px 20px",fontSize:13,fontWeight:active?700:500,
+                border:"none",borderBottom:active?"3px solid #1B2A4A":"3px solid transparent",
+                background:active?"#f8fafc":"transparent",color:active?"#1B2A4A":"#94a3b8",
+                cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",flex:1,textAlign:"center"
+              },
+              onClick:function(){setDbSection(sec.id)}
+            },sec.icon+" "+sec.label,
+              React.createElement("div",{style:{fontSize:10,color:active?"#475569":"#cbd5e1",marginTop:2}},sec.count)
+            );
+          })
+        ),
+
+        // ═══════ ASSETS SECTION ═══════
+        dbSection==="assets"&&React.createElement("div",null,
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:16,fontWeight:700,color:"#1B2A4A"}},"Asset Library"),
+              React.createElement("div",{style:{fontSize:12,color:"#94a3b8"}},"Reference asset categories by development type. Click a preset to view its assets. Use these as templates when setting up your assessment.")
+            )
+          ),
+
+          // Preset type selector
+          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}},
+            Object.keys(ASSET_PRESETS).map(function(presetName){
+              var isActive=dbSection==="assets"&&dbEditThreatId===presetName;
+              return React.createElement("button",{key:presetName,
+                style:{
+                  padding:"8px 16px",borderRadius:8,fontSize:12,fontWeight:isActive?700:500,
+                  border:"1px solid "+(isActive?"#1B2A4A":"#e2e8f0"),
+                  background:isActive?"#1B2A4A":"#fff",color:isActive?"#fff":"#475569",
+                  cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"
+                },
+                onClick:function(){setDbEditThreatId(isActive?null:presetName)}
+              },presetName,
+                React.createElement("span",{style:{fontSize:10,marginLeft:6,opacity:0.7}},ASSET_PRESETS[presetName].length)
+              );
+            })
+          ),
+
+          // Show selected preset's assets
+          dbEditThreatId&&ASSET_PRESETS[dbEditThreatId]?React.createElement("div",null,
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1B2A4A"}},dbEditThreatId+" Assets ("+ASSET_PRESETS[dbEditThreatId].length+")"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+                onClick:function(){
+                  var presetAssets=ASSET_PRESETS[dbEditThreatId].map(function(a,i){return{id:Date.now()+i,cat:a.cat,desc:a.desc,sc:{}}});
+                  if(confirm("Load "+presetAssets.length+" "+dbEditThreatId+" assets into the current assessment? This will replace existing assets.")){
+                    setAssets(presetAssets);setActiveAssetPreset(dbEditThreatId);showToast(dbEditThreatId+" assets loaded into assessment");
+                  }
+                }
+              },"Load into Assessment")
+            ),
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:8}},
+              ASSET_PRESETS[dbEditThreatId].map(function(a,i){
+                return React.createElement("div",{key:i,style:{padding:"10px 14px",borderRadius:8,border:"1px solid #e2e8f0",background:"#fff",display:"flex",gap:10,alignItems:"center"}},
+                  React.createElement("div",{style:{width:28,height:28,borderRadius:6,background:"#f0f9ff",border:"1px solid #bae6fd",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#0369a1",flexShrink:0}},i+1),
+                  React.createElement("div",{style:{flex:1,minWidth:0}},
+                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.cat),
+                    React.createElement("div",{style:{fontSize:10,color:"#94a3b8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.desc)
+                  )
+                );
+              })
+            )
+          ):
+          // Default view — show all presets overview
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}},
+            Object.keys(ASSET_PRESETS).map(function(presetName){
+              var presetAssets=ASSET_PRESETS[presetName];
+              var cats={};presetAssets.forEach(function(a){var c=a.cat.split(" - ")[0].split(" \u2014 ")[0];cats[c]=(cats[c]||0)+1});
+              return React.createElement("div",{key:presetName,className:"card",style:{cursor:"pointer",transition:"all 0.15s"},
+                onClick:function(){setDbEditThreatId(presetName)}
+              },
+                React.createElement("div",{style:{padding:"12px 14px",borderBottom:"1px solid #f1f5f9"}},
+                  React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1B2A4A"}},presetName),
+                  React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},presetAssets.length+" asset categories")
+                ),
+                React.createElement("div",{style:{padding:"8px 14px"}},
+                  Object.entries(cats).slice(0,5).map(function(entry){
+                    return React.createElement("div",{key:entry[0],style:{fontSize:10,color:"#475569",padding:"2px 0",display:"flex",justifyContent:"space-between"}},
+                      React.createElement("span",null,entry[0]),
+                      React.createElement("span",{style:{color:"#94a3b8",fontWeight:600}},entry[1])
+                    );
+                  }),
+                  Object.keys(cats).length>5&&React.createElement("div",{style:{fontSize:9,color:"#cbd5e1",marginTop:2}},"+"+(Object.keys(cats).length-5)+" more categories")
+                )
+              );
+            })
+          )
+        ),
+
+        // ═══════ THREATS SECTION ═══════
+        dbSection==="threats"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Threat Library"),
         React.createElement("p",{className:"section-sub"},"A reference database of standard threat types. Edit descriptions and keywords, then assign which Treatment Sets apply to each threat. Assignments drive suggestion chips in the Residual Risk tab."),
 
@@ -5700,10 +5804,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             );
           })
         )
-      ),
+        ),
 
-      // TREATMENT DATABASE TAB
-      tab==="treatdb"&&React.createElement("div",null,
+        // ═══════ TREATMENTS SECTION ═══════
+        dbSection==="treatments"&&React.createElement("div",null,
         React.createElement("h2",{className:"section-title"},"Treatment Measures Database"),
         React.createElement("p",{className:"section-sub"},"Browse all treatment measures organised by category. Assign threats to each treatment set using the buttons below. Drag items to reorder, edit inline, and manage measures across all categories."),
 
@@ -6088,6 +6192,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               )
             );
           })
+        )
         )
       ),
 
