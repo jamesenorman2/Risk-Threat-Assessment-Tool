@@ -5997,14 +5997,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     React.createElement("span",{style:{fontSize:11,color:"#94a3b8"}},totalItems+" measure"+(totalItems!==1?"s":"")),
                     linkedThreats.length>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedThreats.length+" threat"+(linkedThreats.length>1?"s":"")+" linked")
                   ),
-                  // Show linked threat pills in collapsed header
-                  !isExpanded&&linkedThreats.length>0&&React.createElement("div",{style:{display:"flex",gap:3,flexWrap:"wrap",marginTop:4}},
-                    linkedThreats.slice(0,8).map(function(t){
-                      var isTerr=t.category==="Terrorism";
-                      return React.createElement("span",{key:t.id,style:{fontSize:9,padding:"1px 6px",borderRadius:3,background:isTerr?"#fef2f2":"#EBF1F8",color:isTerr?"#dc2626":"#4472C4",border:"1px solid "+(isTerr?"#fecaca":"#D6E4F0"),fontWeight:600}},t.label);
-                    }),
-                    linkedThreats.length>8&&React.createElement("span",{style:{fontSize:9,color:"#94a3b8"}},"+"+( linkedThreats.length-8)+" more")
-                  )
+                  null
                 ),
                 // Action buttons
                 React.createElement("div",{style:{display:"flex",gap:4,flexShrink:0},onClick:function(e){e.stopPropagation()}},
@@ -6074,88 +6067,65 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 )
               ),
 
-              // Expanded content
-              isExpanded&&React.createElement("div",{style:{padding:"12px 16px"}},
-                // Threat assignment panel
-                React.createElement("div",{style:{marginBottom:16,padding:12,background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0"}},
-                  React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:8,display:"flex",alignItems:"center",gap:8}},
-                    "Assigned Threats",
-                    React.createElement("span",{style:{fontSize:10,color:"#94a3b8",fontWeight:400}},"Click a threat to toggle assignment to this treatment set")
-                  ),
-                  // Terrorism threats
-                  React.createElement("div",{style:{marginBottom:8}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#dc2626",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}},"Terrorism"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
-                      threatDB.filter(function(t){return t.category==="Terrorism"}).map(function(threat){
-                        var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
-                        return React.createElement("button",{key:threat.id,
-                          draggable:true,
-                          onDragStart:function(e){e.dataTransfer.setData("text/plain",threat.id);e.dataTransfer.effectAllowed="link"},
-                          style:{
-                            fontSize:10,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontFamily:"inherit",fontWeight:600,
-                            transition:"all 0.15s",userSelect:"none",
-                            border:"1px solid "+(isLinked?"#dc2626":"#fecaca"),
-                            background:isLinked?"#dc2626":"#fff",
-                            color:isLinked?"#fff":"#dc2626",
-                            boxShadow:isLinked?"0 1px 3px rgba(220,38,38,0.3)":"none"
-                          },
-                          onClick:function(){toggleThreatLink(threat.id)}
-                        },
-                          isLinked?"\u2713 ":"",
-                          threat.label
-                        );
-                      })
-                    )
-                  ),
-                  // Crime threats
-                  React.createElement("div",{style:{marginBottom:4}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#4472C4",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}},"Crime"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
-                      threatDB.filter(function(t){return t.category==="Crime"}).map(function(threat){
-                        var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
-                        return React.createElement("button",{key:threat.id,
-                          draggable:true,
-                          onDragStart:function(e){e.dataTransfer.setData("text/plain",threat.id);e.dataTransfer.effectAllowed="link"},
-                          style:{
-                            fontSize:10,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontFamily:"inherit",fontWeight:600,
-                            transition:"all 0.15s",userSelect:"none",
-                            border:"1px solid "+(isLinked?"#4472C4":"#D6E4F0"),
-                            background:isLinked?"#4472C4":"#fff",
-                            color:isLinked?"#fff":"#4472C4",
-                            boxShadow:isLinked?"0 1px 3px rgba(68,114,196,0.3)":"none"
-                          },
-                          onClick:function(){toggleThreatLink(threat.id)}
-                        },
-                          isLinked?"\u2713 ":"",
-                          threat.label
-                        );
-                      })
-                    )
-                  ),
-                  // Other threats if any
-                  threatDB.filter(function(t){return t.category!=="Terrorism"&&t.category!=="Crime"}).length>0&&React.createElement("div",{style:{marginTop:8}},
-                    React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#475569",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:4}},"Other"),
-                    React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
-                      threatDB.filter(function(t){return t.category!=="Terrorism"&&t.category!=="Crime"}).map(function(threat){
-                        var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
-                        return React.createElement("button",{key:threat.id,
-                          style:{
-                            fontSize:10,padding:"5px 10px",borderRadius:6,cursor:"pointer",fontFamily:"inherit",fontWeight:600,
-                            transition:"all 0.15s",
-                            border:"1px solid "+(isLinked?"#475569":"#e2e8f0"),
-                            background:isLinked?"#475569":"#fff",
-                            color:isLinked?"#fff":"#475569"
-                          },
-                          onClick:function(){toggleThreatLink(threat.id)}
-                        },
-                          isLinked?"\u2713 ":"",
-                          threat.label
-                        );
-                      })
-                    )
-                  )
+              // ── Threat assignment (ALWAYS visible) ────────────────────────────
+              React.createElement("div",{style:{padding:"12px 16px",background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}},
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10}},
+                  React.createElement("span",{style:{fontSize:11,fontWeight:700,color:"#475569",letterSpacing:0.5}},"ASSIGN THREATS"),
+                  linkedThreats.length>0
+                    ?React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#16a34a",background:"#dcfce7",padding:"1px 8px",borderRadius:10}},"\u2713 "+linkedThreats.length+" assigned")
+                    :React.createElement("span",{style:{fontSize:10,color:"#f59e0b",background:"#fef3c7",padding:"1px 8px",borderRadius:10,fontWeight:600}},"none assigned \u2014 keyword fallback only"),
+                  React.createElement("span",{style:{fontSize:10,color:"#94a3b8",fontStyle:"italic"}},"click to add / remove")
                 ),
+                // Terrorism row
+                React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap",marginBottom:6}},
+                  React.createElement("span",{style:{fontSize:9,fontWeight:800,letterSpacing:0.5,color:"#991b1b",background:"#fee2e2",padding:"3px 7px",borderRadius:4,flexShrink:0,minWidth:68,textAlign:"center"}},"TERRORISM"),
+                  threatDB.filter(function(t){return t.category==="Terrorism"}).map(function(threat){
+                    var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
+                    return React.createElement("button",{key:threat.id,
+                      title:isLinked?"Remove "+threat.label+" from this set":"Assign "+threat.label+" to this set",
+                      style:{fontSize:11,padding:"5px 11px",borderRadius:20,cursor:"pointer",fontFamily:"inherit",
+                        border:isLinked?"2px solid #dc2626":"1.5px solid #fca5a5",
+                        background:isLinked?"#dc2626":"#fff",color:isLinked?"#fff":"#9f1239",
+                        fontWeight:isLinked?700:400,transition:"all 0.15s",
+                        boxShadow:isLinked?"0 1px 4px rgba(220,38,38,0.3)":"none"},
+                      onClick:function(e){e.stopPropagation();toggleThreatLink(threat.id)}
+                    },(isLinked?"\u2713 ":"")+threat.label);
+                  })
+                ),
+                // Crime row
+                React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap",marginBottom:threatDB.filter(function(t){return t.category!=="Terrorism"&&t.category!=="Crime"}).length>0?6:0}},
+                  React.createElement("span",{style:{fontSize:9,fontWeight:800,letterSpacing:0.5,color:"#1e3a8a",background:"#dbeafe",padding:"3px 7px",borderRadius:4,flexShrink:0,minWidth:68,textAlign:"center"}},"CRIME"),
+                  threatDB.filter(function(t){return t.category==="Crime"}).map(function(threat){
+                    var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
+                    return React.createElement("button",{key:threat.id,
+                      title:isLinked?"Remove "+threat.label:"Assign "+threat.label,
+                      style:{fontSize:11,padding:"5px 11px",borderRadius:20,cursor:"pointer",fontFamily:"inherit",
+                        border:isLinked?"2px solid #2563eb":"1.5px solid #93c5fd",
+                        background:isLinked?"#2563eb":"#fff",color:isLinked?"#fff":"#1e40af",
+                        fontWeight:isLinked?700:400,transition:"all 0.15s",
+                        boxShadow:isLinked?"0 1px 4px rgba(37,99,235,0.25)":"none"},
+                      onClick:function(e){e.stopPropagation();toggleThreatLink(threat.id)}
+                    },(isLinked?"\u2713 ":"")+threat.label);
+                  })
+                ),
+                // Other row (if any)
+                threatDB.filter(function(t){return t.category!=="Terrorism"&&t.category!=="Crime"}).length>0&&React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap"}},
+                  React.createElement("span",{style:{fontSize:9,fontWeight:800,letterSpacing:0.5,color:"#374151",background:"#e5e7eb",padding:"3px 7px",borderRadius:4,flexShrink:0,minWidth:68,textAlign:"center"}},"OTHER"),
+                  threatDB.filter(function(t){return t.category!=="Terrorism"&&t.category!=="Crime"}).map(function(threat){
+                    var isLinked=(threat.linkedTreatmentIds||[]).includes(entry.id);
+                    return React.createElement("button",{key:threat.id,
+                      style:{fontSize:11,padding:"5px 11px",borderRadius:20,cursor:"pointer",fontFamily:"inherit",
+                        border:isLinked?"2px solid #374151":"1.5px solid #d1d5db",
+                        background:isLinked?"#374151":"#fff",color:isLinked?"#fff":"#374151",
+                        fontWeight:isLinked?700:400,transition:"all 0.15s"},
+                      onClick:function(e){e.stopPropagation();toggleThreatLink(threat.id)}
+                    },(isLinked?"\u2713 ":"")+threat.label);
+                  })
+                )
+              ),
 
+              // ── Expanded content (measures + narrative) ────────────────────────
+              isExpanded&&React.createElement("div",{style:{padding:"12px 16px"}},
                 // Narrative
                 entry.narrative&&React.createElement("div",{style:{padding:"10px 14px",background:"#fffbeb",borderRadius:8,border:"1px solid #fde68a",marginBottom:12,fontSize:12,color:"#78350f",lineHeight:1.6,fontStyle:"italic"}},entry.narrative),
 
