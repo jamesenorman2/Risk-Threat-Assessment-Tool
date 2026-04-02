@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.981";
+  const VERSION="1.982";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3661,6 +3661,27 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement(HelpBox,{title:"Capability, Attractiveness & Vulnerability",
           description:"Capability and Intent are scored on the Threats tab and shown here read-only \u2014 they represent whether the threat actor has the means and motivation to act, which is fundamental to likelihood. The 6 Target Attractiveness criteria assess how appealing and accessible the site is to each threat. Vulnerability measures the site\u2019s susceptibility. Likelihood is then calculated: L = ROUND((Threat Score + TA + Vulnerability) / 3)."}),
+        React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16}},
+          React.createElement("h4",{style:{marginBottom:8}},"Attractiveness & Vulnerability Scoring Key"),
+          React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
+              React.createElement("thead",null,
+                React.createElement("tr",null,
+                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:130}},"Criterion"),
+                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0",width:24}},
+                    React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:24,height:24,borderRadius:5,background:SC[s].bg,color:SC[s].t,fontWeight:700,fontSize:12}},s)
+                  ))
+                )
+              ),
+              React.createElement("tbody",null,
+                [{k:"visibility",l:"Visibility"},{k:"status",l:"Status"},{k:"access",l:"Threat Access"},{k:"collateral",l:"Collateral Exposure"},{k:"crime",l:"Crime Profile"},{k:"history",l:"Historical Precedence"},{k:"vuln",l:"Vulnerability"}].map(({k,l})=>React.createElement("tr",{key:k,style:{borderBottom:"1px solid #f1f5f9"}},
+                  React.createElement("td",{style:{padding:"5px 8px",fontWeight:700,color:"#1e293b",whiteSpace:"nowrap"}},l),
+                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4}},(scales[k]||{})[s]||""))
+                ))
+              )
+            )
+          )
+        ),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const v=vs[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
           return React.createElement("div",{key:t.id,className:"card"},
@@ -3668,10 +3689,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
                 React.createElement("span",{className:"text-xs font-mono text-muted"},"T"+(i+1)),
                 React.createElement("span",{className:"font-bold"},t.n),
-                React.createElement("span",{style:{fontSize:10,color:"#64748b",marginLeft:8}},"Cap:"),React.createElement(SBadge,{value:t.cap}),
-                React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"Int:"),React.createElement(SBadge,{value:t.int}),
-                React.createElement("span",{style:{fontSize:10,color:"#64748b"}},"TS:"),React.createElement(SBadge,{value:t.sc}),
-                t.dbt&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",padding:"1px 6px",borderRadius:4,border:"1px solid #fecaca"}},"DBT")
+                React.createElement("span",{style:{fontSize:13,color:"#64748b",marginLeft:8}},"Cap:"),React.createElement(SBadge,{value:t.cap}),
+                React.createElement("span",{style:{fontSize:13,color:"#64748b"}},"Int:"),React.createElement(SBadge,{value:t.int}),
+                React.createElement("span",{style:{fontSize:13,color:"#64748b"}},"TS:"),React.createElement(SBadge,{value:t.sc}),
+                t.dbt&&React.createElement("span",{style:{fontSize:11,fontWeight:700,color:"#dc2626",background:"#fef2f2",padding:"1px 6px",borderRadius:4,border:"1px solid #fecaca"}},"DBT")
               ),
               React.createElement("div",{className:"flex gap-3 items-center"},
                 React.createElement("span",{className:"text-xs text-muted"},"TA:"),React.createElement(SBadge,{value:r?.ta}),
@@ -3682,20 +3703,18 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
               React.createElement("div",{className:"grid grid-7"},
                 ...[
-                  {k:"visibility",l:"Visibility",h:"1 = No public profile\n5 = Highly visible, major branding"},
-                  {k:"status",l:"Status",h:"1 = No association with prominent groups\n5 = Strongly linked to corporate/political/religious entities"},
-                  {k:"access",l:"Threat Access",h:"1 = Strictly controlled, very hard to reach\n5 = No controls, assets easily accessed"},
-                  {k:"collateral",l:"Collateral Exposure",h:"1 = No nearby high-profile targets\n5 = Multiple iconic targets in close proximity"},
-                  {k:"crime",l:"Crime Profile",h:"1 = No defined crime pattern\n5 = Major crime issue, serious/violent crime present"},
-                  {k:"history",l:"Historical Precedence",h:"1 = No history of being targeted\n5 = Strong, defined history of crime/terrorism"}
-                ].map(({k,l,h})=>React.createElement("div",{key:k,className:"gap-col"},
+                  {k:"visibility",l:"Visibility"},
+                  {k:"status",l:"Status"},
+                  {k:"access",l:"Threat Access"},
+                  {k:"collateral",l:"Collateral Exposure"},
+                  {k:"crime",l:"Crime Profile"},
+                  {k:"history",l:"Historical Precedence"}
+                ].map(({k,l})=>React.createElement("div",{key:k,className:"gap-col"},
                   React.createElement("div",{className:"crit-label"},l),
-                  React.createElement("div",{className:"crit-hint"},h),
                   React.createElement(ScoreBar,{value:v[k],onChange:val=>sv(t.id,k,val),size:"sm",tips:scales[k]})
                 )),
                 React.createElement("div",{className:"gap-col"},
                   React.createElement("div",{className:"crit-label",style:{fontWeight:700}},"Vulnerability"),
-                  React.createElement("div",{className:"crit-hint"},"1 = Highly resistant, robust controls\n5 = Little or no resistance, high vulnerability"),
                   React.createElement(ScoreBar,{value:v.vuln,onChange:val=>sv(t.id,"vuln",val),size:"sm",tips:scales.vuln})
                 )
               )
