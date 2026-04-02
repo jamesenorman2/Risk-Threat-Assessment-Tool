@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.983";
+  const VERSION="1.984";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3809,7 +3809,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{className:"grid grid-5"},
                 ...IC.map(c=>React.createElement("div",{key:c,className:"gap-col"},
                   React.createElement("div",{className:"crit-label"},ICL[c]),
-                  React.createElement("div",{className:"crit-hint"},critDescs[c]||""),
                   React.createElement(ScoreBar,{value:im[c],onChange:val=>si(t.id,c,val),size:"sm",tips:scales[c]})
                 ))
               )
