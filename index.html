@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.977";
+  const VERSION="1.978";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3730,6 +3730,27 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             copyChunkedToWord(chunks,"Impact Assessment \u2014 "+(ctx.project||"Assessment"));
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-impact","Impact assessment captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
+        ),
+        React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16}},
+          React.createElement("h4",{style:{marginBottom:8}},"Impact Scoring Key"),
+          React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
+              React.createElement("thead",null,
+                React.createElement("tr",null,
+                  React.createElement("th",{style:{textAlign:"left",padding:"4px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:90}},"Criterion"),
+                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"4px 6px",borderBottom:"1px solid #e2e8f0",width:22}},
+                    React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:5,background:SC[s].bg,color:SC[s].t,fontWeight:700,fontSize:10}},s)
+                  ))
+                )
+              ),
+              React.createElement("tbody",null,
+                IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f1f5f9"}},
+                  React.createElement("td",{style:{padding:"4px 8px",fontWeight:700,color:"#1e293b",whiteSpace:"nowrap"}},ICL[c]),
+                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"4px 6px",color:"#64748b",fontSize:11,lineHeight:1.4}},(scales[c]||{})[s]||""))
+                ))
+              )
+            )
+          )
         ),
         cThreats.filter(t=>t.n).map((t,i)=>{
           const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
