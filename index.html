@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.982";
+  const VERSION="1.983";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -3241,8 +3241,28 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"preset-btn",style:{marginLeft:4},onClick:function(){captureForWord("section-assets","Assets captured \u2014 paste into Word")}},"📷 Capture")
         ),
         React.createElement(HelpBox,{title:"Asset Criticality Scoring",
-          description:"Rate each asset across four criteria. Assets scoring 4.5+ are Critical, 3.5+ High, 2.5+ Medium, 1.5+ Low, below 1.5 Negligible.",
-          scaleItems:[(scales.opImpact||{})[1]||"",(scales.opImpact||{})[2]||"",(scales.opImpact||{})[3]||"",(scales.opImpact||{})[4]||"",(scales.opImpact||{})[5]||""]}),
+          description:"Rate each asset across four criteria. Assets scoring 4.5+ are Critical, 3.5+ High, 2.5+ Medium, 1.5+ Low, below 1.5 Negligible."}),
+        React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16}},
+          React.createElement("h4",{style:{marginBottom:8}},"Asset Criticality Scoring Key"),
+          React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
+              React.createElement("thead",null,
+                React.createElement("tr",null,
+                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:120}},"Criterion"),
+                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0",width:24}},
+                    React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:24,height:24,borderRadius:5,background:SC[s].bg,color:SC[s].t,fontWeight:700,fontSize:12}},s)
+                  ))
+                )
+              ),
+              React.createElement("tbody",null,
+                AC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f1f5f9"}},
+                  React.createElement("td",{style:{padding:"5px 8px",fontWeight:700,color:"#1e293b",whiteSpace:"nowrap"}},ACL[c]),
+                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4}},(scales[c]||{})[s]||""))
+                ))
+              )
+            )
+          )
+        ),
         React.createElement("div",{className:"card"},
           React.createElement("table",null,
             React.createElement("thead",null,React.createElement("tr",null,
