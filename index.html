@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.989";
+  const VERSION="1.990";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1215,63 +1215,52 @@ function App(){
   };
 
   const captureReport=function(el,toastMsg){
-    // Clean up any stale overlays from a previous capture
-    var stale=el.querySelectorAll("[data-map-overlay]");
-    for(var s=0;s<stale.length;s++)stale[s].parentNode.removeChild(stale[s]);
+    // Clone the element off-screen so we never modify the live DOM.
+    // Previous approach modified styles on the live element (overflow, whiteSpace, etc.)
+    // which caused visible layout shifts and residual changes on subsequent captures.
+    var clone=el.cloneNode(true);
+    clone.style.position="absolute";clone.style.left="-9999px";clone.style.top="0";
+    clone.style.width=el.offsetWidth+"px";
+    clone.style.overflow="visible";clone.style.height="auto";clone.style.maxHeight="none";
+    document.body.appendChild(clone);
 
-    var hdrs=Array.from(el.querySelectorAll("[data-capture-hide]"));
-    hdrs.forEach(function(h){h.style.display="none"});
+    // Hide capture-hide elements on the clone
+    var hdrs=clone.querySelectorAll("[data-capture-hide]");
+    for(var h=0;h<hdrs.length;h++)hdrs[h].style.display="none";
 
-    // Render Leaflet map to a static canvas image BEFORE the main capture.
-    // html2canvas cannot reliably capture Leaflet maps (CORS tiles, CSS 3D transforms,
-    // SVG overlays). Instead we draw tiles and markers directly onto a canvas using
-    // the Leaflet API, then overlay the result as a static image.
-    var mapEl=el.querySelector(".leaflet-container");
-    if(mapEl&&crimeMapRef.current){
+    // Replace map in clone with static canvas image
+    var cloneMap=clone.querySelector(".leaflet-container");
+    if(cloneMap&&crimeMapRef.current){
       try{
         var mc=renderMapToCanvas(crimeMapRef.current);
         var ov=document.createElement("div");
-        ov.setAttribute("data-map-overlay","1");
         ov.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;z-index:100000;background:#fff;";
         var img=document.createElement("img");
         img.src=mc.toDataURL("image/png");
         img.style.cssText="width:100%;height:100%;display:block;";
         ov.appendChild(img);
-        mapEl.appendChild(ov);
+        cloneMap.appendChild(ov);
       }catch(e){console.log("Map snapshot error:",e)}
     }
 
-    // Unconstrain the section element itself
-    var elSaved={ov:el.style.overflow,h:el.style.height,mh:el.style.maxHeight};
-    el.style.overflow="visible";el.style.height="auto";el.style.maxHeight="none";
-    // Skip map internals during style changes
-    var mapContainers=Array.from(el.querySelectorAll(".leaflet-container,[id='crime-map']"));
+    // Unconstrain overflow/clipping on clone elements (skip map internals)
+    var mapContainers=Array.from(clone.querySelectorAll(".leaflet-container,[id='crime-map']"));
     var isInsideMap=function(node){for(var m=0;m<mapContainers.length;m++){if(mapContainers[m].contains(node))return true}return false};
-    var els=el.querySelectorAll("*");var saved=[];
-    for(var i=0;i<els.length;i++){
-      var st=els[i].style;
-      var cs=window.getComputedStyle(els[i]);
-      saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight,h:st.height});
-      if(isInsideMap(els[i]))continue;
+    var cloneEls=clone.querySelectorAll("*");
+    for(var i=0;i<cloneEls.length;i++){
+      if(isInsideMap(cloneEls[i]))continue;
+      var st=cloneEls[i].style;
+      var cs=window.getComputedStyle(cloneEls[i]);
       if(cs.overflow==="hidden"||cs.overflow==="auto"||cs.overflow==="scroll")st.overflow="visible";
       if(cs.textOverflow==="ellipsis")st.textOverflow="clip";
       if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
       if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
     }
-    void el.offsetHeight;
-    // Use a stable capture height — measure once and cap to prevent multi-page on repeated captures
-    var captureH=Math.min(el.scrollHeight+400,5000);
-    var restore=function(){
-      el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
-      hdrs.forEach(function(h){h.style.display=""});
-      for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
-      // Remove map overlay
-      var ovs=el.querySelectorAll("[data-map-overlay]");
-      for(var k=0;k<ovs.length;k++)ovs[k].parentNode.removeChild(ovs[k]);
-    };
+    void clone.offsetHeight;
+    var captureH=Math.min(clone.scrollHeight+400,5000);
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
-    html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
-      restore();
+    html2canvas(clone,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
+      document.body.removeChild(clone);
       var trimH=canvas.height;
       var ctx2=canvas.getContext("2d");
       outer:for(var y=canvas.height-40;y>0;y-=40){
@@ -1336,7 +1325,7 @@ function App(){
         win.document.write(ph);win.document.close();
         showToast("Opened "+pageCount+" A4 pages \u2014 copy or save each");
       }
-    }).catch(function(){restore();showToast("Capture failed")});
+    }).catch(function(){try{document.body.removeChild(clone)}catch(e){}showToast("Capture failed")});
   };
 
   // Load html2canvas on demand and capture an element
