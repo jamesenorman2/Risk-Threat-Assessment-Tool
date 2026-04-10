@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.994";
+  const VERSION="1.995";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1327,7 +1327,19 @@ function App(){
 
   const processCrimeData=(rawResults,monthCount,lat,lng)=>{
     var filtered=rawResults.slice(0,monthCount);
-    var allCrimes=filtered.flatMap(r=>r.crimes.map(c=>({...c,month:r.month})));
+    var allCrimesRaw=filtered.flatMap(r=>r.crimes.map(c=>({...c,month:r.month})));
+    // Filter to 0.5 mile radius using Haversine distance
+    var halfMileKm=0.80467;
+    var toRad=function(d){return d*Math.PI/180};
+    var haversine=function(lat1,lng1,lat2,lng2){
+      var dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+      var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)*Math.sin(dLng/2);
+      return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    };
+    var allCrimes=allCrimesRaw.filter(function(c){
+      if(!c.location||!c.location.latitude||!c.location.longitude)return true;
+      return haversine(lat,lng,parseFloat(c.location.latitude),parseFloat(c.location.longitude))<=halfMileKm;
+    });
     var byCategory={},byMonth={},byOutcome={},locations=[],byStreet={};
     allCrimes.forEach(c=>{
       var cat=c.category||"other";
@@ -2867,7 +2879,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:12,opacity:0.6,marginTop:2}},
                 (function(){var ms=crimeData.sortedMonths;if(!ms||ms.length===0)return"No date info";
                   var mn=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                  return"Data range: "+mn[parseInt(ms[0].split("-")[1])]+" "+ms[0].split("-")[0]+" to "+mn[parseInt(ms[ms.length-1].split("-")[1])]+" "+ms[ms.length-1].split("-")[0]+" ("+ms.length+" months). ~1 mile radius. Source: Police.uk (Crown Copyright).";
+                  return"Data range: "+mn[parseInt(ms[0].split("-")[1])]+" "+ms[0].split("-")[0]+" to "+mn[parseInt(ms[ms.length-1].split("-")[1])]+" "+ms[ms.length-1].split("-")[0]+" ("+ms.length+" months). ~0.5 mile radius. Source: Police.uk (Crown Copyright).";
                 })()
               )
             ),
