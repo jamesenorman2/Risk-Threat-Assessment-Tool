@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.988";
+  const VERSION="1.989";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -899,6 +899,7 @@ function App(){
   };
   const autoSaveRef=useRef(null);
   const crimeMapRef=useRef(null); // Stores Leaflet map instance for capture
+  const siteMarkerPosRef=useRef(null); // Stores dragged site marker position across period changes
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
@@ -1214,6 +1215,10 @@ function App(){
   };
 
   const captureReport=function(el,toastMsg){
+    // Clean up any stale overlays from a previous capture
+    var stale=el.querySelectorAll("[data-map-overlay]");
+    for(var s=0;s<stale.length;s++)stale[s].parentNode.removeChild(stale[s]);
+
     var hdrs=Array.from(el.querySelectorAll("[data-capture-hide]"));
     hdrs.forEach(function(h){h.style.display="none"});
 
@@ -1221,19 +1226,18 @@ function App(){
     // html2canvas cannot reliably capture Leaflet maps (CORS tiles, CSS 3D transforms,
     // SVG overlays). Instead we draw tiles and markers directly onto a canvas using
     // the Leaflet API, then overlay the result as a static image.
-    var mapOverlays=[];
     var mapEl=el.querySelector(".leaflet-container");
     if(mapEl&&crimeMapRef.current){
       try{
         var mc=renderMapToCanvas(crimeMapRef.current);
         var ov=document.createElement("div");
+        ov.setAttribute("data-map-overlay","1");
         ov.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;z-index:100000;background:#fff;";
         var img=document.createElement("img");
         img.src=mc.toDataURL("image/png");
         img.style.cssText="width:100%;height:100%;display:block;";
         ov.appendChild(img);
         mapEl.appendChild(ov);
-        mapOverlays.push({el:mapEl,ov:ov});
       }catch(e){console.log("Map snapshot error:",e)}
     }
 
@@ -1255,12 +1259,15 @@ function App(){
       if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
     }
     void el.offsetHeight;
-    var captureH=Math.min(Math.max(el.scrollHeight*4,6000)+2000,15000);
+    // Use a stable capture height — measure once and cap to prevent multi-page on repeated captures
+    var captureH=Math.min(el.scrollHeight+400,5000);
     var restore=function(){
       el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
       hdrs.forEach(function(h){h.style.display=""});
       for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
-      mapOverlays.forEach(function(mo){try{mo.el.removeChild(mo.ov)}catch(e){}});
+      // Remove map overlay
+      var ovs=el.querySelectorAll("[data-map-overlay]");
+      for(var k=0;k<ovs.length;k++)ovs[k].parentNode.removeChild(ovs[k]);
     };
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
     html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
@@ -2955,8 +2962,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var map=L.map(el).setView([crimeData.lat,crimeData.lng],15);
                     crimeMapRef.current=map;
                     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"\u00a9 OSM",maxZoom:18,crossOrigin:"anonymous"}).addTo(map);
-                    var siteMarker=L.marker([crimeData.lat,crimeData.lng],{draggable:true}).addTo(map).bindPopup("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+"<br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");
-                    siteMarker.on("dragend",function(){var p=siteMarker.getLatLng();siteMarker.setPopupContent("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+"<br/><i style='font-size:10px;color:#64748b'>Moved to "+p.lat.toFixed(5)+", "+p.lng.toFixed(5)+"</i><br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");showToast("Site marker repositioned")});
+                    var pinPos=siteMarkerPosRef.current||[crimeData.lat,crimeData.lng];
+                    var siteMarker=L.marker(pinPos,{draggable:true}).addTo(map).bindPopup("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+(siteMarkerPosRef.current?"<br/><i style='font-size:10px;color:#64748b'>Moved to "+pinPos[0].toFixed(5)+", "+pinPos[1].toFixed(5)+"</i>":"")+"<br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");
+                    siteMarker.on("dragend",function(){var p=siteMarker.getLatLng();siteMarkerPosRef.current=[p.lat,p.lng];siteMarker.setPopupContent("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+"<br/><i style='font-size:10px;color:#64748b'>Moved to "+p.lat.toFixed(5)+", "+p.lng.toFixed(5)+"</i><br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");showToast("Site marker repositioned")});
                     // Sample locations proportionally — guarantee every crime type appears
                     var maxDots=2000;var locs=crimeData.locations;
                     var sampled=[];
