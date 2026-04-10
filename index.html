@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.991";
+  const VERSION="1.992";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1258,8 +1258,9 @@ function App(){
     }
     void clone.offsetHeight;
     var captureH=Math.min(clone.scrollHeight+400,5000);
-    var A4W=1200;var A4RATIO=210/160;var SCALE=2;
-    html2canvas(clone,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
+    var captureW=Math.max(clone.scrollWidth,el.offsetWidth)+40;
+    var SCALE=2;
+    html2canvas(clone,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:captureW,height:captureH,windowWidth:captureW+40,scrollX:0,scrollY:0}).then(function(canvas){
       document.body.removeChild(clone);
       // Trim bottom whitespace
       var trimH=canvas.height;
