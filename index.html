@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.987";
+  const VERSION="1.988";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1145,21 +1145,27 @@ function App(){
     var w=size.x,h=size.y;
     var c=document.createElement("canvas");c.width=w*2;c.height=h*2;
     var cx=c.getContext("2d");cx.scale(2,2);
+    // Helper: parse translate3d or translate from CSS transform string
+    var parseT=function(s){
+      if(!s)return{x:0,y:0};
+      var m=s.match(/translate3d\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px/)||s.match(/translate\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px/);
+      return m?{x:parseFloat(m[1]),y:parseFloat(m[2])}:{x:0,y:0};
+    };
     // 1. Draw tile images
     var tilePane=mapInstance.getPane("tilePane");
     if(tilePane){
-      var tm=tilePane.style.transform.match(/translate3d\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px/);
-      var tx=tm?parseFloat(tm[1]):0,ty=tm?parseFloat(tm[2]):0;
+      var tp=parseT(tilePane.style.transform);
       var containers=tilePane.querySelectorAll(".leaflet-tile-container");
       containers.forEach(function(cont){
-        var ctm=cont.style.transform.match(/translate3d\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px/);
-        var ctx2=ctm?parseFloat(ctm[1]):0,cty=ctm?parseFloat(ctm[2]):0;
+        var cp2=parseT(cont.style.transform);
         var tiles=cont.querySelectorAll("img.leaflet-tile");
         for(var i=0;i<tiles.length;i++){
           var tile=tiles[i];if(!tile.complete||tile.naturalWidth===0)continue;
-          var tl=parseFloat(tile.style.left)||0,tt=parseFloat(tile.style.top)||0;
+          // Leaflet 1.9+ uses CSS transform for tile positioning; fall back to left/top
+          var tilePt=parseT(tile.style.transform);
+          if(tilePt.x===0&&tilePt.y===0){tilePt.x=parseFloat(tile.style.left)||0;tilePt.y=parseFloat(tile.style.top)||0}
           var tw=tile.offsetWidth||256,th2=tile.offsetHeight||256;
-          try{cx.drawImage(tile,tx+ctx2+tl,ty+cty+tt,tw,th2)}catch(e){}
+          try{cx.drawImage(tile,tp.x+cp2.x+tilePt.x,tp.y+cp2.y+tilePt.y,tw,th2)}catch(e){}
         }
       });
     }
