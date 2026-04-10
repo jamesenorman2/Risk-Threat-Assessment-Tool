@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.990";
+  const VERSION="1.991";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1261,6 +1261,7 @@ function App(){
     var A4W=1200;var A4RATIO=210/160;var SCALE=2;
     html2canvas(clone,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
       document.body.removeChild(clone);
+      // Trim bottom whitespace
       var trimH=canvas.height;
       var ctx2=canvas.getContext("2d");
       outer:for(var y=canvas.height-40;y>0;y-=40){
@@ -1270,61 +1271,11 @@ function App(){
       trimH=Math.min(trimH+80,canvas.height);
       var trimmed=document.createElement("canvas");trimmed.width=canvas.width;trimmed.height=trimH;
       trimmed.getContext("2d").drawImage(canvas,0,0);
-      var pageH=Math.round(A4W*A4RATIO)*SCALE;
-      var totalH=trimmed.height;
-      var pageCount=Math.ceil(totalH/pageH);
-      var ctx3=trimmed.getContext("2d");
-      var findBreak=function(yTarget){
-        var best=yTarget;var bestWhite=-1;
-        for(var y=yTarget;y>Math.max(yTarget-300,0);y-=2){
-          var row=ctx3.getImageData(0,y,trimmed.width,1).data;
-          var wc=0;for(var q=0;q<row.length;q+=4){if(row[q]>238&&row[q+1]>238&&row[q+2]>238)wc++;}
-          if(wc>bestWhite){bestWhite=wc;best=y;}
-          if(wc===trimmed.width)break;
-        }
-        return best;
-      };
-      if(pageCount<=1){
-        trimmed.toBlob(function(blob){
-          try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
-          catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
-        },"image/png");
-      }else{
-        var breaks=[0];
-        for(var p=1;p<pageCount;p++){breaks.push(findBreak(p*pageH));}
-        breaks.push(totalH);
-        var srcs=[];
-        for(var p=0;p<pageCount;p++){
-          var y0=breaks[p];var y1=breaks[p+1];var sliceH=y1-y0;
-          var pc=document.createElement("canvas");pc.width=trimmed.width;pc.height=sliceH;
-          pc.getContext("2d").drawImage(trimmed,0,y0,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
-          srcs.push(pc.toDataURL("image/png"));
-        }
-        var win=window.open("","_blank");
-        var ph="<!DOCTYPE html><html><head><meta charset='utf-8'><title>Page Captures</title>";
-        ph+="<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#555;margin:0;padding:0}";
-        ph+=".toolbar{background:#1B2A4A;color:#fff;padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}";
-        ph+=".toolbar b{font-size:15px}.hint{color:#94a3b8;font-size:11px}";
-        ph+=".pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px}";
-        ph+=".page{background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);width:100%;max-width:920px}";
-        ph+=".page-bar{background:#1B2A4A;color:#fff;padding:8px 14px;font-size:12px;display:flex;justify-content:space-between;align-items:center}";
-        ph+=".page img{display:block;width:100%;height:auto}";
-        ph+=".btn{background:#4472C4;color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;margin-left:6px;text-decoration:none;display:inline-block;line-height:1.6}";
-        ph+=".btn:hover{background:#2d5ca8}.copied{background:#70AD47!important}</style>";
-        ph+="</head><body>";
-        ph+="<div class='toolbar'><b>\ud83d\udcc4 "+pageCount+" page"+(pageCount>1?"s":"")+"</b><span class='hint'>Each image = one A4 page &nbsp;\u2022&nbsp; Click \u2018Copy\u2019 then Ctrl+V into Word &nbsp;\u2022&nbsp; Or right-click any image \u2192 Save image as</span></div>";
-        ph+="<div class='pages'>";
-        srcs.forEach(function(src,i){
-          ph+="<div class='page'><div class='page-bar'><span>Page "+(i+1)+" of "+pageCount+"</span><span>";
-          ph+="<button class='btn' id='cb"+i+"' onclick='cp("+i+")'>&#128203; Copy</button>";
-          ph+="<a class='btn' href='"+src+"' download='capture-page-"+(i+1)+".png'>&#128190; Save</a></span></div>";
-          ph+="<img id='img"+i+"' src='"+src+"'/></div>";
-        });
-        ph+="</div><script>function cp(i){var img=document.getElementById('img'+i);var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);c.toBlob(function(b){navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){var btn=document.getElementById('cb'+i);btn.textContent='\u2713 Copied';btn.className='btn copied';setTimeout(function(){btn.textContent='\ud83d\udccb Copy';btn.className='btn'},2000)}).catch(function(){alert('Copy blocked \u2014 right-click image and Save As')})},'image/png')}<\/script>";
-        ph+="</body></html>";
-        win.document.write(ph);win.document.close();
-        showToast("Opened "+pageCount+" A4 pages \u2014 copy or save each");
-      }
+      // Always copy as single image to clipboard — Word handles page breaks automatically
+      trimmed.toBlob(function(blob){
+        try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
+        catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
+      },"image/png");
     }).catch(function(){try{document.body.removeChild(clone)}catch(e){}showToast("Capture failed")});
   };
 
