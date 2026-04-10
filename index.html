@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.993";
+  const VERSION="1.994";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1350,9 +1350,9 @@ function App(){
     var catColors={"anti-social-behaviour":"#FFC000","burglary":"#B45309","criminal-damage-arson":"#ED7D31","drugs":"#7B68EE","other-theft":"#E91E63",
       "possession-of-weapons":"#1e1e1e","public-order":"#00BCD4","robbery":"#dc2626","shoplifting":"#8BC34A","vehicle-crime":"#FF5722",
       "violent-crime":"#C00000","other-crime":"#607D8B","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0"};
-    // Cap map locations to 2000 per period with proportional sampling
+    // Cap map locations to 8000 per period with proportional sampling
     var totalLocations=locations.length;
-    var maxPlot=2000;
+    var maxPlot=8000;
     if(locations.length>maxPlot){
       var byCatLoc={};
       locations.forEach(function(l){if(!byCatLoc[l.cat])byCatLoc[l.cat]=[];byCatLoc[l.cat].push(l)});
@@ -2920,7 +2920,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("div",{style:{padding:12,borderRight:"1px solid #e2e8f0"}},
               React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:2}},"CRIME DENSITY MAP"),
               React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:4}},
-                "Plotting "+crimeData.locations.length.toLocaleString()+(crimeData.totalLocations>crimeData.locations.length?" of "+crimeData.totalLocations.toLocaleString():"")+" data points (max 2,000)"
+                "Plotting "+crimeData.locations.length.toLocaleString()+(crimeData.totalLocations>crimeData.locations.length?" of "+crimeData.totalLocations.toLocaleString():"")+" data points (max 8,000)"
               ),
               React.createElement("div",{id:"crime-map-container",style:{background:"#fff"}},
                 React.createElement("div",{key:"map-"+crimePeriod,id:"crime-map",ref:function(el){
