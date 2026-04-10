@@ -1,0 +1,264 @@
+[
+  {
+    "id": "td_vbied",
+    "label": "VBIED / VAAW",
+    "category": "Terrorism",
+    "description": "Vehicle-borne improvised explosive device (VBIED) or vehicle used as a weapon (VAAW). Encompasses car/van bombs and deliberate vehicle ramming attacks against people or structures.",
+    "keywords": [
+      "vbied",
+      "vaaw",
+      "vehicle bomb"
+    ],
+    "linkedTreatmentIds": [
+      "vbied_vaaw"
+    ]
+  },
+  {
+    "id": "td_mta",
+    "label": "Marauding Terrorist Attack (MTA / MTFA)",
+    "category": "Terrorism",
+    "description": "Coordinated attack by one or more individuals using bladed weapons, firearms, or improvised weapons to cause mass casualties while moving through a location.",
+    "keywords": [
+      "mta",
+      "mtfa",
+      "marauding"
+    ],
+    "linkedTreatmentIds": [
+      "mta_mtfa"
+    ]
+  },
+  {
+    "id": "td_pbied",
+    "label": "PBIED",
+    "category": "Terrorism",
+    "description": "Person-borne improvised explosive device — a concealed explosive device carried or worn by an attacker, typically detonated in a crowded space.",
+    "keywords": [
+      "pbied",
+      "person borne"
+    ],
+    "linkedTreatmentIds": [
+      "pbied"
+    ]
+  },
+  {
+    "id": "td_ied",
+    "label": "IED / Drone / Mail Threat",
+    "category": "Terrorism",
+    "description": "Improvised explosive devices placed or delivered by hand, drone, or postal/courier service. Includes suspect packages and small unmanned aerial system (UAS) threats.",
+    "keywords": [
+      "ied",
+      "drone",
+      "mail",
+      "parcel"
+    ],
+    "linkedTreatmentIds": [
+      "ied"
+    ]
+  },
+  {
+    "id": "td_cbr",
+    "label": "CBR / CBRN Attack",
+    "category": "Terrorism",
+    "description": "Chemical, biological, radiological, or nuclear attack using toxic agents, pathogens, or radioactive material to cause harm, contamination, or mass disruption.",
+    "keywords": [
+      "cbr",
+      "cbrn",
+      "chemical",
+      "biological",
+      "radiological"
+    ],
+    "linkedTreatmentIds": [
+      "cbr"
+    ]
+  },
+  {
+    "id": "td_burglary",
+    "label": "Burglary",
+    "category": "Crime",
+    "description": "Unlawful entry into premises with intent to steal, commit criminal damage, or cause harm. Includes forced entry, opportunistic access, and distraction techniques.",
+    "keywords": [
+      "burglary",
+      "break-in",
+      "unlawful entry"
+    ],
+    "linkedTreatmentIds": [
+      "burglary"
+    ]
+  },
+  {
+    "id": "td_theft",
+    "label": "Theft",
+    "category": "Crime",
+    "description": "Deprivation of assets without consent. Includes shoplifting, employee theft, and theft of high-value or CRAVED (Concealable, Removable, Available, Valuable, Enjoyable, Disposable) items.",
+    "keywords": [
+      "theft",
+      "stealing",
+      "shoplifting"
+    ],
+    "linkedTreatmentIds": [
+      "theft"
+    ]
+  },
+  {
+    "id": "td_vehicle_crime",
+    "label": "Vehicle Crime",
+    "category": "Crime",
+    "description": "Theft of vehicles, theft from vehicles, or criminal damage to vehicles. Includes carjacking, catalytic converter theft, and fuel theft.",
+    "keywords": [
+      "vehicle crime",
+      "car theft",
+      "van theft"
+    ],
+    "linkedTreatmentIds": [
+      "vehicle_crime"
+    ]
+  },
+  {
+    "id": "td_arson",
+    "label": "Arson",
+    "category": "Crime",
+    "description": "Deliberate ignition of fire to destroy property, cause harm, or create disruption. May be opportunistic or targeted.",
+    "keywords": [
+      "arson",
+      "deliberate fire",
+      "fire setting"
+    ],
+    "linkedTreatmentIds": [
+      "arson"
+    ]
+  },
+  {
+    "id": "td_trespass",
+    "label": "Trespass",
+    "category": "Crime",
+    "description": "Unauthorised entry onto land or into buildings without permission. Ranges from opportunistic to deliberate (protest, reconnaissance, squatting).",
+    "keywords": [
+      "trespass",
+      "unauthorised access",
+      "squatting"
+    ],
+    "linkedTreatmentIds": [
+      "trespass"
+    ]
+  },
+  {
+    "id": "td_asb",
+    "label": "ASB / Criminal Damage",
+    "category": "Crime",
+    "description": "Anti-social behaviour, nuisance, intimidation, and deliberate damage to property. May escalate or create secondary risks.",
+    "keywords": [
+      "asb",
+      "anti-social",
+      "criminal damage",
+      "vandalism"
+    ],
+    "linkedTreatmentIds": [
+      "asb"
+    ]
+  },
+  {
+    "id": "td_public_order",
+    "label": "Public Order / Protest",
+    "category": "Crime",
+    "description": "Protests, demonstrations, riots, or direct action that may disrupt operations, damage property, or endanger people.",
+    "keywords": [
+      "public order",
+      "protest",
+      "riot",
+      "demonstration"
+    ],
+    "linkedTreatmentIds": [
+      "public_order"
+    ]
+  },
+  {
+    "id": "td_violence",
+    "label": "Violence / Sexual Offences",
+    "category": "Crime",
+    "description": "Physical assault, domestic violence, threats of violence, and sexual offences on or near the premises.",
+    "keywords": [
+      "violence",
+      "assault",
+      "sexual offence",
+      "harassment"
+    ],
+    "linkedTreatmentIds": [
+      "violence"
+    ]
+  },
+  {
+    "id": "td_cybercrime",
+    "label": "Cybercrime",
+    "category": "Crime",
+    "description": "Attacks on IT, OT, and IoT systems including ransomware, phishing, DDoS, network intrusion, and operational technology compromise.",
+    "keywords": [
+      "cyber",
+      "ransomware",
+      "phishing",
+      "hacking",
+      "it attack"
+    ],
+    "linkedTreatmentIds": [
+      "cybercrime"
+    ]
+  },
+  {
+    "id": "td_info_theft",
+    "label": "Information Theft",
+    "category": "Crime",
+    "description": "Theft or unauthorised disclosure of confidential, commercially sensitive, or personal data. Includes document theft, covert photography, and data exfiltration.",
+    "keywords": [
+      "information theft",
+      "data theft",
+      "espionage",
+      "data breach"
+    ],
+    "linkedTreatmentIds": [
+      "info_theft"
+    ]
+  },
+  {
+    "id": "td_insider",
+    "label": "Insider Threat",
+    "category": "Crime",
+    "description": "Malicious or negligent actions by employees, contractors, or trusted individuals with authorised access. Includes sabotage, fraud, and data theft.",
+    "keywords": [
+      "insider",
+      "staff misconduct",
+      "disgruntled employee"
+    ],
+    "linkedTreatmentIds": [
+      "insider"
+    ]
+  },
+  {
+    "id": "td_soc",
+    "label": "Serious Organised Crime",
+    "category": "Crime",
+    "description": "Organised criminal activity including drug supply, human trafficking, money laundering, and professional theft gangs targeting premises.",
+    "keywords": [
+      "soc",
+      "organised crime",
+      "gang",
+      "trafficking"
+    ],
+    "linkedTreatmentIds": [
+      "soc"
+    ]
+  },
+  {
+    "id": "td_kre",
+    "label": "Kidnap, Ransom & Extortion",
+    "category": "Crime",
+    "description": "Threats to individuals or organisations including kidnapping, ransom demands, product contamination threats, and extortion via digital or physical means.",
+    "keywords": [
+      "kidnap",
+      "ransom",
+      "extortion",
+      "hostage"
+    ],
+    "linkedTreatmentIds": [
+      "kre"
+    ]
+  }
+]
