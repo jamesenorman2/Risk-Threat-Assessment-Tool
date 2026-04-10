@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.992";
+  const VERSION="1.993";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1350,9 +1350,32 @@ function App(){
     var catColors={"anti-social-behaviour":"#FFC000","burglary":"#B45309","criminal-damage-arson":"#ED7D31","drugs":"#7B68EE","other-theft":"#E91E63",
       "possession-of-weapons":"#1e1e1e","public-order":"#00BCD4","robbery":"#dc2626","shoplifting":"#8BC34A","vehicle-crime":"#FF5722",
       "violent-crime":"#C00000","other-crime":"#607D8B","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0"};
+    // Cap map locations to 2000 per period with proportional sampling
+    var totalLocations=locations.length;
+    var maxPlot=2000;
+    if(locations.length>maxPlot){
+      var byCatLoc={};
+      locations.forEach(function(l){if(!byCatLoc[l.cat])byCatLoc[l.cat]=[];byCatLoc[l.cat].push(l)});
+      var sampled=[];
+      var cats=Object.keys(byCatLoc);
+      cats.forEach(function(cat){
+        var arr=byCatLoc[cat];
+        var quota=Math.max(3,Math.round(arr.length/locations.length*maxPlot));
+        var step=Math.max(1,arr.length/quota);
+        for(var j=0;j<arr.length&&sampled.length<maxPlot;j+=step)sampled.push(arr[Math.floor(j)]);
+      });
+      // Fill remaining slots if rounding left room
+      if(sampled.length<maxPlot){
+        var sampledSet=new Set(sampled);
+        for(var fi=0;fi<locations.length&&sampled.length<maxPlot;fi++){
+          if(!sampledSet.has(locations[fi]))sampled.push(locations[fi]);
+        }
+      }
+      locations=sampled;
+    }
     return{total:allCrimes.length,monthsLoaded:filtered.length,byCategory:Object.entries(byCategory).sort((a,b)=>b[1]-a[1]),
       byMonth,sortedMonths:Object.keys(byMonth).sort(),byOutcome:Object.entries(byOutcome).sort((a,b)=>b[1]-a[1]),
-      lat,lng,locations,sortedStreets:Object.entries(byStreet).sort((a,b)=>b[1].total-a[1].total),catColors};
+      lat,lng,locations,totalLocations,sortedStreets:Object.entries(byStreet).sort((a,b)=>b[1].total-a[1].total),catColors};
   };
 
   const fetchCrimeByCoords=async(lat,lng)=>{
@@ -2895,7 +2918,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
             // LEFT: Map + Legend
             React.createElement("div",{style:{padding:12,borderRight:"1px solid #e2e8f0"}},
-              React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},"CRIME DENSITY MAP"),
+              React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:2}},"CRIME DENSITY MAP"),
+              React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:4}},
+                "Plotting "+crimeData.locations.length.toLocaleString()+(crimeData.totalLocations>crimeData.locations.length?" of "+crimeData.totalLocations.toLocaleString():"")+" data points (max 2,000)"
+              ),
               React.createElement("div",{id:"crime-map-container",style:{background:"#fff"}},
                 React.createElement("div",{key:"map-"+crimePeriod,id:"crime-map",ref:function(el){
                   if(!el||el.dataset.init)return;el.dataset.init="1";
@@ -2906,26 +2932,13 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     var pinPos=siteMarkerPosRef.current||[crimeData.lat,crimeData.lng];
                     var siteMarker=L.marker(pinPos,{draggable:true}).addTo(map).bindPopup("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+(siteMarkerPosRef.current?"<br/><i style='font-size:10px;color:#64748b'>Moved to "+pinPos[0].toFixed(5)+", "+pinPos[1].toFixed(5)+"</i>":"")+"<br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");
                     siteMarker.on("dragend",function(){var p=siteMarker.getLatLng();siteMarkerPosRef.current=[p.lat,p.lng];siteMarker.setPopupContent("<b>Site</b><br/>"+(ctx.address||"")+"<br/>"+(ctx.postcode||"")+"<br/><i style='font-size:10px;color:#64748b'>Moved to "+p.lat.toFixed(5)+", "+p.lng.toFixed(5)+"</i><br/><i style='font-size:10px;color:#94a3b8'>Drag pin to reposition</i>");showToast("Site marker repositioned")});
-                    // Sample locations proportionally — guarantee every crime type appears
-                    var maxDots=2000;var locs=crimeData.locations;
-                    var sampled=[];
-                    if(locs.length<=maxDots){sampled=locs}
-                    else{
-                      var byCat={};
-                      locs.forEach(function(l){if(!byCat[l.cat])byCat[l.cat]=[];byCat[l.cat].push(l)});
-                      var cats=Object.keys(byCat);
-                      // First pass: allocate proportional quota per category
-                      cats.forEach(function(cat){
-                        var arr=byCat[cat];
-                        var quota=Math.max(5,Math.round(arr.length/locs.length*maxDots));
-                        var step=Math.max(1,Math.floor(arr.length/quota));
-                        for(var j=0;j<arr.length&&sampled.length<maxDots;j+=step)sampled.push(arr[j]);
-                      });
-                      // Shuffle so types intermix visually (later dots render on top)
-                      for(var si=sampled.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=sampled[si];sampled[si]=sampled[sj];sampled[sj]=tmp}
-                    }
-                    for(var i=0;i<sampled.length;i++){
-                      var loc=sampled[i];var col=crimeData.catColors[loc.cat]||"#64748b";
+                    // Plot all locations (already capped to 2000 per period in processCrimeData)
+                    var locs=crimeData.locations;
+                    // Shuffle so crime types intermix visually
+                    var plotLocs=locs.slice();
+                    for(var si=plotLocs.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=plotLocs[si];plotLocs[si]=plotLocs[sj];plotLocs[sj]=tmp}
+                    for(var i=0;i<plotLocs.length;i++){
+                      var loc=plotLocs[i];var col=crimeData.catColors[loc.cat]||"#64748b";
                       var jLat=loc.lat+(Math.random()-0.5)*0.0008;
                       var jLng=loc.lng+(Math.random()-0.5)*0.0008;
                       L.circleMarker([jLat,jLng],{radius:4,fillColor:col,color:"#fff",weight:0.5,opacity:0.9,fillOpacity:0.75}).addTo(map)
