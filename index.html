@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.985";
+  const VERSION="1.986";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1140,107 +1140,129 @@ function App(){
   const captureReport=function(el,toastMsg){
     var hdrs=Array.from(el.querySelectorAll("[data-capture-hide]"));
     hdrs.forEach(function(h){h.style.display="none"});
-    // Also unconstrain the section element itself
-    var elSaved={ov:el.style.overflow,h:el.style.height,mh:el.style.maxHeight};
-    el.style.overflow="visible";el.style.height="auto";el.style.maxHeight="none";
-    // Find map containers so we can skip their internals (Leaflet relies on overflow:hidden for tile clipping)
-    var mapContainers=Array.from(el.querySelectorAll(".leaflet-container,[id='crime-map']"));
-    var isInsideMap=function(node){for(var m=0;m<mapContainers.length;m++){if(mapContainers[m].contains(node))return true}return false};
-    var els=el.querySelectorAll("*");var saved=[];
-    for(var i=0;i<els.length;i++){
-      var st=els[i].style;
-      var cs=window.getComputedStyle(els[i]);
-      saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight,h:st.height});
-      // Skip Leaflet map internals — they need overflow:hidden for correct tile rendering
-      if(isInsideMap(els[i]))continue;
-      // Fix both inline and class-based overflow/clipping that would cut content
-      if(cs.overflow==="hidden"||cs.overflow==="auto"||cs.overflow==="scroll")st.overflow="visible";
-      if(cs.textOverflow==="ellipsis")st.textOverflow="clip";
-      if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
-      if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
-    }
-    // Force reflow after style changes
-    void el.offsetHeight;
-    // Use generous height (4× scrollHeight capped at 15000) — exact height determined by trimming below
-    var captureH=Math.min(Math.max(el.scrollHeight*4,6000)+2000,15000);
-    var restore=function(){
-      el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
-      hdrs.forEach(function(h){h.style.display=""});
-      for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
-    };
-    // Fixed A4 capture width (150dpi equivalent) — ensures images fit Word page width precisely
-    var A4W=1200;var A4RATIO=210/160;var SCALE=2;
-    html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
-      restore();
-      // Trim bottom white space — scan in 40-row chunks from bottom to find last content row
-      var trimH=canvas.height;
-      var ctx2=canvas.getContext("2d");
-      outer:for(var y=canvas.height-40;y>0;y-=40){
-        var chunk=ctx2.getImageData(0,y,canvas.width,40).data;
-        for(var p=0;p<chunk.length;p+=4){if(chunk[p]<252||chunk[p+1]<252||chunk[p+2]<252){trimH=y+40;break outer;}}
+
+    // Snapshot Leaflet maps as static images BEFORE the main capture.
+    // Leaflet's tile/marker pixel positions are calculated for the current container
+    // width. html2canvas renders at A4 width (1240px) which would give the map a
+    // different width, causing tiles and dots to shift. A static overlay freezes the
+    // exact pixel layout the user sees on screen.
+    var mapEls=Array.from(el.querySelectorAll(".leaflet-container"));
+    var mapOverlays=[];
+
+    var doMainCapture=function(){
+      // Unconstrain the section element itself
+      var elSaved={ov:el.style.overflow,h:el.style.height,mh:el.style.maxHeight};
+      el.style.overflow="visible";el.style.height="auto";el.style.maxHeight="none";
+      // Find map containers so we can skip their internals during style changes
+      var mapContainers=Array.from(el.querySelectorAll(".leaflet-container,[id='crime-map']"));
+      var isInsideMap=function(node){for(var m=0;m<mapContainers.length;m++){if(mapContainers[m].contains(node))return true}return false};
+      var els=el.querySelectorAll("*");var saved=[];
+      for(var i=0;i<els.length;i++){
+        var st=els[i].style;
+        var cs=window.getComputedStyle(els[i]);
+        saved.push({ov:st.overflow,te:st.textOverflow,ws:st.whiteSpace,mh:st.maxHeight,h:st.height});
+        if(isInsideMap(els[i]))continue;
+        if(cs.overflow==="hidden"||cs.overflow==="auto"||cs.overflow==="scroll")st.overflow="visible";
+        if(cs.textOverflow==="ellipsis")st.textOverflow="clip";
+        if(cs.whiteSpace==="nowrap")st.whiteSpace="normal";
+        if(cs.maxHeight!=="none"&&cs.maxHeight!=="")st.maxHeight="none";
       }
-      trimH=Math.min(trimH+80,canvas.height);
-      var trimmed=document.createElement("canvas");trimmed.width=canvas.width;trimmed.height=trimH;
-      trimmed.getContext("2d").drawImage(canvas,0,0);
-      var pageH=Math.round(A4W*A4RATIO)*SCALE;
-      var totalH=trimmed.height;
-      var pageCount=Math.ceil(totalH/pageH);
-      // Find nearest clean break (whitest row) within 300px above a page boundary
-      var ctx3=trimmed.getContext("2d");
-      var findBreak=function(yTarget){
-        var best=yTarget;var bestWhite=-1;
-        for(var y=yTarget;y>Math.max(yTarget-300,0);y-=2){
-          var row=ctx3.getImageData(0,y,trimmed.width,1).data;
-          var wc=0;for(var q=0;q<row.length;q+=4){if(row[q]>238&&row[q+1]>238&&row[q+2]>238)wc++;}
-          if(wc>bestWhite){bestWhite=wc;best=y;}
-          if(wc===trimmed.width)break;
-        }
-        return best;
+      void el.offsetHeight;
+      var captureH=Math.min(Math.max(el.scrollHeight*4,6000)+2000,15000);
+      var restore=function(){
+        el.style.overflow=elSaved.ov;el.style.height=elSaved.h;el.style.maxHeight=elSaved.mh;
+        hdrs.forEach(function(h){h.style.display=""});
+        for(var j=0;j<els.length;j++){var s2=els[j].style;var o=saved[j];s2.overflow=o.ov;s2.textOverflow=o.te;s2.whiteSpace=o.ws;s2.maxHeight=o.mh;s2.height=o.h}
+        // Remove map snapshot overlays
+        mapOverlays.forEach(function(mo){try{mo.el.removeChild(mo.ov)}catch(e){}});
       };
-      if(pageCount<=1){
-        // Single page — copy to clipboard for direct paste into Word
-        trimmed.toBlob(function(blob){
-          try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
-          catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
-        },"image/png");
-      }else{
-        // Multi-page — slice into A4 pages at smart break points (avoid cutting through cards)
-        var breaks=[0];
-        for(var p=1;p<pageCount;p++){breaks.push(findBreak(p*pageH));}
-        breaks.push(totalH);
-        var srcs=[];
-        for(var p=0;p<pageCount;p++){
-          var y0=breaks[p];var y1=breaks[p+1];var sliceH=y1-y0;
-          var pc=document.createElement("canvas");pc.width=trimmed.width;pc.height=sliceH;
-          pc.getContext("2d").drawImage(trimmed,0,y0,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
-          srcs.push(pc.toDataURL("image/png"));
+      var A4W=1200;var A4RATIO=210/160;var SCALE=2;
+      html2canvas(el,{useCORS:true,scale:SCALE,backgroundColor:"#fff",logging:false,width:A4W,height:captureH,windowWidth:A4W+40,scrollX:0,scrollY:0}).then(function(canvas){
+        restore();
+        var trimH=canvas.height;
+        var ctx2=canvas.getContext("2d");
+        outer:for(var y=canvas.height-40;y>0;y-=40){
+          var chunk=ctx2.getImageData(0,y,canvas.width,40).data;
+          for(var p=0;p<chunk.length;p+=4){if(chunk[p]<252||chunk[p+1]<252||chunk[p+2]<252){trimH=y+40;break outer;}}
         }
-        var win=window.open("","_blank");
-        var ph="<!DOCTYPE html><html><head><meta charset='utf-8'><title>Page Captures</title>";
-        ph+="<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#555;margin:0;padding:0}";
-        ph+=".toolbar{background:#1B2A4A;color:#fff;padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}";
-        ph+=".toolbar b{font-size:15px}.hint{color:#94a3b8;font-size:11px}";
-        ph+=".pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px}";
-        ph+=".page{background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);width:100%;max-width:920px}";
-        ph+=".page-bar{background:#1B2A4A;color:#fff;padding:8px 14px;font-size:12px;display:flex;justify-content:space-between;align-items:center}";
-        ph+=".page img{display:block;width:100%;height:auto}";
-        ph+=".btn{background:#4472C4;color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;margin-left:6px;text-decoration:none;display:inline-block;line-height:1.6}";
-        ph+=".btn:hover{background:#2d5ca8}.copied{background:#70AD47!important}</style>";
-        ph+="</head><body>";
-        ph+="<div class='toolbar'><b>\ud83d\udcc4 "+pageCount+" page"+(pageCount>1?"s":"")+"</b><span class='hint'>Each image = one A4 page &nbsp;\u2022&nbsp; Click \u2018Copy\u2019 then Ctrl+V into Word &nbsp;\u2022&nbsp; Or right-click any image \u2192 Save image as</span></div>";
-        ph+="<div class='pages'>";
-        srcs.forEach(function(src,i){
-          ph+="<div class='page'><div class='page-bar'><span>Page "+(i+1)+" of "+pageCount+"</span><span>";
-          ph+="<button class='btn' id='cb"+i+"' onclick='cp("+i+")'>&#128203; Copy</button>";
-          ph+="<a class='btn' href='"+src+"' download='capture-page-"+(i+1)+".png'>&#128190; Save</a></span></div>";
-          ph+="<img id='img"+i+"' src='"+src+"'/></div>";
-        });
-        ph+="</div><script>function cp(i){var img=document.getElementById('img'+i);var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);c.toBlob(function(b){navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){var btn=document.getElementById('cb'+i);btn.textContent='\u2713 Copied';btn.className='btn copied';setTimeout(function(){btn.textContent='\ud83d\udccb Copy';btn.className='btn'},2000)}).catch(function(){alert('Copy blocked \u2014 right-click image and Save As')})},'image/png')}<\/script>";
-        ph+="</body></html>";
-        win.document.write(ph);win.document.close();
-        showToast("Opened "+pageCount+" A4 pages \u2014 copy or save each");
-      }
-    }).catch(function(){restore();showToast("Capture failed")});
+        trimH=Math.min(trimH+80,canvas.height);
+        var trimmed=document.createElement("canvas");trimmed.width=canvas.width;trimmed.height=trimH;
+        trimmed.getContext("2d").drawImage(canvas,0,0);
+        var pageH=Math.round(A4W*A4RATIO)*SCALE;
+        var totalH=trimmed.height;
+        var pageCount=Math.ceil(totalH/pageH);
+        var ctx3=trimmed.getContext("2d");
+        var findBreak=function(yTarget){
+          var best=yTarget;var bestWhite=-1;
+          for(var y=yTarget;y>Math.max(yTarget-300,0);y-=2){
+            var row=ctx3.getImageData(0,y,trimmed.width,1).data;
+            var wc=0;for(var q=0;q<row.length;q+=4){if(row[q]>238&&row[q+1]>238&&row[q+2]>238)wc++;}
+            if(wc>bestWhite){bestWhite=wc;best=y;}
+            if(wc===trimmed.width)break;
+          }
+          return best;
+        };
+        if(pageCount<=1){
+          trimmed.toBlob(function(blob){
+            try{navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){showToast(toastMsg||"Captured \u2014 paste into Word (Ctrl+V)")})}
+            catch(e2){var url=trimmed.toDataURL("image/png");var win=window.open("");win.document.write("<p style='font-family:sans-serif;padding:16px'>Right-click image \u2192 Save As \u2192 insert into Word.</p><img src='"+url+"' style='max-width:100%'/>")}
+          },"image/png");
+        }else{
+          var breaks=[0];
+          for(var p=1;p<pageCount;p++){breaks.push(findBreak(p*pageH));}
+          breaks.push(totalH);
+          var srcs=[];
+          for(var p=0;p<pageCount;p++){
+            var y0=breaks[p];var y1=breaks[p+1];var sliceH=y1-y0;
+            var pc=document.createElement("canvas");pc.width=trimmed.width;pc.height=sliceH;
+            pc.getContext("2d").drawImage(trimmed,0,y0,trimmed.width,sliceH,0,0,trimmed.width,sliceH);
+            srcs.push(pc.toDataURL("image/png"));
+          }
+          var win=window.open("","_blank");
+          var ph="<!DOCTYPE html><html><head><meta charset='utf-8'><title>Page Captures</title>";
+          ph+="<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#555;margin:0;padding:0}";
+          ph+=".toolbar{background:#1B2A4A;color:#fff;padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}";
+          ph+=".toolbar b{font-size:15px}.hint{color:#94a3b8;font-size:11px}";
+          ph+=".pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px}";
+          ph+=".page{background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.5);width:100%;max-width:920px}";
+          ph+=".page-bar{background:#1B2A4A;color:#fff;padding:8px 14px;font-size:12px;display:flex;justify-content:space-between;align-items:center}";
+          ph+=".page img{display:block;width:100%;height:auto}";
+          ph+=".btn{background:#4472C4;color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;margin-left:6px;text-decoration:none;display:inline-block;line-height:1.6}";
+          ph+=".btn:hover{background:#2d5ca8}.copied{background:#70AD47!important}</style>";
+          ph+="</head><body>";
+          ph+="<div class='toolbar'><b>\ud83d\udcc4 "+pageCount+" page"+(pageCount>1?"s":"")+"</b><span class='hint'>Each image = one A4 page &nbsp;\u2022&nbsp; Click \u2018Copy\u2019 then Ctrl+V into Word &nbsp;\u2022&nbsp; Or right-click any image \u2192 Save image as</span></div>";
+          ph+="<div class='pages'>";
+          srcs.forEach(function(src,i){
+            ph+="<div class='page'><div class='page-bar'><span>Page "+(i+1)+" of "+pageCount+"</span><span>";
+            ph+="<button class='btn' id='cb"+i+"' onclick='cp("+i+")'>&#128203; Copy</button>";
+            ph+="<a class='btn' href='"+src+"' download='capture-page-"+(i+1)+".png'>&#128190; Save</a></span></div>";
+            ph+="<img id='img"+i+"' src='"+src+"'/></div>";
+          });
+          ph+="</div><script>function cp(i){var img=document.getElementById('img'+i);var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);c.toBlob(function(b){navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){var btn=document.getElementById('cb'+i);btn.textContent='\u2713 Copied';btn.className='btn copied';setTimeout(function(){btn.textContent='\ud83d\udccb Copy';btn.className='btn'},2000)}).catch(function(){alert('Copy blocked \u2014 right-click image and Save As')})},'image/png')}<\/script>";
+          ph+="</body></html>";
+          win.document.write(ph);win.document.close();
+          showToast("Opened "+pageCount+" A4 pages \u2014 copy or save each");
+        }
+      }).catch(function(){restore();showToast("Capture failed")});
+    };
+
+    // If there are Leaflet maps, snapshot them first then proceed
+    if(mapEls.length>0){
+      var snapsDone=0;
+      mapEls.forEach(function(mapEl){
+        html2canvas(mapEl,{useCORS:true,scale:2,logging:false,backgroundColor:null}).then(function(mc){
+          var ov=document.createElement("div");
+          ov.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;z-index:100000;";
+          var img=document.createElement("img");
+          img.src=mc.toDataURL("image/png");
+          img.style.cssText="width:100%;height:100%;display:block;";
+          ov.appendChild(img);
+          mapEl.appendChild(ov);
+          mapOverlays.push({el:mapEl,ov:ov});
+          snapsDone++;if(snapsDone===mapEls.length)doMainCapture();
+        }).catch(function(){snapsDone++;if(snapsDone===mapEls.length)doMainCapture()});
+      });
+    }else{doMainCapture()}
   };
 
   // Load html2canvas on demand and capture an element
