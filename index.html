@@ -256,225 +256,10 @@ const TAL={visibility:"Visibility",status:"Status",access:"Access",collateral:"C
 const IC=["disruption","fatalities","reputation","financial","property"];
 const ICL={disruption:"Disruption",fatalities:"Fatalities",reputation:"Reputation",financial:"Financial",property:"Property"};
 
-const DEF_ASSETS=[
-  {id:1,cat:"Human Assets",desc:"Residents, Staff, Contractors, Visitors",sc:{}},
-  {id:2,cat:"Physical - IT/Comms",desc:"MER, SER, Network Infrastructure",sc:{}},
-  {id:3,cat:"Physical - MEP",desc:"Power, HV switchgear, Emergency systems",sc:{}},
-  {id:4,cat:"Physical - Safety",desc:"Fire suppression, Smoke control",sc:{}},
-  {id:5,cat:"Information",desc:"Financial data, IP, Personal info",sc:{}},
-  {id:6,cat:"Physical - HVAC",desc:"AHUs, Ventilation, Water supply",sc:{}},
-  {id:7,cat:"Physical - Equipment",desc:"Computers, Laptops, Mobiles",sc:{}},
-  {id:8,cat:"Physical - Vehicles",desc:"Vehicles, e-bikes, cycles",sc:{}},
-];
-const ASSET_PRESETS={
-  Residential:[
-    {cat:"Human Assets",desc:"Residents, Families, Visitors, Guests"},
-    {cat:"Human Assets - Staff",desc:"Concierge, Facilities Management, Security, Cleaning"},
-    {cat:"Human Assets - Contractors",desc:"Maintenance Contractors, Delivery Personnel"},
-    {cat:"Physical - Building",desc:"Residential building fabric, Communal areas, Lobbies"},
-    {cat:"Physical - Apartments",desc:"Private dwellings, Balconies, Roof terraces"},
-    {cat:"Physical - IT/Comms",desc:"MER, SER, Comms Rooms, Network Infrastructure"},
-    {cat:"Physical - MEP Electrical",desc:"Main power supply, Distribution boards, Emergency lighting"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Suppression, Smoke control, Sprinklers"},
-    {cat:"Physical - HVAC/Plumbing",desc:"AHUs, Ventilation, Water supply, Hot water systems"},
-    {cat:"Physical - Vertical Transport",desc:"Lifts, Lift motor rooms, Stair cores"},
-    {cat:"Physical - Bicycle Storage",desc:"Bicycle stores, E-bike charging points"},
-    {cat:"Physical - Vehicles",desc:"Resident vehicles, Visitor parking, E-bikes, Scooters"},
-    {cat:"Physical - Personal",desc:"Personal belongings, Parcels, Mail"},
-    {cat:"Physical - Amenities",desc:"Gym, Communal gardens, Podium, Play areas"},
-    {cat:"Information Assets",desc:"Resident personal data, Financial records, Access credentials"},
-    {cat:"Intangible - Reputation",desc:"Brand, Stakeholder confidence, Resident satisfaction"},
-  ],
-  Commercial:[
-    {cat:"Human Assets",desc:"Office staff, Management, Visitors, Clients"},
-    {cat:"Human Assets - Support",desc:"Reception, Security, FM, Cleaning, Catering"},
-    {cat:"Human Assets - Contractors",desc:"IT Contractors, Maintenance, Delivery Personnel"},
-    {cat:"Physical - Building",desc:"Office building fabric, Reception, Lobbies, Common parts"},
-    {cat:"Physical - Office Space",desc:"Open plan offices, Meeting rooms, Executive suites"},
-    {cat:"Physical - IT/Comms",desc:"MER, SER, Comms Rooms, Server Rooms, Network switches"},
-    {cat:"Physical - MEP Electrical",desc:"Main power, UPS, Generator, Distribution boards"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Suppression, Smoke ventilation"},
-    {cat:"Physical - HVAC",desc:"AHUs, FCUs, Ventilation, BMS"},
-    {cat:"Physical - Vertical Transport",desc:"Lifts, Escalators, Stair cores"},
-    {cat:"Physical - Vehicles",desc:"Staff vehicles, Visitor parking, Loading bay"},
-    {cat:"Physical - Equipment",desc:"Computers, Monitors, Laptops, Printers, Mobile devices"},
-    {cat:"Information Assets",desc:"Business data, Client information, Financial records, IP"},
-    {cat:"Information - Digital",desc:"Email systems, Cloud storage, CRM, ERP"},
-    {cat:"Intangible - Reputation",desc:"Corporate brand, Client confidence, Market position"},
-    {cat:"Intangible - Operations",desc:"Business continuity, Revenue generation, Service delivery"},
-  ],
-  Transport:[
-    {cat:"Human Assets - Passengers",desc:"Commuters, Travellers, Tourists"},
-    {cat:"Human Assets - Staff",desc:"Station staff, Drivers, Control room operators, Security"},
-    {cat:"Human Assets - Contractors",desc:"Maintenance crews, Cleaning, Retail staff"},
-    {cat:"Physical - Infrastructure",desc:"Station buildings, Platforms, Concourses, Ticket halls"},
-    {cat:"Physical - Track/Routes",desc:"Rail lines, Bus lanes, Tunnels, Bridges, Signals"},
-    {cat:"Physical - Rolling Stock",desc:"Trains, Buses, Trams, Depot facilities"},
-    {cat:"Physical - IT/Comms",desc:"Control rooms, Signalling systems, PA systems, SCADA"},
-    {cat:"Physical - MEP",desc:"Traction power, Ventilation, Tunnel extraction, Emergency power"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Emergency lighting, Evacuation systems"},
-    {cat:"Physical - Retail",desc:"Station retail units, Kiosks, Vending"},
-    {cat:"Physical - Vehicles",desc:"Staff vehicles, Emergency vehicles, Maintenance fleet"},
-    {cat:"Information Assets",desc:"Passenger data, Ticketing data, CCTV footage, Operational data"},
-    {cat:"Intangible - Operations",desc:"Service continuity, Timetable reliability, Network resilience"},
-    {cat:"Intangible - Reputation",desc:"Operator brand, Public confidence, Regulator confidence"},
-    {cat:"CNI Assets",desc:"Critical National Infrastructure designation, Interdependencies"},
-  ],
-  Hotel:[
-    {cat:"Human Assets - Guests",desc:"Hotel guests, Conference delegates, Event attendees"},
-    {cat:"Human Assets - Staff",desc:"Reception, Housekeeping, F&B, Management, Security"},
-    {cat:"Human Assets - Contractors",desc:"Maintenance, Agency staff, Event suppliers, Delivery"},
-    {cat:"Physical - Building",desc:"Hotel building fabric, Reception, Lobbies, Public areas"},
-    {cat:"Physical - Guest Rooms",desc:"Bedrooms, Suites, Corridors, Lift lobbies"},
-    {cat:"Physical - F&B",desc:"Restaurant, Bar, Kitchen, Banqueting, Room service"},
-    {cat:"Physical - Conference",desc:"Meeting rooms, Ballroom, AV equipment, Business centre"},
-    {cat:"Physical - Leisure",desc:"Spa, Pool, Gym, Treatment rooms"},
-    {cat:"Physical - IT/Comms",desc:"MER, SER, PMS Server, PBX, Wi-Fi infrastructure"},
-    {cat:"Physical - MEP",desc:"Power, Boilers, Chillers, Generators, BMS"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Suppression, Sprinklers, Emergency lighting"},
-    {cat:"Physical - Vehicles",desc:"Guest vehicles, Valet parking, Loading bay"},
-    {cat:"Physical - Valuables",desc:"Safe deposit, Cash handling, Minibar stock, Linen"},
-    {cat:"Information Assets",desc:"Guest PII, Payment card data (PCI-DSS), Loyalty data, CCTV"},
-    {cat:"Intangible - Reputation",desc:"Brand, Star rating, Guest reviews, Investor confidence"},
-    {cat:"Intangible - Operations",desc:"Occupancy rates, Revenue per room, Service standards"},
-  ],
-  Hospital:[
-    {cat:"Human Assets - Patients",desc:"Inpatients, Outpatients, A&E attendees, Maternity"},
-    {cat:"Human Assets - Staff",desc:"Clinical staff, Nurses, Doctors, Surgeons, Allied health"},
-    {cat:"Human Assets - Support",desc:"Admin, Porters, Catering, Cleaning, Security, Volunteers"},
-    {cat:"Physical - Clinical",desc:"Wards, Operating theatres, ICU, A&E, Outpatient clinics"},
-    {cat:"Physical - Diagnostics",desc:"Imaging (MRI, CT, X-ray), Pathology labs, Pharmacy"},
-    {cat:"Physical - Building",desc:"Hospital building fabric, Corridors, Waiting areas, Reception"},
-    {cat:"Physical - IT/Comms",desc:"MER, SER, Clinical systems servers, Network infrastructure"},
-    {cat:"Physical - Medical Equipment",desc:"Ventilators, Monitors, Surgical equipment, Imaging"},
-    {cat:"Physical - MEP Critical",desc:"Main power, Generator (life safety), Medical gas, UPS"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Compartmentation, Smoke control, Sprinklers"},
-    {cat:"Physical - HVAC Critical",desc:"Theatre ventilation, Isolation room pressure, Pharmacy HVAC"},
-    {cat:"Physical - Pharmacy/Store",desc:"Drug storage, Controlled substances, Blood bank, Supplies"},
-    {cat:"Physical - Vehicles",desc:"Ambulances, Staff parking, Patient transport, Helicopter pad"},
-    {cat:"Information Assets",desc:"Patient records (NHS), Clinical data, Staff records, Research"},
-    {cat:"Intangible - Operations",desc:"Clinical service continuity, Patient safety, Care quality"},
-    {cat:"Intangible - Reputation",desc:"Trust reputation, CQC rating, Public confidence"},
-  ],
-  "Schools/University":[
-    {cat:"Human Assets - Students",desc:"Pupils, Students, Sixth formers, Postgraduate researchers"},
-    {cat:"Human Assets - Staff",desc:"Teachers, Lecturers, Teaching assistants, Admin, Head teacher"},
-    {cat:"Human Assets - Support",desc:"Caretakers, Cleaners, Kitchen staff, IT technicians, Security"},
-    {cat:"Human Assets - Visitors",desc:"Parents, Carers, Governors, Inspectors, Contractors"},
-    {cat:"Physical - Teaching Spaces",desc:"Classrooms, Lecture halls, Laboratories, Workshops, Studios"},
-    {cat:"Physical - Building",desc:"School building fabric, Corridors, Assembly hall, Dining hall"},
-    {cat:"Physical - Admin & Offices",desc:"Head teacher office, Staff room, Reception, Admin offices"},
-    {cat:"Physical - IT/Comms",desc:"Server room, IT suite, Network infrastructure, Wi-Fi"},
-    {cat:"Physical - Sports & External",desc:"Sports hall, Playing fields, Playground, MUGA, Swimming pool"},
-    {cat:"Physical - MEP",desc:"Main power supply, Boilers, HVAC, Emergency lighting"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Fire alarm, Sprinklers, Emergency exits"},
-    {cat:"Physical - Specialist",desc:"Science labs, Chemical stores, DT workshops, Art rooms, Kitchen"},
-    {cat:"Physical - Vehicles",desc:"Staff parking, Visitor parking, Minibuses, Bicycle storage"},
-    {cat:"Information Assets",desc:"Student records, Safeguarding data, Exam papers, Staff records, SEND data"},
-    {cat:"Intangible - Reputation",desc:"Ofsted/Inspection rating, Community reputation, Parental confidence"},
-    {cat:"Intangible - Operations",desc:"Educational continuity, Exam delivery, Safeguarding obligations"},
-  ],
-  Datacentre:[
-    {cat:"Human Assets",desc:"Operations staff, Engineers, Security, Management"},
-    {cat:"Human Assets - Contractors",desc:"IT engineers, Cabling, Maintenance, Auditors"},
-    {cat:"Physical - IT Infrastructure",desc:"Server racks, Network switches, Routers, Firewalls"},
-    {cat:"Physical - Storage",desc:"SAN/NAS arrays, Backup systems, Tape libraries"},
-    {cat:"Physical - Building",desc:"Data hall, Meet-me rooms, Loading dock, Offices"},
-    {cat:"Physical - Power Critical",desc:"HV/LV switchgear, Transformers, UPS, Generators, PDUs"},
-    {cat:"Physical - Cooling Critical",desc:"CRAC/CRAH units, Chillers, Cooling towers, Hot/cold aisle"},
-    {cat:"Physical - Fire Suppression",desc:"Gas suppression (FM200/Novec), VESDA, Fire detection"},
-    {cat:"Physical - Cabling",desc:"Fibre optic, Copper, Cable trays, Patch panels"},
-    {cat:"Physical - Security Systems",desc:"CCTV, Access control, Mantrap, Perimeter detection"},
-    {cat:"Physical - Fuel",desc:"Diesel storage, Fuel delivery infrastructure"},
-    {cat:"Information Assets - Data",desc:"Client data, Customer databases, Financial transactions"},
-    {cat:"Information Assets - Connectivity",desc:"Internet links, Cross-connects, Carrier neutral"},
-    {cat:"Intangible - SLAs",desc:"Uptime guarantees (99.999%), SLA commitments, Tier rating"},
-    {cat:"Intangible - Reputation",desc:"Client confidence, Certification status, Market position"},
-    {cat:"CNI Assets",desc:"Critical National Infrastructure designation if applicable"},
-  ],
-  Government:[
-    {cat:"Human Assets - Public",desc:"Citizens, Visitors, Applicants, Service users"},
-    {cat:"Human Assets - Staff",desc:"Civil servants, Elected officials, Ministers, Advisors"},
-    {cat:"Human Assets - Security",desc:"Security staff, Police liaison, Counter-terrorism"},
-    {cat:"Physical - Building",desc:"Government building fabric, Public areas, Reception"},
-    {cat:"Physical - Secure Areas",desc:"Restricted offices, Briefing rooms, SCIFs, Archives"},
-    {cat:"Physical - IT/Comms",desc:"Classified networks, MER, SER, Secure comms rooms"},
-    {cat:"Physical - MEP",desc:"Power, Generator, HVAC, BMS"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection, Suppression, Emergency systems"},
-    {cat:"Physical - Vehicles",desc:"Official vehicles, Staff parking, Secure compound"},
-    {cat:"Physical - Mail/Post",desc:"Mail room, Screening equipment, Post handling"},
-    {cat:"Information - Classified",desc:"SECRET/TOP SECRET documents, Policy papers, Intelligence"},
-    {cat:"Information - Personal",desc:"Citizen data, Benefits records, Tax records, Immigration"},
-    {cat:"Information - Operational",desc:"Building plans, Security protocols, Emergency procedures"},
-    {cat:"Intangible - Operations",desc:"Public service continuity, Democratic function"},
-    {cat:"Intangible - Reputation",desc:"Public trust, Ministerial confidence, Media profile"},
-    {cat:"CNI Assets",desc:"Critical National Infrastructure, Continuity of government"},
-  ],
-  Masterplan:[
-    {cat:"Human Assets - Residents",desc:"Residents across multiple buildings and tenures"},
-    {cat:"Human Assets - Workers",desc:"Office staff, Retail staff, F&B, Service industry"},
-    {cat:"Human Assets - Visitors",desc:"Shoppers, Tourists, Event attendees, Public"},
-    {cat:"Human Assets - Support",desc:"FM, Security, Estate management, Cleaning, Maintenance"},
-    {cat:"Physical - Residential Buildings",desc:"Apartment buildings, Townhouses, Affordable housing"},
-    {cat:"Physical - Commercial Buildings",desc:"Office buildings, Co-working, Flexible workspace"},
-    {cat:"Physical - Retail/F&B",desc:"Retail units, Restaurants, Cafes, Markets"},
-    {cat:"Physical - Public Realm",desc:"Parks, Squares, Green space, Play areas, Water features"},
-    {cat:"Physical - Infrastructure",desc:"Roads, Bridges, Utilities, Substations, District heating"},
-    {cat:"Physical - IT/Comms",desc:"Estate-wide network, MERs, SERs, Smart city systems"},
-    {cat:"Physical - MEP Estate",desc:"District power, Water, Gas, Waste management"},
-    {cat:"Physical - Safety Systems",desc:"Fire detection per building, Estate-wide emergency systems"},
-    {cat:"Physical - Transport",desc:"Car parks, Cycle hubs, EV charging, Bus stops, Station"},
-    {cat:"Physical - Security Systems",desc:"Estate CCTV, Access control, HVM, Control room"},
-    {cat:"Information Assets",desc:"Resident data, Tenant data, Estate management data, CCTV"},
-    {cat:"Intangible - Placemaking",desc:"Brand, Community identity, Desirability, Land value"},
-  ],
-};
-const DEF_THREATS=[
-  // Terrorism threats first
-  {id:1,n:"VBIED",d:"Vehicle Borne IED",cat:"Terrorism"},
-  {id:2,n:"PBIED",d:"Person Borne IED",cat:"Terrorism"},
-  {id:3,n:"IED",d:"Improvised Explosive Device",cat:"Terrorism"},
-  {id:4,n:"IED-Drone",d:"Drone-delivered device",cat:"Terrorism"},
-  {id:5,n:"Mail/Parcel Threat",d:"Explosive/toxic mail or parcel",cat:"Terrorism"},
-  {id:6,n:"CBR",d:"Chemical/Bio/Radiological attack",cat:"Terrorism"},
-  {id:7,n:"MTFA",d:"Marauding Terrorist Firearm Attack",cat:"Terrorism"},
-  {id:8,n:"MTA",d:"Marauding Terrorist Attack (bladed)",cat:"Terrorism"},
-  {id:9,n:"VAAW",d:"Vehicle as a Weapon",cat:"Terrorism"},
-  // Crime threats
-  {id:10,n:"Cybercrime",d:"IT/OT/IoT targeting",cat:"Crime"},
-  {id:11,n:"KRE",d:"Kidnap/Ransom/Extortion",cat:"Crime"},
-  {id:12,n:"Violence & Sexual",d:"Violence and sexual offending",cat:"Crime"},
-  {id:13,n:"SOC",d:"Serious Organised Crime",cat:"Crime"},
-  {id:14,n:"Info Theft",d:"Information theft",cat:"Crime"},
-  {id:15,n:"Arson",d:"Deliberate fire",cat:"Crime"},
-  {id:16,n:"Insider Threat",d:"Staff/contractor misuse",cat:"Crime"},
-  {id:17,n:"Burglary",d:"Unlawful entry/theft",cat:"Crime"},
-  {id:18,n:"Vehicle Crime",d:"Theft of/from vehicles",cat:"Crime"},
-  {id:19,n:"Theft",d:"Asset deprivation (CRAVED)",cat:"Crime"},
-  {id:20,n:"Theft from Person",d:"Personal effects theft",cat:"Crime"},
-  {id:21,n:"Public Order",d:"Protests/direct action/civil action",cat:"Crime"},
-  {id:22,n:"ASB",d:"Anti-Social Behaviour",cat:"Crime"},
-  {id:23,n:"Criminal Damage",d:"Vandalism/criminal damage",cat:"Crime"},
-  {id:24,n:"Trespass",d:"Unauthorised access to land/property",cat:"Crime"},
-].map(t=>({...t,cap:null,int:null}));
-
-const THREAT_PRESETS={
-  Residential:["VBIED","PBIED","IED","MTA","VAAW","Violence & Sexual","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","ASB","Criminal Damage","Trespass"],
-  Commercial:["VBIED","PBIED","IED","MTFA","MTA","VAAW","Cybercrime","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Theft","Public Order","ASB","Criminal Damage","Trespass"],
-  Transport:["VBIED","PBIED","IED","IED-Drone","CBR","MTFA","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Arson","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  Hotel:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","ASB","Criminal Damage","Trespass"],
-  Hospital:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","Info Theft","Arson","Insider Threat","Burglary","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  "Schools/University":["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","Info Theft","Arson","Insider Threat","Burglary","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  Datacentre:["VBIED","PBIED","IED","IED-Drone","VAAW","Cybercrime","SOC","Info Theft","Arson","Insider Threat","Burglary","Criminal Damage","Trespass"],
-  Government:["VBIED","PBIED","IED","IED-Drone","Mail/Parcel Threat","CBR","MTFA","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Public Order","ASB","Trespass"],
-  Masterplan:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-};
-
-// Compute unique asset categories across all presets (for category-level linking)
-const UNIQUE_ASSET_CATEGORIES=(function(){var r={};Object.keys(ASSET_PRESETS).forEach(function(p){ASSET_PRESETS[p].forEach(function(a){if(!r[a.cat])r[a.cat]={cat:a.cat,desc:a.desc,presets:[]};if(!r[a.cat].presets.includes(p))r[a.cat].presets.push(p)})});return r})();
+const DEF_ASSETS=[];
 
 // Migrate linkedAssetSets from preset names to category names
-function migrateLinkedAssets(db){return db.map(function(t){var s=t.linkedAssetSets||[];if(s.length===0)return t;var migrated=[];s.forEach(function(v){if(ASSET_PRESETS[v]){ASSET_PRESETS[v].forEach(function(a){if(!migrated.includes(a.cat))migrated.push(a.cat)})}else{if(!migrated.includes(v))migrated.push(v)}});return{...t,linkedAssetSets:migrated}})}
+function migrateLinkedAssets(db,assetPresets){assetPresets=assetPresets||{};return db.map(function(t){var s=t.linkedAssetSets||[];if(s.length===0)return t;var migrated=[];s.forEach(function(v){if(assetPresets[v]){assetPresets[v].forEach(function(a){if(!migrated.includes(a.cat))migrated.push(a.cat)})}else{if(!migrated.includes(v))migrated.push(v)}});return{...t,linkedAssetSets:migrated}})}
 
 function avg(a){const v=a.filter(x=>x!=null&&x>0);return v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):null}
 function getRR(l,i){return(l&&i)?RM[5-l][i-1]:null}
@@ -527,163 +312,18 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
   {id:"settings",l:"Settings",n:"16"}];
 
 
-// ============================================================
-// THREAT LIBRARY — reference database of threat types
-// ============================================================
-const DEFAULT_THREAT_DB=[
-  {id:"td_vbied",label:"VBIED / VAAW",category:"Terrorism",description:"Vehicle-borne improvised explosive device (VBIED) or vehicle used as a weapon (VAAW). Encompasses car/van bombs and deliberate vehicle ramming attacks against people or structures.",keywords:["vbied","vaaw","vehicle bomb"],linkedTreatmentIds:["vbied_vaaw"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
-  {id:"td_mta",label:"Marauding Terrorist Attack (MTA / MTFA)",category:"Terrorism",description:"Coordinated attack by one or more individuals using bladed weapons, firearms, or improvised weapons to cause mass casualties while moving through a location.",keywords:["mta","mtfa","marauding"],linkedTreatmentIds:["mta_mtfa"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Transport","Mixed-Use"]},
-  {id:"td_pbied",label:"PBIED",category:"Terrorism",description:"Person-borne improvised explosive device — a concealed explosive device carried or worn by an attacker, typically detonated in a crowded space.",keywords:["pbied","person borne"],linkedTreatmentIds:["pbied"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Transport","Mixed-Use"]},
-  {id:"td_ied",label:"IED / Drone / Mail Threat",category:"Terrorism",description:"Improvised explosive devices placed or delivered by hand, drone, or postal/courier service. Includes suspect packages and small unmanned aerial system (UAS) threats.",keywords:["ied","drone","mail","parcel"],linkedTreatmentIds:["ied"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
-  {id:"td_cbr",label:"CBR / CBRN Attack",category:"Terrorism",description:"Chemical, biological, radiological, or nuclear attack using toxic agents, pathogens, or radioactive material to cause harm, contamination, or mass disruption.",keywords:["cbr","cbrn","chemical","biological","radiological"],linkedTreatmentIds:["cbr"],linkedAssetSets:["Commercial","Government","Industrial","Transport"]},
-  {id:"td_burglary",label:"Burglary",category:"Crime",description:"Unlawful entry into premises with intent to steal, commit criminal damage, or cause harm. Includes forced entry, opportunistic access, and distraction techniques.",keywords:["burglary","break-in","unlawful entry"],linkedTreatmentIds:["burglary"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
-  {id:"td_theft",label:"Theft",category:"Crime",description:"Deprivation of assets without consent. Includes shoplifting, employee theft, and theft of high-value or CRAVED (Concealable, Removable, Available, Valuable, Enjoyable, Disposable) items.",keywords:["theft","stealing","shoplifting"],linkedTreatmentIds:["theft"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
-  {id:"td_vehicle_crime",label:"Vehicle Crime",category:"Crime",description:"Theft of vehicles, theft from vehicles, or criminal damage to vehicles. Includes carjacking, catalytic converter theft, and fuel theft.",keywords:["vehicle crime","car theft","van theft"],linkedTreatmentIds:["vehicle_crime"],linkedAssetSets:["Residential","Commercial","Retail","Healthcare","Industrial","Transport","Mixed-Use"]},
-  {id:"td_arson",label:"Arson",category:"Crime",description:"Deliberate ignition of fire to destroy property, cause harm, or create disruption. May be opportunistic or targeted.",keywords:["arson","deliberate fire","fire setting"],linkedTreatmentIds:["arson"],linkedAssetSets:["Residential","Commercial","Retail","Education","Industrial","Mixed-Use"]},
-  {id:"td_trespass",label:"Trespass",category:"Crime",description:"Unauthorised entry onto land or into buildings without permission. Ranges from opportunistic to deliberate (protest, reconnaissance, squatting).",keywords:["trespass","unauthorised access","squatting"],linkedTreatmentIds:["trespass"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Government","Industrial","Mixed-Use"]},
-  {id:"td_asb",label:"ASB / Criminal Damage",category:"Crime",description:"Anti-social behaviour, nuisance, intimidation, and deliberate damage to property. May escalate or create secondary risks.",keywords:["asb","anti-social","criminal damage","vandalism"],linkedTreatmentIds:["asb"],linkedAssetSets:["Residential","Commercial","Retail","Education","Transport","Mixed-Use"]},
-  {id:"td_public_order",label:"Public Order / Protest",category:"Crime",description:"Protests, demonstrations, riots, or direct action that may disrupt operations, damage property, or endanger people.",keywords:["public order","protest","riot","demonstration"],linkedTreatmentIds:["public_order"],linkedAssetSets:["Commercial","Retail","Government","Transport","Mixed-Use"]},
-  {id:"td_violence",label:"Violence / Sexual Offences",category:"Crime",description:"Physical assault, domestic violence, threats of violence, and sexual offences on or near the premises.",keywords:["violence","assault","sexual offence","harassment"],linkedTreatmentIds:["violence"],linkedAssetSets:["Residential","Commercial","Retail","Education","Healthcare","Transport","Mixed-Use"]},
-  {id:"td_cybercrime",label:"Cybercrime",category:"Crime",description:"Attacks on IT, OT, and IoT systems including ransomware, phishing, DDoS, network intrusion, and operational technology compromise.",keywords:["cyber","ransomware","phishing","hacking","it attack"],linkedTreatmentIds:["cybercrime"],linkedAssetSets:["Commercial","Retail","Education","Healthcare","Government","Industrial","Transport","Mixed-Use"]},
-  {id:"td_info_theft",label:"Information Theft",category:"Crime",description:"Theft or unauthorised disclosure of confidential, commercially sensitive, or personal data. Includes document theft, covert photography, and data exfiltration.",keywords:["information theft","data theft","espionage","data breach"],linkedTreatmentIds:["info_theft"],linkedAssetSets:["Commercial","Government","Healthcare","Industrial"]},
-  {id:"td_insider",label:"Insider Threat",category:"Crime",description:"Malicious or negligent actions by employees, contractors, or trusted individuals with authorised access. Includes sabotage, fraud, and data theft.",keywords:["insider","staff misconduct","disgruntled employee"],linkedTreatmentIds:["insider"],linkedAssetSets:["Commercial","Government","Healthcare","Industrial"]},
-  {id:"td_soc",label:"Serious Organised Crime",category:"Crime",description:"Organised criminal activity including drug supply, human trafficking, money laundering, and professional theft gangs targeting premises.",keywords:["soc","organised crime","gang","trafficking"],linkedTreatmentIds:["soc"],linkedAssetSets:["Commercial","Retail","Industrial","Transport","Mixed-Use"]},
-  {id:"td_kre",label:"Kidnap, Ransom & Extortion",category:"Crime",description:"Threats to individuals or organisations including kidnapping, ransom demands, product contamination threats, and extortion via digital or physical means.",keywords:["kidnap","ransom","extortion","hostage"],linkedTreatmentIds:["kre"],linkedAssetSets:["Commercial","Government","Retail"]}
-];
-
-// ============================================================
-// TREATMENT MEASURES DATABASE (5 categories)
-// ext_physical, ext_electronic, int_physical, int_electronic, procedures
-// ============================================================
-const DEFAULT_TREATMENT_DB=[
-  {id:"vbied_vaaw",label:"VBIED / VAAW",keywords:["vbied","vaaw"],
-   narrative:"The primary external treatment is establishing and enforcing vehicle standoff distance through hostile vehicle mitigation. The building perimeter must prevent unauthorised vehicle approach to the shell. Internal blast-resilient construction and laminated glazing reduce the consequence of detonation.",
-   ext_physical:["Hostile Vehicle Mitigation (HVM) \u2014 bollards, planters or rated barriers at the perimeter to enforce standoff distance","Anti-ram rated barriers at all vehicular entry points integrated with access control","Speed reduction measures on approach \u2014 chicanes, raised tables, surface changes","Vehicle search/inspection area at safe standoff with overwatch position","Reinforced collision/blast jackets to structural columns within vehicle reach","Laminated anti-blast glazing to facades facing vehicle approaches","Window film or sacrificial glazing to reduce fragmentation"],
-   ext_electronic:["ANPR at vehicle access points for identification and audit","CCTV covering all vehicle approaches and perimeter"],
-   int_physical:["Blast-resilient construction to reception and entrance lobbies"],
-   int_electronic:[],
-   procedures:["Blast analysis and standoff distance modelling to inform perimeter layout"]},
-  {id:"mta_mtfa",label:"MTA / MTFA",keywords:["mta","mtfa"],
-   narrative:"Marauding attack mitigation requires layered defences: early detection through surveillance outside the building, denial of entry through screening and access control at the threshold, internal compartmentalisation to limit attacker movement inside the building, and rehearsed lockdown procedures to protect occupants.",
-   ext_physical:["Clear sight lines across all external areas for early detection of hostile approach","Removal of concealment opportunities in landscaping, furniture and recessed areas","Hostile Vehicle Mitigation if the threat involves vehicle approach"],
-   ext_electronic:["External CCTV with behavioural analytics for loitering and hostile reconnaissance detection"],
-   int_physical:["Internal compartmentalisation \u2014 security-rated doors enabling zones to be isolated during an attack","Offices and meeting rooms with thumb-turn lockable doors for immediate shelter"],
-   int_electronic:["Lockdown capability activated from reception, security control room and distributed panic buttons","Weapons detection screening at main entry points","Internal CCTV at all corridors, stair cores and lift lobbies for real-time tracking"],
-   procedures:["Invacuation routes and designated safe havens within the building core","Lockdown procedures with regular rehearsal and testing programme","Hostile reconnaissance awareness training for all building users","Collaboration with Counter Terrorism Security Advisors (CTSA)","Communication cascade for rapid alert during an incident","SIA-licensed security operatives during occupied hours","Emergency communication system linking security, management and emergency services"]},
-  {id:"pbied",label:"PBIED",keywords:["pbied"],
-   narrative:"Person-borne IED mitigation focuses on detection at entry through screening and search, supported by personnel trained to identify suspicious behaviour. Internal blast resilience reduces the consequence if a device enters the building.",
-   ext_physical:["Clear external areas with minimal concealment for device placement","Search and screening regime at building entry points"],
-   ext_electronic:["Hostile reconnaissance detection through CCTV analytics and trained security personnel"],
-   int_physical:["Blast-resilient construction to reception and entrance lobby","Laminated glazing to entrance areas to reduce fragmentation"],
-   int_electronic:["Bag search policy and/or weapons/explosives detection at main entrances","Internal CCTV coverage of all public-facing areas and circulation","Visitor management \u2014 identification, sign-in, temporary pass, escort policy"],
-   procedures:["Staff trained to identify suspicious behaviour and unattended items","Suspicious item/package response procedures","Evacuation and invacuation drills specific to blast scenarios"]},
-  {id:"ied",label:"IED / Drone / Mail",keywords:["ied","mail","parcel","drone"],
-   narrative:"IED and postal threat treatment isolates incoming mail and deliveries from occupied areas with dedicated screening facilities.",
-   ext_physical:["Perimeter security preventing unauthorised access to building shell and service areas"],
-   ext_electronic:["CCTV analytics for detection of suspicious items and unattended packages","Counter-UAS detection and mitigation measures where drone delivery risk is assessed","Monitoring of airspace above site for unauthorised drone activity"],
-   int_physical:["Dedicated mail/post room physically separated from occupied areas","Receiving room with independent ventilation","Secure delivery holding area for parcels awaiting screening"],
-   int_electronic:["Mail screening equipment (X-ray) appropriate to threat level"],
-   procedures:["Mail screening procedures and trained personnel","Suspicious mail identification training for all staff handling deliveries","Delivery vehicle inspection and verification protocols","Response procedures for suspect packages"]},
-  {id:"cbr",label:"CBR",keywords:["cbr"],
-   narrative:"CBR treatment protects building occupants through secure air handling, detection at intake points, and rapid isolation.",
-   ext_physical:["Air intakes elevated and protected from ground-level interference","Perimeter controls preventing access to MEP infrastructure"],
-   ext_electronic:["CCTV coverage of building air intakes and ventilation access points"],
-   int_physical:["Sealed post room with independent ventilation"],
-   int_electronic:["HVAC zoning with rapid isolation and shutdown capability","CBR detection at air handling units where threat assessment requires"],
-   procedures:["CBR incident response procedures including shelter-in-place","Staff awareness training on recognising CBR indicators","Emergency services liaison on CBR response protocols"]},
-  {id:"burglary",label:"Burglary",keywords:["burglary"],
-   narrative:"Burglary treatment hardens the building shell outside through perimeter security and lighting, and inside through security-rated doors, windows, glazing and electronic detection to deter, delay and detect forced entry.",
-   ext_physical:["Security-rated perimeter fencing/walls at consistent height","Security-rated pedestrian boundary gates with self-closing mechanism","Dusk-to-dawn external lighting at all entries, service areas and parking","Defensive planting beneath windows and along vulnerable boundaries","Landscape maintained for sight lines \u2014 canopies above 2.2m, shrubs below 1m"],
-   ext_electronic:["External CCTV covering perimeter, entries, recessed areas and service bays"],
-   int_physical:["Security-tested external doorsets with multi-point locking and access control integration","Enhanced security glazing to all ground floor and accessible windows","Laminated glass with internal beading preventing external removal","Window opening restrictors on accessible windows","Fire escape doors alarmed, without external ironmongery"],
-   int_electronic:["Electronic access control at all external entry points with audit trail","Intruder alarm system with panic buttons and 24/7 monitoring","Door contacts with forced/left-open/tamper alarms on perimeter doors"],
-   procedures:[]},
-  {id:"theft",label:"Theft",keywords:["theft"],
-   narrative:"Theft treatment combines external surveillance and secure cycle parking outside the building, with access control and CCTV inside to remove opportunity.",
-   ext_physical:["Cycle stands to police-preferred specification in secure, lit, CCTV-covered enclosures","E-bike/e-scooter storage in fire-rated enclosure separated from building"],
-   ext_electronic:[],
-   int_physical:["Secure storage for high-value portable equipment"],
-   int_electronic:["CCTV in stair cores, lift lobbies and circulation areas","Access control preventing unauthorised floor-to-floor movement"],
-   procedures:[]},
-  {id:"vehicle_crime",label:"Vehicle Crime",keywords:["vehicle crime"],
-   narrative:"Vehicle crime treatment relies on surveillance, lighting and natural oversight of parking areas outside the building.",
-   ext_physical:["Well-lit parking with uniform illumination and no dark spots","Natural surveillance from occupied rooms into parking areas"],
-   ext_electronic:["Car park CCTV at all entry/exit points, aisles and pedestrian routes","ANPR at car park barriers"],
-   int_physical:[],int_electronic:[],procedures:[]},
-  {id:"arson",label:"Arson",keywords:["arson"],
-   narrative:"Arson treatment removes opportunity outside by securing combustible materials away from the building, and inside through comprehensive fire detection, suppression and compartmentation.",
-   ext_physical:["Refuse/bin storage lockable and positioned away from building exterior","External lighting to rear and service areas","No combustible material stored against building exterior walls"],
-   ext_electronic:[],
-   int_physical:["Fire detection system covering all areas including voids and risers","Sprinkler or suppression system","Fire compartmentation to limit spread","Smoke ventilation to protect escape routes","Letterbox fire protection where letter slots exist"],
-   int_electronic:[],procedures:[]},
-  {id:"trespass",label:"Trespass",keywords:["trespass"],
-   narrative:"Trespass treatment establishes clear territorial boundaries outside and layered access control inside to prevent unauthorised presence.",
-   ext_physical:["Perimeter demarcation through fencing, walls, landscaping and signage","Consistent perimeter boundary height","Clear 2m zone either side of boundary for surveillance"],
-   ext_electronic:["CCTV with out-of-hours intrusion detection analytics"],
-   int_physical:[],
-   int_electronic:["Electronic access control preventing unauthorised internal movement","Stair core and lift lobby access control at each level"],
-   procedures:[]},
-  {id:"asb",label:"ASB / Criminal Damage",keywords:["asb","criminal damage"],
-   narrative:"ASB and criminal damage treatment applies CPTED principles outside the building \u2014 surveillance, lighting and maintenance creating a well-managed environment that discourages antisocial behaviour.",
-   ext_physical:["CPTED principles \u2014 natural surveillance, defined ownership, active maintenance regime","Robust, securely fixed street furniture and hard landscaping","Anti-graffiti coating on vulnerable external surfaces","Dusk-to-dawn lighting with vandal-resistant fittings at height"],
-   ext_electronic:["External CCTV with recording for evidence and deterrence"],
-   int_physical:[],int_electronic:[],procedures:[]},
-  {id:"public_order",label:"Public Order",keywords:["public order"],
-   narrative:"Public order treatment combines physical crowd management measures outside the building with operational planning for escalation and continuity.",
-   ext_physical:["HVM measures that also control crowd movement","Clear pedestrian routes and defined public/private boundaries"],
-   ext_electronic:["External CCTV with wide-area coverage and recording"],
-   int_physical:[],int_electronic:[],
-   procedures:["Public order response plan coordinated with police","Escalation procedures for protest or demonstration activity","Business continuity plan for access disruption"]},
-  {id:"violence",label:"Violence / Sexual Offences",keywords:["violence"],
-   narrative:"Violence treatment eliminates concealed, unlit spaces outside where offending could occur, and provides panic alarms, access control and CCTV coverage inside the building.",
-   ext_physical:["Well-lit external areas with no concealment opportunities","Natural surveillance from occupied spaces to external areas"],
-   ext_electronic:["CCTV covering all pedestrian routes, entrances and car parks"],
-   int_physical:[],
-   int_electronic:["Internal CCTV in corridors, stair cores and isolated areas","Panic buttons at reception and public-facing positions","Controlled access preventing unauthorised individuals reaching occupied areas"],
-   procedures:["Staff trained on conflict de-escalation and personal safety","Lone worker policy and monitoring procedures","Incident recording and pattern analysis"]},
-  {id:"cybercrime",label:"Cybercrime",keywords:["cyber"],
-   narrative:"Cybercrime treatment protects digital assets through network architecture, monitoring and staff awareness. Physical security of IT spaces inside the building supports the electronic defences.",
-   ext_physical:[],ext_electronic:[],
-   int_physical:["Security-rated doorsets to server rooms, MER/SER and data storage"],
-   int_electronic:["Access control to IT infrastructure with full audit trail","Environmental monitoring in server rooms","Network segmentation isolating security, BMS and corporate networks","Intrusion detection and prevention systems","Encrypted storage and transmission for sensitive data","Endpoint protection with managed detection and response","Regular penetration testing and vulnerability assessments","Patch management for all systems including IoT and OT","Mobile device management and removable media controls"],
-   procedures:["Staff cyber awareness training with phishing simulations","Cyber incident response plan","Backup and disaster recovery tested regularly"]},
-  {id:"info_theft",label:"Information Theft",keywords:["info"],
-   narrative:"Information theft treatment combines physical security of storage areas inside the building with data handling policies, encryption and monitoring operationally.",
-   ext_physical:[],ext_electronic:[],
-   int_physical:["Security-rated doorsets to areas storing/processing sensitive information","Clear desk policy with secure document storage","Secure print-release preventing uncollected documents","Shredding facilities for confidential waste"],
-   int_electronic:["Access logging with anomaly detection","Data loss prevention on email and file transfer"],
-   procedures:["Data classification and handling policy","Encrypted storage and transmission","Secure media disposal procedures","Third-party data processing agreements","Regular information asset audit"]},
-  {id:"insider",label:"Insider Threat",keywords:["insider"],
-   narrative:"Insider threat treatment applies least privilege inside the building through access zoning and monitoring, supported by vetting, behavioural detection and reporting mechanisms operationally.",
-   ext_physical:[],ext_electronic:[],
-   int_physical:["Key management via secure electronic cabinet with audit"],
-   int_electronic:["Access control zoning restricting individuals to role-required areas only","CCTV in sensitive areas with recording"],
-   procedures:["Pre-employment vetting and ongoing security screening","Joiners/movers/leavers access process \u2014 immediate revocation on departure","Whistleblowing and confidential reporting policy","Regular access rights reviews enforcing least privilege","User behaviour monitoring and anomaly detection","Clear desk and screen policy enforcement","Security clearance for sensitive roles","Separation of duties for critical processes"]},
-  {id:"soc",label:"Serious Organised Crime",keywords:["soc"],
-   narrative:"Serious organised crime treatment addresses vulnerabilities through physical controls inside the building and due diligence, monitoring and fraud prevention operationally.",
-   ext_physical:[],ext_electronic:[],
-   int_physical:["Security-rated doorsets to high-value areas"],
-   int_electronic:["CCTV at all access points to valuable assets and cash handling"],
-   procedures:["Background screening for staff and contractors in positions of trust","Supply chain due diligence and third-party risk assessment","Fraud prevention controls with segregation of duties","Anomaly detection in financial and access systems","Organised crime threat briefings","Whistleblowing and confidential reporting"]},
-  {id:"kre",label:"Kidnap, Ransom & Extortion",keywords:["kre"],
-   narrative:"Kidnap, ransom and extortion treatment protects at-risk individuals inside the building through access control and surveillance, with specialist response planning operationally.",
-   ext_physical:[],ext_electronic:[],
-   int_physical:["Controlled access to areas occupied by at-risk individuals"],
-   int_electronic:["CCTV at entrances capturing identification-quality images"],
-   procedures:["Travel security procedures for at-risk personnel","Personal security risk assessments for key individuals","Secure communication channels","Kidnap/ransom/extortion incident response plan","Close liaison with police and specialist advisors"]}
-];
 
 // ============================================================
 // MAIN APP
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.997";
+  const VERSION="1.998";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
-  const[assets,setAssets]=useState(DEF_ASSETS);
-  const[threats,setThreats]=useState(DEF_THREATS);
+  const[assets,setAssets]=useState([]);
+  const[threats,setThreats]=useState([]);
   const[activeAssetPreset,setActiveAssetPreset]=useState(null);
   const[activeThreatPreset,setActiveThreatPreset]=useState(null);
   const[assetsLocked,setAssetsLocked]=useState(false);
@@ -792,9 +432,9 @@ function App(){
   const[showAddThreat,setShowAddThreat]=useState(false);
   const[residualJustifications,setResidualJustifications]=useState({});
   const[treatOptional,setTreatOptional]=useState({});
-  const[threatDB,setThreatDB]=useState(migrateLinkedAssets(DEFAULT_THREAT_DB));
-  const[treatmentDB,setTreatmentDB]=useState(DEFAULT_TREATMENT_DB);
-  const[assetPresetsDB,setAssetPresetsDB]=useState(ASSET_PRESETS);
+  const[threatDB,setThreatDB]=useState([]);
+  const[treatmentDB,setTreatmentDB]=useState([]);
+  const[assetPresetsDB,setAssetPresetsDB]=useState({});
   const[dbThreatSearch,setDbThreatSearch]=useState("");
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[dbExpandedCats,setDbExpandedCats]=useState({});
@@ -803,6 +443,8 @@ function App(){
   const[dbSection,setDbSection]=useState("assets");
   const[showRelMatrix,setShowRelMatrix]=useState(false);
   const[relMatrixMode,setRelMatrixMode]=useState("assets");
+  const[dataLoaded,setDataLoaded]=useState(false);
+  const defaultsRef=useRef(null);
   const dragRef=useRef(null);
   const treatDBAutoFetched=useRef(false);
   const threatLibAutoFetched=useRef(false);
@@ -838,12 +480,22 @@ function App(){
   };
   useEffect(()=>{fetchThreatLevel()},[]);
 
-  // Auto-save
+  // Load database defaults, then restore from localStorage
   useEffect(()=>{
-    const d=localStorage.getItem("sra-rta-data");
-    if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats){const loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}));}
-    if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB))setAssetPresetsDB(p.assetPresetsDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
+    fetch("/api/db",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(defs){
+      defaultsRef.current=defs;
+      var d=localStorage.getItem("sra-rta-data");
+      if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
+      if(p.threats){var loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}))}else setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));
+      if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
+      if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);
+      if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB,defs.ASSET_PRESETS));else setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));
+      if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);else setTreatmentDB(defs.DEFAULT_TREATMENT_DB);
+      if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB))setAssetPresetsDB(p.assetPresetsDB);else setAssetPresetsDB(defs.ASSET_PRESETS);
+      if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}}
+      else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}
+      setDataLoaded(true);
+    }).catch(function(){setDataLoaded(true)});
   },[]);
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
@@ -1109,7 +761,7 @@ function App(){
 
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    setAssets(DEF_ASSETS);setThreats(DEF_THREATS);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(migrateLinkedAssets(DEFAULT_THREAT_DB));setTreatmentDB(DEFAULT_TREATMENT_DB);setSbdCompliance({});
+    var defs=defaultsRef.current||{};setAssets((defs.DEF_ASSETS||[]).map(function(a){return{...a}}));setThreats((defs.DEF_THREATS||[]).map(function(t){return{...t}}));setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
   // Meetings helpers
@@ -2467,14 +2119,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const toggleThreatCat=(id)=>setThreats(p=>p.map(t=>t.id===id?{...t,cat:t.cat==="Terrorism"?"Crime":"Terrorism"}:t));
   const fillThreatPreset=(type,skipConfirm)=>{
     if(threatsLocked)return;
-    const preset=THREAT_PRESETS[type];
+    const preset=((defaultsRef.current||{}).THREAT_PRESETS||{})[type];
     if(!preset)return;
     if(!skipConfirm&&threats.length>0){
       if(!confirm("\u26a0 Warning: Changing to '"+type+"' will replace the current threat list.\n\nAll existing scores will be preserved for any threats that also appear in the new preset.\n\nThreats unique to the current list will be lost.\n\nDo you want to continue?"))return;
     }
     var oldByName={};
     threats.forEach(function(t){oldByName[t.n]={id:t.id,cap:t.cap,int:t.int,targets:t.targets,vs:vs[t.id],is_:is_[t.id],cd:cd[t.id],tx:tx[t.id],rs:rs[t.id],acc:acc[t.id]}});
-    var allDef=DEF_THREATS.map(function(t){return{n:t.n,d:t.d,cat:t.cat}});
+    var allDef=((defaultsRef.current||{}).DEF_THREATS||[]).map(function(t){return{n:t.n,d:t.d,cat:t.cat}});
     var newThreats=[];
     preset.forEach(function(name,i){
       var def=allDef.find(function(d){return d.n===name});
@@ -2584,6 +2236,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   // ============================================================
   // RENDER
   // ============================================================
+  if(!dataLoaded)return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",flexDirection:"column",gap:16,fontFamily:"Arial,sans-serif",color:"#475569"}},
+    React.createElement("div",{style:{width:40,height:40,border:"4px solid #e2e8f0",borderTopColor:"#1B2A4A",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}),
+    React.createElement("div",{style:{fontSize:14,fontWeight:600}},"Loading..."),
+    React.createElement("style",null,"@keyframes spin{to{transform:rotate(360deg)}}")
+  );
   return React.createElement("div",{className:"app"},
     // Toast
     toast&&React.createElement("div",{className:"toast"},toast),
@@ -3417,7 +3074,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement("div",{className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
-          ...Object.keys(THREAT_PRESETS).map(type=>
+          ...Object.keys((defaultsRef.current||{}).THREAT_PRESETS||{}).map(type=>
             React.createElement("button",{key:type,className:"preset-btn"+((activeThreatPreset||ctx.devType)===type?" active":""),onClick:()=>fillThreatPreset(type)},type)
           ),
           React.createElement("button",{className:"preset-btn",style:{borderColor:"#fecaca",color:"#dc2626",marginLeft:8},onClick:clearThreats},"✕ Clear All"),
@@ -3433,7 +3090,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11,flexShrink:0},
             onClick:function(){
               var allThreatDefs=suggestedThreats.map(function(st){
-                var def=DEF_THREATS.find(function(d){return(st.keywords||[]).some(function(k){return d.n.toLowerCase().includes(k)})});
+                var def=((defaultsRef.current||{}).DEF_THREATS||[]).find(function(d){return(st.keywords||[]).some(function(k){return d.n.toLowerCase().includes(k)})});
                 return def?{...def,id:Date.now()+Math.random(),cap:null,int:null}:null;
               }).filter(Boolean);
               // Only add threats not already in the list
@@ -5867,10 +5524,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   setDbEditThreatId(trimmed);
                 }
               },"Rename"),
-              ASSET_PRESETS[dbEditThreatId]&&React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+              ((defaultsRef.current||{}).ASSET_PRESETS||{})[dbEditThreatId]&&React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                 onClick:function(){
                   if(!confirm("Reset '"+dbEditThreatId+"' to factory defaults? Custom edits to this type's asset list will be lost."))return;
-                  setAssetPresetsDB(function(p){return Object.assign({},p,{[dbEditThreatId]:ASSET_PRESETS[dbEditThreatId]})});
+                  var factoryPreset=((defaultsRef.current||{}).ASSET_PRESETS||{})[dbEditThreatId];
+                  if(factoryPreset)setAssetPresetsDB(function(p){return Object.assign({},p,{[dbEditThreatId]:factoryPreset})});
                   showToast("Reset to defaults");
                 }
               },"Reset Defaults"),
@@ -6030,7 +5688,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           },Object.values(tlExpanded).some(Boolean)?"Collapse All":"Expand All"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
             onClick:function(){
-              if(confirm("Reset Threat Library to defaults?")){setThreatDB(migrateLinkedAssets(DEFAULT_THREAT_DB));setTlEditing(null);setTlExpanded({});showToast("Reset to defaults")}
+              if(confirm("Reset Threat Library to defaults?")){var defs=defaultsRef.current||{};setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTlEditing(null);setTlExpanded({});showToast("Reset to defaults")}
             }
           },"Reset")
         ),
@@ -6271,7 +5929,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
             onClick:function(){
               if(confirm("Reset the entire database to defaults? All custom edits will be lost.")){
-                setTreatmentDB(DEFAULT_TREATMENT_DB);setDbEditThreatId(null);setDbExpandedCats({});
+                setTreatmentDB((defaultsRef.current||{}).DEFAULT_TREATMENT_DB||[]);setDbEditThreatId(null);setDbExpandedCats({});
                 showToast("Database reset to defaults");
               }
             }
@@ -6382,7 +6040,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   })
                 ),
                 React.createElement("div",{style:{marginTop:8,display:"flex",gap:6}},
-                  (function(){var def=DEFAULT_TREATMENT_DB.find(function(d){return d.id===entry.id});
+                  (function(){var def=((defaultsRef.current||{}).DEFAULT_TREATMENT_DB||[]).find(function(d){return d.id===entry.id});
                     return def?React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                       onClick:function(){
                         if(confirm("Reset \""+entry.label+"\" to factory defaults?")){
