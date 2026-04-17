@@ -1,4 +1,7 @@
 export default async function middleware(req) {
+  // API route handles its own auth via x-api-key header
+  if (new URL(req.url).pathname === '/api/db') return;
+
   // Check session cookie first — set after successful Basic Auth login
   const cookieStr = req.headers.get("cookie") || "";
   const sessionCookie = cookieStr.split(";").map(c => c.trim()).find(c => c.startsWith("__sra_session="));
