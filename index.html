@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.999";
+  const VERSION="2.000";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -482,7 +482,7 @@ function App(){
 
   // Load database defaults, then restore from localStorage
   useEffect(()=>{
-    fetch("/api/db",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(defs){
+    fetch("/api/db",{credentials:"same-origin",headers:{"x-api-key":"__API_SECRET__"}}).then(function(r){return r.json()}).then(function(defs){
       defaultsRef.current=defs;
       var d=localStorage.getItem("sra-rta-data");
       if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
