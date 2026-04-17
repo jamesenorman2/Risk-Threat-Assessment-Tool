@@ -359,8 +359,15 @@ const DEFAULT_TREATMENT_DB=[
 ];
 
 module.exports = function handler(req, res) {
-  if (req.headers['x-api-key'] !== process.env.APP_PASSWORD) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const pwd = process.env.APP_PASSWORD;
+  if (pwd) {
+    const apiKey = req.headers['x-api-key'];
+    const cookieHeader = req.headers['cookie'] || '';
+    const sessionCookie = cookieHeader.split(';').map(c => c.trim()).find(c => c.startsWith('__sra_session='));
+    const sessionVal = sessionCookie ? decodeURIComponent(sessionCookie.split('=').slice(1).join('=')) : null;
+    if (apiKey !== pwd && sessionVal !== pwd) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
   res.setHeader("Cache-Control", "private, no-store");
   res.json({ DEF_ASSETS, ASSET_PRESETS, DEF_THREATS, THREAT_PRESETS, DEFAULT_THREAT_DB, DEFAULT_TREATMENT_DB });
