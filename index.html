@@ -678,7 +678,7 @@ const DEFAULT_TREATMENT_DB=[
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="1.996";
+  const VERSION="1.997";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -794,6 +794,8 @@ function App(){
   const[treatOptional,setTreatOptional]=useState({});
   const[threatDB,setThreatDB]=useState(migrateLinkedAssets(DEFAULT_THREAT_DB));
   const[treatmentDB,setTreatmentDB]=useState(DEFAULT_TREATMENT_DB);
+  const[assetPresetsDB,setAssetPresetsDB]=useState(ASSET_PRESETS);
+  const[dbThreatSearch,setDbThreatSearch]=useState("");
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[dbExpandedCats,setDbExpandedCats]=useState({});
   const[tlExpanded,setTlExpanded]=useState({});
@@ -841,12 +843,12 @@ function App(){
     const d=localStorage.getItem("sra-rta-data");
     if(d){try{const p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats){const loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}));}
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
+    if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB))setAssetPresetsDB(p.assetPresetsDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){}}
   },[]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance]);
 
   // Auto-load shared treatment DB from GitHub once on startup when config is ready
   useEffect(()=>{
@@ -903,7 +905,7 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance]);
 
   const buildFilename=useCallback(()=>{
@@ -2506,7 +2508,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const clearAssets=()=>{if(assetsLocked)return;setAssets([]);setActiveAssetPreset(null);};
   const fillPreset=(type,skipConfirm)=>{
     if(assetsLocked)return;
-    const preset=ASSET_PRESETS[type];
+    const preset=assetPresetsDB[type];
     if(!preset)return;
     if(!skipConfirm&&assets.length>0){
       if(!confirm("\u26a0 Warning: Changing to '"+type+"' will replace the current asset list.\n\nCriticality scores will be preserved for any assets that also appear in the new preset (matched by description).\n\nAssets unique to the current list will be lost.\n\nDo you want to continue?"))return;
@@ -2709,7 +2711,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   }
                 }},
                   React.createElement("option",{value:""},"— Select —"),
-                  ...Object.keys(ASSET_PRESETS).map(t=>
+                  ...Object.keys(assetPresetsDB).map(t=>
                     React.createElement("option",{key:t,value:t},t)
                   )
                 )
@@ -3315,7 +3317,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("p",{"data-capture-hide":"1",className:"section-sub"},"Click a score to select. Click again to deselect."),
         React.createElement("div",{"data-capture-hide":"1",className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
-          ...Object.keys(ASSET_PRESETS).map(type=>
+          ...Object.keys(assetPresetsDB).map(type=>
             React.createElement("button",{key:type,className:"preset-btn"+((activeAssetPreset||ctx.devType)===type?" active":""),onClick:()=>fillPreset(type)},type)
           ),
           React.createElement("button",{className:"preset-btn",style:{borderColor:"#fecaca",color:"#dc2626",marginLeft:8},onClick:clearAssets},"✕ Clear All"),
@@ -5786,7 +5788,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // Sub-navigation
         React.createElement("div",{style:{display:"flex",gap:0,marginBottom:16,borderBottom:"2px solid #e2e8f0",position:"sticky",top:42,zIndex:50,background:"#fff"}},
-          [{id:"assets",label:"Assets",icon:"\ud83c\udfe2",count:Object.keys(ASSET_PRESETS).reduce(function(t,k){return t+ASSET_PRESETS[k].length},0)+" presets"},
+          [{id:"assets",label:"Assets",icon:"\ud83c\udfe2",count:Object.keys(assetPresetsDB).reduce(function(t,k){return t+assetPresetsDB[k].length},0)+" presets"},
            {id:"threats",label:"Threats",icon:"\u26a0\ufe0f",count:threatDB.length+" types"},
            {id:"treatments",label:"Treatments",icon:"\ud83d\udee1\ufe0f",count:treatmentDB.length+" sets"}
           ].map(function(sec){
@@ -5808,58 +5810,169 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // ═══════ ASSETS SECTION ═══════
         dbSection==="assets"&&React.createElement("div",null,
-          // Preset type selector
-          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}},
-            Object.keys(ASSET_PRESETS).map(function(presetName){
-              var isActive=dbSection==="assets"&&dbEditThreatId===presetName;
+          // Help strip
+          React.createElement("div",{style:{background:"#f0f4f8",border:"1px solid #e2e8f0",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:"#475569",lineHeight:1.6}},
+            React.createElement("strong",{style:{color:"#1B2A4A"}},"Asset Presets — "),
+            "Each development type defines the default asset categories loaded into an assessment. Threats linked to a category will be suggested automatically. Add, edit, reorder and delete categories per type, or add entirely new development types."
+          ),
+          // Dev type selector pills + New Type
+          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16,alignItems:"center"}},
+            Object.keys(assetPresetsDB).map(function(presetName){
+              var isActive=dbEditThreatId===presetName;
+              var catNames=assetPresetsDB[presetName].map(function(a){return a.cat});
+              var linkedCount=threatDB.filter(function(t){return (t.linkedAssetSets||[]).some(function(c){return catNames.includes(c)})}).length;
               return React.createElement("button",{key:presetName,
-                style:{
-                  padding:"8px 16px",borderRadius:8,fontSize:12,fontWeight:isActive?700:500,
+                style:{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:isActive?700:500,
                   border:"1px solid "+(isActive?"#1B2A4A":"#e2e8f0"),
                   background:isActive?"#1B2A4A":"#fff",color:isActive?"#fff":"#475569",
-                  cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"
-                },
+                  cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",gap:5},
                 onClick:function(){setDbEditThreatId(isActive?null:presetName)}
-              },presetName,
-                React.createElement("span",{style:{fontSize:10,marginLeft:6,opacity:0.7}},ASSET_PRESETS[presetName].length)
+              },
+                presetName,
+                React.createElement("span",{style:{fontSize:10,background:isActive?"rgba(255,255,255,0.18)":"#f1f5f9",padding:"1px 6px",borderRadius:4,fontWeight:600}},assetPresetsDB[presetName].length),
+                linkedCount>0&&React.createElement("span",{style:{fontSize:10,background:isActive?"rgba(239,68,68,0.25)":"#fef2f2",color:isActive?"#fca5a5":"#dc2626",padding:"1px 6px",borderRadius:4,fontWeight:700}},linkedCount+"T")
               );
-            })
+            }),
+            React.createElement("button",{
+              style:{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:500,border:"2px dashed #e2e8f0",background:"transparent",color:"#94a3b8",cursor:"pointer",fontFamily:"inherit"},
+              onClick:function(){
+                var name=prompt("New development type name (e.g. Retail, Stadium):");
+                if(!name||!name.trim())return;
+                var trimmed=name.trim();
+                if(assetPresetsDB[trimmed]){showToast("A type with that name already exists");return;}
+                setAssetPresetsDB(function(p){return Object.assign({},p,{[trimmed]:[]})});
+                setDbEditThreatId(trimmed);
+                showToast("Created: "+trimmed);
+              }
+            },"+ New Type")
           ),
 
-          // Show selected preset's assets
-          dbEditThreatId&&ASSET_PRESETS[dbEditThreatId]?React.createElement("div",null,
-            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
-              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1B2A4A"}},dbEditThreatId+" Assets ("+ASSET_PRESETS[dbEditThreatId].length+")"),
+          // Detail editor for selected preset
+          dbEditThreatId&&assetPresetsDB[dbEditThreatId]?React.createElement("div",{className:"card"},
+            // Card header — type name, actions
+            React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #e2e8f0",background:"#f8fafc",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
+              React.createElement("div",{style:{fontWeight:700,fontSize:14,color:"#1B2A4A",flex:1}},
+                dbEditThreatId,
+                React.createElement("span",{style:{fontWeight:400,fontSize:11,color:"#94a3b8",marginLeft:8}},assetPresetsDB[dbEditThreatId].length+" categories")
+              ),
               React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                 onClick:function(){
-                  var presetAssets=ASSET_PRESETS[dbEditThreatId].map(function(a,i){return{id:Date.now()+i,cat:a.cat,desc:a.desc,sc:{}}});
-                  if(confirm("Load "+presetAssets.length+" "+dbEditThreatId+" assets into the current assessment? This will replace existing assets.")){
-                    setAssets(presetAssets);setActiveAssetPreset(dbEditThreatId);showToast(dbEditThreatId+" assets loaded into assessment");
-                  }
+                  var newName=prompt("Rename '"+dbEditThreatId+"' to:",dbEditThreatId);
+                  if(!newName||!newName.trim()||newName.trim()===dbEditThreatId)return;
+                  var trimmed=newName.trim();
+                  if(assetPresetsDB[trimmed]){showToast("Name already in use");return;}
+                  setAssetPresetsDB(function(p){
+                    var n={};Object.keys(p).forEach(function(k){n[k===dbEditThreatId?trimmed:k]=p[k];});return n;
+                  });
+                  setDbEditThreatId(trimmed);
                 }
-              },"Load into Assessment")
+              },"Rename"),
+              ASSET_PRESETS[dbEditThreatId]&&React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
+                onClick:function(){
+                  if(!confirm("Reset '"+dbEditThreatId+"' to factory defaults? Custom edits to this type's asset list will be lost."))return;
+                  setAssetPresetsDB(function(p){return Object.assign({},p,{[dbEditThreatId]:ASSET_PRESETS[dbEditThreatId]})});
+                  showToast("Reset to defaults");
+                }
+              },"Reset Defaults"),
+              React.createElement("button",{
+                style:{fontSize:11,padding:"4px 10px",borderRadius:6,border:"1px solid #fecaca",background:"#fff",color:"#dc2626",cursor:"pointer",fontFamily:"inherit"},
+                onClick:function(){
+                  if(!confirm("Delete '"+dbEditThreatId+"' development type? This cannot be undone."))return;
+                  setAssetPresetsDB(function(p){var n=Object.assign({},p);delete n[dbEditThreatId];return n;});
+                  setDbEditThreatId(null);
+                }
+              },"Delete Type"),
+              React.createElement("button",{className:"btn btn-dark btn-sm",style:{fontSize:11},
+                onClick:function(){fillPreset(dbEditThreatId)}
+              },"Load into Assessment \u2197")
             ),
-            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:8}},
-              ASSET_PRESETS[dbEditThreatId].map(function(a,i){
-                var catThreats=threatDB.filter(function(t){return(t.linkedAssetSets||[]).includes(a.cat)});
-                return React.createElement("div",{key:i,style:{padding:"10px 14px",borderRadius:8,border:"1px solid #e2e8f0",background:"#fff",display:"flex",gap:10,alignItems:"center"}},
-                  React.createElement("div",{style:{width:28,height:28,borderRadius:6,background:"#f0f9ff",border:"1px solid #bae6fd",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#0369a1",flexShrink:0}},i+1),
-                  React.createElement("div",{style:{flex:1,minWidth:0}},
-                    React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.cat),
-                    React.createElement("div",{style:{fontSize:10,color:"#94a3b8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.desc)
+            // Column headers
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"40px 1fr 1fr 200px 32px",borderBottom:"1px solid #e2e8f0",padding:"5px 8px 5px 0",background:"#f8fafc"}},
+              React.createElement("div",{style:{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"#94a3b8",textAlign:"center"}},""),
+              React.createElement("div",{style:{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"#94a3b8",paddingLeft:8}},"Asset Category"),
+              React.createElement("div",{style:{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"#94a3b8",paddingLeft:8}},"Description"),
+              React.createElement("div",{style:{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"#94a3b8",textAlign:"center"}},"Linked Threats"),
+              React.createElement("div",null)
+            ),
+            // Rows
+            React.createElement("div",null,
+              assetPresetsDB[dbEditThreatId].length===0&&React.createElement("div",{style:{padding:"24px",textAlign:"center",color:"#94a3b8",fontSize:12,fontStyle:"italic"}},"No asset categories yet. Click '+ Add' below to start."),
+              assetPresetsDB[dbEditThreatId].map(function(asset,idx){
+                var totalRows=assetPresetsDB[dbEditThreatId].length;
+                var linkedThreats=threatDB.filter(function(t){return (t.linkedAssetSets||[]).includes(asset.cat)});
+                var terrT=linkedThreats.filter(function(t){return t.category==="Terrorism"});
+                var crimeT=linkedThreats.filter(function(t){return t.category!=="Terrorism"});
+                function updateCat(patch){
+                  setAssetPresetsDB(function(p){
+                    var n=Object.assign({},p);
+                    n[dbEditThreatId]=n[dbEditThreatId].map(function(a,i){return i===idx?Object.assign({},a,patch):a;});
+                    return n;
+                  });
+                }
+                return React.createElement("div",{key:idx,
+                  style:{display:"grid",gridTemplateColumns:"40px 1fr 1fr 200px 32px",
+                    borderBottom:idx<totalRows-1?"1px solid #f1f5f9":"none",
+                    alignItems:"center",background:idx%2===0?"#fff":"#fafbfc"}
+                },
+                  // Move up/down
+                  React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"4px 0"}},
+                    React.createElement("button",{title:"Move up",disabled:idx===0,
+                      style:{background:"none",border:"none",cursor:idx===0?"default":"pointer",color:idx===0?"#e2e8f0":"#94a3b8",fontSize:9,padding:"2px",lineHeight:1,fontFamily:"inherit"},
+                      onClick:function(){setAssetPresetsDB(function(p){var n=Object.assign({},p);var arr=[...n[dbEditThreatId]];var t=arr[idx-1];arr[idx-1]=arr[idx];arr[idx]=t;n[dbEditThreatId]=arr;return n;})}
+                    },"\u25b2"),
+                    React.createElement("button",{title:"Move down",disabled:idx===totalRows-1,
+                      style:{background:"none",border:"none",cursor:idx===totalRows-1?"default":"pointer",color:idx===totalRows-1?"#e2e8f0":"#94a3b8",fontSize:9,padding:"2px",lineHeight:1,fontFamily:"inherit"},
+                      onClick:function(){setAssetPresetsDB(function(p){var n=Object.assign({},p);var arr=[...n[dbEditThreatId]];var t=arr[idx+1];arr[idx+1]=arr[idx];arr[idx]=t;n[dbEditThreatId]=arr;return n;})}
+                    },"\u25bc")
                   ),
-                  catThreats.length>0&&React.createElement("span",{style:{fontSize:9,padding:"2px 6px",borderRadius:4,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",fontWeight:600,flexShrink:0},title:catThreats.map(function(t){return t.label}).join(", ")},catThreats.length+" threat"+(catThreats.length>1?"s":""))
+                  // Category name
+                  React.createElement("div",{style:{padding:"3px 8px"}},
+                    React.createElement("input",{className:"input",style:{fontSize:12,fontWeight:600,padding:"4px 8px"},
+                      value:asset.cat,placeholder:"Category name...",
+                      onChange:function(e){updateCat({cat:e.target.value})}
+                    })
+                  ),
+                  // Description
+                  React.createElement("div",{style:{padding:"3px 8px"}},
+                    React.createElement("input",{className:"input",style:{fontSize:11,color:"#64748b",padding:"4px 8px"},
+                      value:asset.desc,placeholder:"e.g. Residents, Families, Visitors...",
+                      onChange:function(e){updateCat({desc:e.target.value})}
+                    })
+                  ),
+                  // Linked threat chips
+                  React.createElement("div",{style:{padding:"4px 6px",display:"flex",flexWrap:"wrap",gap:3,alignItems:"center"}},
+                    terrT.map(function(t){return React.createElement("span",{key:t.id,title:"Terrorism: "+t.label,style:{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:10,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",whiteSpace:"nowrap"}},t.label)}),
+                    crimeT.map(function(t){return React.createElement("span",{key:t.id,title:"Crime: "+t.label,style:{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:10,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe",whiteSpace:"nowrap"}},t.label)}),
+                    linkedThreats.length===0&&React.createElement("span",{style:{fontSize:10,color:"#cbd5e1",fontStyle:"italic"}},"none")
+                  ),
+                  // Delete row
+                  React.createElement("div",{style:{padding:"4px 4px 4px 0",textAlign:"center"}},
+                    React.createElement("button",{title:"Remove this category",
+                      style:{width:22,height:22,border:"1px solid #fecaca",borderRadius:4,background:"#fff",color:"#dc2626",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",padding:0,fontFamily:"inherit"},
+                      onClick:function(){
+                        setAssetPresetsDB(function(p){var n=Object.assign({},p);n[dbEditThreatId]=n[dbEditThreatId].filter(function(_,i){return i!==idx;});return n;});
+                      }
+                    },"\u00d7")
+                  )
                 );
               })
+            ),
+            // Add row
+            React.createElement("div",{style:{padding:"8px 14px",borderTop:assetPresetsDB[dbEditThreatId].length>0?"1px solid #f1f5f9":"none"}},
+              React.createElement("button",{className:"btn-add",
+                onClick:function(){
+                  setAssetPresetsDB(function(p){var n=Object.assign({},p);n[dbEditThreatId]=[...n[dbEditThreatId],{cat:"",desc:""}];return n;});
+                }
+              },"+ Add Asset Category")
             )
           ):
-          // Default view — show all presets overview
+          // Overview cards (no preset selected)
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}},
-            Object.keys(ASSET_PRESETS).map(function(presetName){
-              var presetAssets=ASSET_PRESETS[presetName];
+            Object.keys(assetPresetsDB).map(function(presetName){
+              var presetAssets=assetPresetsDB[presetName];
               var cats={};presetAssets.forEach(function(a){var c=a.cat.split(" - ")[0].split(" \u2014 ")[0];cats[c]=(cats[c]||0)+1});
               var presetCatNames=presetAssets.map(function(a){return a.cat});
-              var linkedThreatCount=threatDB.filter(function(t){return(t.linkedAssetSets||[]).some(function(c){return presetCatNames.includes(c)})}).length;
+              var linkedThreatCount=threatDB.filter(function(t){return (t.linkedAssetSets||[]).some(function(c){return presetCatNames.includes(c)})}).length;
               return React.createElement("div",{key:presetName,className:"card",style:{cursor:"pointer",transition:"all 0.15s"},
                 onClick:function(){setDbEditThreatId(presetName)}
               },
@@ -5890,6 +6003,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         // Compact toolbar
         React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}},
           React.createElement("span",{style:{fontSize:12,color:"#475569"}},threatDB.filter(function(t){return t.category==="Terrorism"}).length+" terrorism, "+threatDB.filter(function(t){return t.category==="Crime"}).length+" crime"),
+          React.createElement("input",{className:"input",style:{width:200,fontSize:12,padding:"5px 10px"},
+            value:dbThreatSearch,placeholder:"Search threats...",
+            onChange:function(e){setDbThreatSearch(e.target.value)}
+          }),
           React.createElement("div",{style:{flex:1}}),
           // GitHub sync (compact)
           ghConfig.enabled&&ghConfig.owner&&ghConfig.repo&&React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
@@ -5958,10 +6075,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         // Threat cards
         React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
           ["Terrorism","Crime","Other"].map(function(cat){
-            var catThreats=threatDB.filter(function(t){return (t.category||"Other")===cat});
+            var srch=dbThreatSearch.trim().toLowerCase();
+            var catThreats=threatDB.filter(function(t){return (t.category||"Other")===cat&&(!srch||(t.label||"").toLowerCase().includes(srch)||(t.description||"").toLowerCase().includes(srch)||(t.keywords||[]).join(" ").toLowerCase().includes(srch))});
             var catColor=cat==="Terrorism"?"#dc2626":cat==="Crime"?"#d97706":"#475569";
             var catBg=cat==="Terrorism"?"#fef2f2":cat==="Crime"?"#fffbeb":"#f8fafc";
             var catBorder=cat==="Terrorism"?"#fecaca":cat==="Crime"?"#fde68a":"#e2e8f0";
+            if(srch&&catThreats.length===0)return null;
             return React.createElement("div",{key:cat},
               React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6,padding:"4px 0"}},
                 React.createElement("div",{style:{fontSize:11,fontWeight:700,color:catColor,textTransform:"uppercase",letterSpacing:"0.8px"}},cat+" threats ("+catThreats.length+")"),
@@ -5981,7 +6100,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   var isEditing=tlEditing===threat.id;
                   var linkedCount=(threat.linkedTreatmentIds||[]).length;
                   var linkedCats=threat.linkedAssetSets||[];
-                  var linkedPresetCount=Object.keys(ASSET_PRESETS).filter(function(p){return ASSET_PRESETS[p].every(function(a){return linkedCats.includes(a.cat)})}).length;
+                  var linkedPresetCount=Object.keys(assetPresetsDB).filter(function(p){return assetPresetsDB[p].every(function(a){return linkedCats.includes(a.cat)})}).length;
 
                   function updateThreat(patch){
                     setThreatDB(function(prev){return prev.map(function(t){return t.id===threat.id?{...t,...patch}:t})});
@@ -6050,8 +6169,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       React.createElement("div",{style:{marginBottom:12}},
                         React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:6}},"Linked Asset Sets"),
                         React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
-                          Object.keys(ASSET_PRESETS).map(function(presetName){
-                            var presetCats=ASSET_PRESETS[presetName].map(function(a){return a.cat});
+                          Object.keys(assetPresetsDB).map(function(presetName){
+                            var presetCats=assetPresetsDB[presetName].map(function(a){return a.cat});
                             var linkedCats=threat.linkedAssetSets||[];
                             var allSel=presetCats.every(function(c){return linkedCats.includes(c)});
                             return React.createElement("label",{key:presetName,style:{
@@ -6205,7 +6324,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     React.createElement("span",{style:{fontWeight:700,fontSize:14,color:"#1e293b"}},entry.label),
                     React.createElement("span",{style:{fontSize:11,color:"#94a3b8"}},totalItems+" measure"+(totalItems!==1?"s":"")),
                     linkedThreats.length>0&&React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0fdf4",color:"#15803d",border:"1px solid #bbf7d0",fontWeight:600}},linkedThreats.length+" threat"+(linkedThreats.length>1?"s":"")),
-                    (function(){var cp={};linkedThreats.forEach(function(t){(t.linkedAssetSets||[]).forEach(function(c){Object.keys(ASSET_PRESETS).forEach(function(p){if(ASSET_PRESETS[p].every(function(a){return(t.linkedAssetSets||[]).includes(a.cat)}))cp[p]=true})})});var pc=Object.keys(cp).length;return pc>0?React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600},title:Object.keys(cp).join(", ")},pc+" asset set"+(pc>1?"s":"")):null})()
+                    (function(){var cp={};linkedThreats.forEach(function(t){(t.linkedAssetSets||[]).forEach(function(c){Object.keys(assetPresetsDB).forEach(function(p){if(assetPresetsDB[p].every(function(a){return(t.linkedAssetSets||[]).includes(a.cat)}))cp[p]=true})})});var pc=Object.keys(cp).length;return pc>0?React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:4,background:"#f0f9ff",color:"#0369a1",border:"1px solid #bae6fd",fontWeight:600},title:Object.keys(cp).join(", ")},pc+" asset set"+(pc>1?"s":"")):null})()
                   )
                 ),
                 // Action buttons
@@ -6336,8 +6455,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   var coveredPresets={};
                   linkedThreats.forEach(function(t){
                     var cats=t.linkedAssetSets||[];
-                    Object.keys(ASSET_PRESETS).forEach(function(p){
-                      if(ASSET_PRESETS[p].every(function(a){return cats.includes(a.cat)})){
+                    Object.keys(assetPresetsDB).forEach(function(p){
+                      if(assetPresetsDB[p].every(function(a){return cats.includes(a.cat)})){
                         coveredPresets[p]=true;
                       }
                     });
