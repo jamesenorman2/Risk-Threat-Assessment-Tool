@@ -359,6 +359,9 @@ const DEFAULT_TREATMENT_DB=[
 ];
 
 module.exports = function handler(req, res) {
+  if (req.headers['x-api-key'] !== process.env.APP_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   res.setHeader("Cache-Control", "private, no-store");
   res.json({ DEF_ASSETS, ASSET_PRESETS, DEF_THREATS, THREAT_PRESETS, DEFAULT_THREAT_DB, DEFAULT_TREATMENT_DB });
 };
