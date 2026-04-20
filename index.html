@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.003";
+  const VERSION="2.004";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -451,11 +451,13 @@ function App(){
   const[sbdCompliance,setSbdCompliance]=useState({});
   const[showSetupWizard,setShowSetupWizard]=useState(false);
   const[wizardStep,setWizardStep]=useState(1);
-  const[wizardDevType,setWizardDevType]=useState('');
+  const[wizardDevType,setWizardDevType]=useState(null);
   const[wizardAssets,setWizardAssets]=useState([]);
   const[wizardThreats,setWizardThreats]=useState([]);
   const[wizardTreatScope,setWizardTreatScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
   const[treatCategoryScope,setTreatCategoryScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+  const[wizardAnswers,setWizardAnswers]=useState({});
+  const[wizardThreatsBase,setWizardThreatsBase]=useState([]);
 
   // Fetch live UK threat level
   const levelColors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
@@ -504,7 +506,7 @@ function App(){
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
-  useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setShowSetupWizard(true);}},[dataLoaded]);
+  useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
@@ -771,7 +773,7 @@ function App(){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
     var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");
-    setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}};
+    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}};
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -2269,14 +2271,47 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   // ============================================================
   const renderSetupWizard=()=>{
     const ol={position:"fixed",inset:0,background:"rgba(15,23,42,0.65)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16};
-    const card={background:"#fff",borderRadius:16,boxShadow:"0 24px 80px rgba(0,0,0,0.4)",width:"100%",maxWidth:760,maxHeight:"92vh",display:"flex",flexDirection:"column",overflow:"hidden"};
+    const card={background:"#fff",borderRadius:16,boxShadow:"0 24px 80px rgba(0,0,0,0.4)",width:"100%",maxWidth:780,maxHeight:"92vh",display:"flex",flexDirection:"column",overflow:"hidden"};
     const hdr={padding:"24px 28px 16px",borderBottom:"1px solid #f1f5f9",flexShrink:0};
     const body={padding:"18px 28px",overflowY:"auto",flex:1};
     const ftr={padding:"14px 28px 22px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0};
     const types=Object.keys(assetPresetsDB);
     const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥"};
     const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities"};
-    const stepLabels=["Development Type","Assets","Threats","Confirm & Launch"];
+    const stepLabels=["Development Type","Assets","Threats","Site Profile","Confirm & Launch"];
+    const SITE_QS=[
+      {id:"perimeter",q:"Does the site have a defined perimeter?",hint:"A perimeter (fence, wall, or natural boundary) enables layered security and controlled access points.",opts:["Yes — clear perimeter","Partial / soft boundary","No defined perimeter"]},
+      {id:"hvm",q:"Is Hostile Vehicle Mitigation (HVM) required or under consideration?",hint:"Typically required for crowded places, high-profile buildings, or sites where vehicles can approach within 20m of occupied areas.",opts:["Yes — confirmed requirement","Under consideration","No"]},
+      {id:"vehicle",q:"Is there vehicle access to within 20m of occupied building areas?",hint:"Includes adjacent public roads, car parks, loading bays, and drop-off points.",opts:["Yes","No"]},
+      {id:"public_access",q:"Is the site openly accessible to members of the public?",hint:"Publicly accessible sites have different crowd dynamics and broader terrorism threat profiles.",opts:["Yes — fully open","Partially open (some public areas)","No — access-controlled"]},
+      {id:"crowded",q:"Is this a crowded place or high-footfall location (500+ at peak)?",hint:"Crowded places are recognised targets for marauding attacks, VBIEDs, and mass-casualty events.",opts:["Yes","No"]},
+      {id:"car_park",q:"Is there underground or multi-storey car parking?",hint:"Enclosed car parks present specific risks: VBIED concealment, vehicle crime, and lone-worker safety.",opts:["Yes","No"]},
+      {id:"at_risk",q:"Are there high-profile or at-risk individuals associated with this site?",hint:"Includes executives, politicians, celebrities, VIPs, or persons who have received specific threats.",opts:["Yes","No"]},
+      {id:"cni",q:"Does this site form part of Critical National Infrastructure (CNI)?",hint:"CNI covers energy, water, transport, communications, finance, government and emergency services.",opts:["Yes","No","Unsure"]},
+      {id:"security",q:"Is there a manned security presence on site?",opts:["Yes — 24/7","Daytime / concierge only","No security staff"]},
+      {id:"cctv",q:"Is CCTV in place or formally planned?",opts:["Yes — existing system","Planned (new build / upgrade)","No"]},
+      {id:"access_ctrl",q:"Is electronic access control in place or formally planned?",opts:["Yes — existing system","Planned (new build / upgrade)","No"]},
+      {id:"new_build",q:"Is this a new-build or design-stage project?",hint:"New builds allow security to be designed in from the outset — typically more effective and lower cost than retrofitting.",opts:["Yes — new build / design stage","No — existing operational site","Refurbishment / part new-build"]},
+    ];
+    const setAnswer=(id,val)=>setWizardAnswers(p=>({...p,[id]:val}));
+    const applyQEffects=(answers,baseThreats,baseScope)=>{
+      const deselect=(threats,...kws)=>threats.map(t=>{const txt=(t.n+" "+t.d).toLowerCase();return kws.some(k=>txt.includes(k))?{...t,included:false}:t;});
+      let t=[...baseThreats];let s={...baseScope};
+      if(answers.hvm==="No"){t=deselect(t,"vehicle-borne","vbied","vehicle ramming","vehicle bomb","hostile vehicle");}
+      if(answers.vehicle==="No"){t=deselect(t,"vehicle-borne","vbied","ram raid","vehicle ramming");}
+      if(answers.public_access==="No — access-controlled"&&answers.crowded==="No"){t=deselect(t,"marauding","crowded place","mass casualty");}
+      if(answers.at_risk==="No"){t=deselect(t,"kidnap","extort","assassin","abduct","ransom","blackmail","targeted violence");}
+      if(answers.cni==="No"){t=deselect(t,"critical national infrastructure","cni attack","infrastructure attack");}
+      if(answers.car_park==="No"){t=deselect(t,"car park","vehicle theft from","catalytic");}
+      if(answers.cctv==="No"){s={...s,ext_electronic:false};}
+      if(answers.access_ctrl==="No"){s={...s,int_electronic:false};}
+      return{threats:t,scope:s};
+    };
+    const advanceToConfirm=()=>{
+      const base=wizardThreatsBase.length>0?wizardThreatsBase:wizardThreats;
+      const{threats:t,scope:s}=applyQEffects(wizardAnswers,base,wizardTreatScope);
+      setWizardThreats(t);setWizardTreatScope(s);setWizardStep(5);
+    };
     const progress=React.createElement("div",{style:{display:"flex",alignItems:"center",gap:0,marginTop:14}},
       stepLabels.map((s,i)=>React.createElement(React.Fragment,{key:i},
         React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:3}},
@@ -2309,7 +2344,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("span",null,(((defs.THREAT_PRESETS||{})[type])||[]).length+" threats")
             )
           )),
-          React.createElement("button",{key:"blank",onClick:()=>{setWizardDevType("");setWizardAssets([]);setWizardThreats([]);},style:{border:"2px solid "+(wizardDevType===""&&wizardThreats.length===0?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===""&&wizardThreats.length===0?"#EEF2FF":"#fff",transition:"all 0.12s"}},
+          React.createElement("button",{key:"blank",onClick:()=>{setWizardDevType("");setWizardAssets([]);setWizardThreats([]);},style:{border:"2px solid "+(wizardDevType===""?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===""&&wizardThreats.length===0?"#EEF2FF":"#fff",transition:"all 0.12s"}},
             React.createElement("div",{style:{fontSize:22,marginBottom:6}},"✏️"),
             React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},"Custom / Blank"),
             React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},"Start from scratch"),
@@ -2418,33 +2453,83 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement("div",{style:ftr},
           React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(2)},"← Back"),skip),
-          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(4)},"Next: Confirm Setup →")
+          React.createElement("button",{className:"btn btn-primary",onClick:()=>{setWizardThreatsBase([...wizardThreats]);setWizardStep(4);}},"Next: Site Profile →")
         )
       ));
     }
 
     if(wizardStep===4){
+      const allAnswered=SITE_QS.every(q=>wizardAnswers[q.id]);
+      const qCard=(q)=>React.createElement("div",{key:q.id,style:{background:"#f8fafc",borderRadius:8,padding:"12px 14px",border:"1px solid "+(wizardAnswers[q.id]?"#c7d2fe":"#e2e8f0")}},
+        React.createElement("div",{style:{fontWeight:700,fontSize:12,color:"#1e293b",marginBottom:q.hint?3:8}},q.q),
+        q.hint&&React.createElement("div",{style:{fontSize:11,color:"#64748b",marginBottom:8,lineHeight:1.4}},q.hint),
+        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6}},
+          q.opts.map(opt=>React.createElement("label",{key:opt,style:{display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:20,cursor:"pointer",fontSize:11,fontWeight:wizardAnswers[q.id]===opt?600:400,background:wizardAnswers[q.id]===opt?"#1B2A4A":"#fff",color:wizardAnswers[q.id]===opt?"#fff":"#475569",border:"1px solid "+(wizardAnswers[q.id]===opt?"#1B2A4A":"#cbd5e1"),transition:"all 0.1s"}},
+            React.createElement("input",{type:"radio",name:"wq_"+q.id,value:opt,checked:wizardAnswers[q.id]===opt,onChange:()=>setAnswer(q.id,opt),style:{display:"none"}}),
+            opt
+          ))
+        )
+      );
+      const answered=SITE_QS.filter(q=>wizardAnswers[q.id]).length;
+      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+        React.createElement("div",{style:hdr},
+          badge,
+          React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Tell us about this site"),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Your answers automatically adjust the threat list and treatment scope. "+answered+" / "+SITE_QS.length+" answered."),
+          progress
+        ),
+        React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+          ...SITE_QS.map(q=>qCard(q))
+        ),
+        React.createElement("div",{style:ftr},
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>{setWizardThreats([...wizardThreatsBase]);setWizardStep(3);}},"← Back"),skip),
+          React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
+            !allAnswered&&React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},(SITE_QS.length-answered)+" questions unanswered — you can still proceed"),
+            React.createElement("button",{className:"btn btn-primary",onClick:advanceToConfirm},"Next: Confirm Setup →")
+          )
+        )
+      ));
+    }
+
+    if(wizardStep===5){
       const selA=wizardAssets.filter(a=>a.included).length;
       const selTerror=wizardThreats.filter(t=>t.included&&t.cat==="Terrorism").length;
       const selCrime=wizardThreats.filter(t=>t.included&&t.cat==="Crime").length;
+      const deselTerror=wizardThreats.filter(t=>!t.included&&t.cat==="Terrorism").length;
+      const deselCrime=wizardThreats.filter(t=>!t.included&&t.cat==="Crime").length;
+      const autoAdj=deselTerror+deselCrime;
       const tsLabels={ext_physical:"External Physical Security Measures",ext_electronic:"External Electronic / CCTV / Access Control",int_physical:"Internal Physical Security Measures",int_electronic:"Internal Electronic / Technical Systems",procedures:"Procedural & Management Measures"};
-      const statBox=(label,val,bg,col,bc)=>React.createElement("div",{style:{background:bg,borderRadius:10,padding:"14px 16px",border:"1px solid "+bc}},
-        React.createElement("div",{style:{fontSize:10,fontWeight:700,color:col,letterSpacing:1,textTransform:"uppercase",marginBottom:6}},label),
-        React.createElement("div",{style:{fontSize:18,fontWeight:800,color:col}},val)
+      const statBox=(label,val,sub,bg,col,bc)=>React.createElement("div",{style:{background:bg,borderRadius:10,padding:"12px 14px",border:"1px solid "+bc}},
+        React.createElement("div",{style:{fontSize:10,fontWeight:700,color:col,letterSpacing:1,textTransform:"uppercase",marginBottom:4}},label),
+        React.createElement("div",{style:{fontSize:17,fontWeight:800,color:col}},val),
+        sub&&React.createElement("div",{style:{fontSize:10,color:col,opacity:0.7,marginTop:2}},sub)
       );
+      const answeredQs=SITE_QS.filter(q=>wizardAnswers[q.id]);
       return React.createElement("div",{style:ol},React.createElement("div",{style:card},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Confirm your assessment setup"),
-          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Review your configuration and set which treatment categories are in scope for this development."),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Review configuration. All choices can be refined further in the Assets, Threats and Database tabs."),
           progress
         ),
         React.createElement("div",{style:body},
-          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}},
-            statBox("Development Type",wizardDevType||"Custom","#f8fafc","#1B2A4A","#e2e8f0"),
-            statBox("Assets",selA+" categories","#f8fafc","#1B2A4A","#e2e8f0"),
-            statBox("Terrorism",selTerror+" threats","#FFF5F5","#DC2626","#FECACA"),
-            statBox("Crime",selCrime+" threats","#EFF6FF","#2563EB","#BFDBFE")
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}},
+            statBox("Development Type",wizardDevType||"Custom",null,"#f8fafc","#1B2A4A","#e2e8f0"),
+            statBox("Assets",selA+" categories",null,"#f8fafc","#1B2A4A","#e2e8f0"),
+            statBox("Terrorism",selTerror+" included",deselTerror>0?deselTerror+" removed by site profile":null,"#FFF5F5","#DC2626","#FECACA"),
+            statBox("Crime",selCrime+" included",deselCrime>0?deselCrime+" removed by site profile":null,"#EFF6FF","#2563EB","#BFDBFE")
+          ),
+          autoAdj>0&&React.createElement("div",{style:{background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:"#92400E"}},
+            "⚡ "+autoAdj+" threat"+(autoAdj>1?"s were":"was")+" de-selected based on your site profile answers. You can reinstate any threat in Step 3 or from the Threats tab after launch."
+          ),
+          answeredQs.length>0&&React.createElement("div",{style:{background:"#f8fafc",borderRadius:10,padding:"12px 14px",border:"1px solid #e2e8f0",marginBottom:14}},
+            React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#64748b",letterSpacing:1,textTransform:"uppercase",marginBottom:8}},"Site Profile Summary"),
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 16px"}},
+              answeredQs.map(q=>React.createElement("div",{key:q.id,style:{display:"flex",gap:6,fontSize:11,padding:"2px 0",borderBottom:"1px solid #f1f5f9"}},
+                React.createElement("span",{style:{color:"#94a3b8",flexShrink:0,width:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},q.q.replace("?","")),
+                React.createElement("span",{style:{fontWeight:600,color:"#1e293b"}},wizardAnswers[q.id])
+              ))
+            )
           ),
           React.createElement("div",{style:{background:"#f8fafc",borderRadius:10,padding:"16px",border:"1px solid #e2e8f0"}},
             React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:4}},"Treatment Categories in Scope"),
@@ -2458,7 +2543,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           )
         ),
         React.createElement("div",{style:ftr},
-          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(3)},"← Back"),skip),
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>{setWizardThreats([...wizardThreatsBase]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setWizardStep(4);}},"← Back"),skip),
           React.createElement("button",{className:"btn btn-primary",style:{padding:"10px 28px",fontSize:14,fontWeight:700},onClick:applyWizard},"Launch Assessment →")
         )
       ));
@@ -2535,7 +2620,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWord},"📄 Word"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel},"📊 Excel"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:printReport},"🖨️ Print"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
+        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
         React.createElement("button",{className:"btn btn-danger btn-sm",onClick:clearAll},"New")
       ),
       React.createElement("div",{className:"header-right"},
