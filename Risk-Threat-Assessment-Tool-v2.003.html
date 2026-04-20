@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.004";
+  const VERSION="2.003";
   // Project profile — drives tailoring of assets / threats / treatments across the app.
   // Kept as a self-contained object so the Setup Wizard can read/write it in one place
   // and future features (regulatory bindings, methodology toggles, LLM tailoring) hang off it.
@@ -460,93 +460,6 @@ function App(){
   const[autoSaveEnabled,setAutoSaveEnabled]=useState(false);
   const[ghConfig,setGhConfig]=useState({token:"",repo:"",owner:"",enabled:true});
   const[ghBrowser,setGhBrowser]=useState({open:false,files:[],loading:false,path:"projects"});
-  // Setup Wizard: opens automatically on first run, re-openable from the header.
-  // Works on a draft copy of ctx.profile so the user can Cancel without side effects.
-  const[setupOpen,setSetupOpen]=useState(false);
-  const[setupStep,setSetupStep]=useState(1);
-  const[setupDraft,setSetupDraft]=useState(null);
-  const REGULATORY_OPTIONS=[
-    {id:"martyns-law",label:"Martyn's Law (TPPA 2025)",hint:"Public premises / 200+ capacity venues"},
-    {id:"protectuk",label:"ProtectUK / NaCTSO",hint:"CT guidance for crowded places"},
-    {id:"sabre",label:"SABRE (BRE)",hint:"Security rating for built assets"},
-    {id:"npsa",label:"NPSA (formerly CPNI)",hint:"Critical national infrastructure"},
-    {id:"jsp440",label:"JSP 440",hint:"MoD / defence estate"},
-    {id:"sbd",label:"Secure By Design",hint:"Police-preferred design standard"},
-    {id:"approved-docs",label:"UK Building Regulations",hint:"Approved Documents B, Q, T"},
-    {id:"iso-31000",label:"ISO 31000 / ISO 31010",hint:"Risk management framework"}
-  ];
-  const LIFECYCLE_OPTIONS=[
-    {id:"design",label:"Design (RIBA 0-3)"},
-    {id:"new-build",label:"New build (RIBA 4-5)"},
-    {id:"refurb",label:"Refurbishment"},
-    {id:"existing",label:"Existing / in-use"},
-    {id:"operational",label:"Operational only"},
-    {id:"decommission",label:"Decommissioning"}
-  ];
-  const SCALE_OPTIONS=[
-    {id:"small",label:"Small (<50 occupants)"},
-    {id:"medium",label:"Medium (50-500)"},
-    {id:"large",label:"Large (500-5000)"},
-    {id:"major",label:"Major (5000+)"}
-  ];
-  const openSetupWizard=()=>{
-    setSetupDraft({
-      project:ctx.project||"",
-      projectNum:ctx.projectNum||"",
-      date:ctx.date||"",
-      assessor:ctx.assessor||"",
-      client:ctx.client||"",
-      address:ctx.address||"",
-      postcode:ctx.postcode||"",
-      stage:ctx.stage||"",
-      profile:{...DEFAULT_PROFILE,...(ctx.profile||{}),
-        appetite:{...DEFAULT_PROFILE.appetite,...((ctx.profile||{}).appetite||{})},
-        methodology:{...DEFAULT_PROFILE.methodology,...((ctx.profile||{}).methodology||{})}
-      }
-    });
-    setSetupStep(1);
-    setSetupOpen(true);
-  };
-  const closeSetupWizard=()=>{setSetupOpen(false);};
-  const updateDraftProfile=(patch)=>setSetupDraft(d=>d?{...d,profile:{...d.profile,...patch}}:d);
-  const toggleDraftRegulatory=(id)=>setSetupDraft(d=>{
-    if(!d)return d;
-    var list=Array.isArray(d.profile.regulatory)?d.profile.regulatory.slice():[];
-    var i=list.indexOf(id);
-    if(i>=0)list.splice(i,1);else list.push(id);
-    return{...d,profile:{...d.profile,regulatory:list}};
-  });
-  const toggleDraftDevTypeMulti=(type)=>setSetupDraft(d=>{
-    if(!d)return d;
-    var list=Array.isArray(d.profile.devTypesMulti)?d.profile.devTypesMulti.slice():[];
-    var i=list.indexOf(type);
-    if(i>=0)list.splice(i,1);else list.push(type);
-    return{...d,profile:{...d.profile,devTypesMulti:list}};
-  });
-  const finishSetupWizard=()=>{
-    if(!setupDraft)return;
-    var d=setupDraft;
-    // Write top-level ctx fields + the completed profile
-    setCtx(function(prev){return{...prev,
-      project:d.project||prev.project,
-      projectNum:d.projectNum||prev.projectNum,
-      date:d.date||prev.date,
-      assessor:d.assessor||prev.assessor,
-      client:d.client||prev.client,
-      address:d.address||prev.address,
-      postcode:d.postcode||prev.postcode,
-      stage:d.stage||prev.stage,
-      devType:d.profile.devType||prev.devType,
-      profile:{...d.profile,setupComplete:true}
-    }});
-    // If a dev type was chosen and matches a preset, load its assets (only when list is empty, to avoid surprise overwrite)
-    if(d.profile.devType&&assetPresetsDB&&assetPresetsDB[d.profile.devType]&&assets.length===0){
-      // fillPreset reads from closures; defer until next tick so setCtx above doesn't race
-      setTimeout(function(){fillPreset(d.profile.devType,true);},0);
-    }
-    setSetupOpen(false);
-    showToast("Setup saved — project tailored");
-  };
   const[treatDBSync,setTreatDBSync]=useState({status:"idle",lastSaved:null,lastLoaded:null});
   const[threatLibSync,setThreatLibSync]=useState({status:"idle",lastSaved:null,lastLoaded:null});
   const[comparisonData,setComparisonData]=useState(null);
@@ -619,24 +532,6 @@ function App(){
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
-
-  // First-run: open the Setup Wizard automatically when no profile has been completed yet.
-  // For returning users who already have project data (pre-v2.003 saves), silently
-  // mark setup complete instead of blocking them with the wizard — they can open it
-  // manually from the header at any time.
-  const setupAutoOpened=useRef(false);
-  useEffect(()=>{
-    if(!dataLoaded)return;
-    if(setupAutoOpened.current)return;
-    if(ctx&&ctx.profile&&ctx.profile.setupComplete)return;
-    setupAutoOpened.current=true;
-    var hasExistingWork=(ctx&&ctx.project)||(assets&&assets.length>0)||(threats&&threats.length>0);
-    if(hasExistingWork){
-      setCtx(function(prev){return{...prev,profile:{...(prev.profile||DEFAULT_PROFILE),setupComplete:true,devType:prev.devType||(prev.profile&&prev.profile.devType)||""}}});
-    }else{
-      openSetupWizard();
-    }
-  },[dataLoaded,ctx,assets,threats]);
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
@@ -2432,173 +2327,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       )
     ),
 
-    // SETUP WIZARD — tailors the app by capturing project profile up-front.
-    // Step 1: project basics.  Step 2: development profile + mixed-use.
-    // Step 3: regulatory bindings.  Step 4: risk appetite & methodology.
-    // Step 5: scope & assumptions.  On Finish: writes ctx.profile, loads
-    // asset preset for the chosen dev type, marks setupComplete.
-    setupOpen&&setupDraft&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(15,23,42,0.55)",zIndex:2100,display:"flex",alignItems:"center",justifyContent:"center",padding:20},onClick:closeSetupWizard},
-      React.createElement("div",{style:{background:"#fff",borderRadius:14,boxShadow:"0 24px 80px rgba(0,0,0,0.35)",width:720,maxWidth:"100%",maxHeight:"90vh",display:"flex",flexDirection:"column",overflow:"hidden"},onClick:e=>e.stopPropagation()},
-        // Header
-        React.createElement("div",{style:{padding:"18px 24px",borderBottom:"1px solid #e2e8f0",background:"linear-gradient(180deg,#f8fafc,#fff)"}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontSize:11,color:"#4472C4",fontWeight:700,letterSpacing:0.4,textTransform:"uppercase"}},"Project Setup Wizard"),
-              React.createElement("div",{style:{fontSize:16,fontWeight:700,color:"#1e293b",marginTop:2}},"Tailor the app to this project"),
-              React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:4}},"These answers drive asset presets, threat priors, treatment suggestions and the final report.")
-            ),
-            React.createElement("button",{onClick:closeSetupWizard,style:{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"#94a3b8"}},"✕")
-          ),
-          // Stepper
-          React.createElement("div",{style:{display:"flex",gap:6,marginTop:14}},
-            [1,2,3,4,5].map(function(n){
-              var labels=["Basics","Development","Regulatory","Appetite","Scope"];
-              var active=setupStep===n;
-              var done=setupStep>n;
-              return React.createElement("button",{key:n,onClick:()=>setSetupStep(n),style:{flex:1,padding:"8px 6px",borderRadius:8,border:"1px solid "+(active?"#4472C4":done?"#86efac":"#e2e8f0"),background:active?"#4472C4":done?"#f0fdf4":"#fff",color:active?"#fff":done?"#166534":"#64748b",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}},
-                React.createElement("div",{style:{fontSize:10,opacity:0.8}},(done?"✓":n)+""),
-                React.createElement("div",null,labels[n-1])
-              );
-            })
-          )
-        ),
-        // Body
-        React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"20px 24px"}},
-          // STEP 1 — BASICS
-          setupStep===1&&React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1e293b",marginBottom:12}},"Project basics"),
-            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
-              [["project","Project name",""],["projectNum","Project number",""],["client","Client",""],["assessor","Assessor (SQSS)",""],["address","Site address",""],["postcode","Postcode",""],["stage","RIBA stage",""]].map(function(f){
-                return React.createElement("div",{key:f[0]},
-                  React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},f[1]),
-                  React.createElement("input",{className:"input",value:setupDraft[f[0]]||"",onChange:e=>{var v=e.target.value;setSetupDraft(d=>({...d,[f[0]]:v}));}})
-                );
-              }),
-              React.createElement("div",{key:"date"},
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Date"),
-                React.createElement("input",{type:"date",className:"input",value:setupDraft.date||"",onChange:e=>{var v=e.target.value;setSetupDraft(d=>({...d,date:v}));}})
-              )
-            )
-          ),
-          // STEP 2 — DEVELOPMENT
-          setupStep===2&&React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1e293b",marginBottom:12}},"Development profile"),
-            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginBottom:10}},"Primary type seeds the asset library and tailors threat priors.  Multi-select below for mixed-use sites."),
-            React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Primary development type"),
-            React.createElement("select",{className:"input",value:setupDraft.profile.devType||"",onChange:e=>{var v=e.target.value;updateDraftProfile({devType:v});}},
-              React.createElement("option",{value:""},"— select —"),
-              Object.keys(assetPresetsDB||{}).map(function(t){return React.createElement("option",{key:t,value:t},t);})
-            ),
-            React.createElement("div",{style:{marginTop:14}},
-              React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Sub-type (optional)"),
-              React.createElement("input",{className:"input",placeholder:"e.g. BTR, Student, Luxury, CNI, Govt",value:setupDraft.profile.devSubType||"",onChange:e=>{var v=e.target.value;updateDraftProfile({devSubType:v});}})
-            ),
-            React.createElement("div",{style:{marginTop:14}},
-              React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:6}},"Mixed-use components (tick all that apply)"),
-              React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6}},
-                Object.keys(assetPresetsDB||{}).map(function(t){
-                  var on=(setupDraft.profile.devTypesMulti||[]).indexOf(t)>=0;
-                  return React.createElement("button",{key:t,onClick:()=>toggleDraftDevTypeMulti(t),style:{padding:"6px 10px",borderRadius:999,border:"1px solid "+(on?"#4472C4":"#cbd5e1"),background:on?"#4472C4":"#fff",color:on?"#fff":"#475569",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}},t);
-                })
-              )
-            ),
-            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginTop:14}},
-              React.createElement("div",null,
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Lifecycle stage"),
-                React.createElement("select",{className:"input",value:setupDraft.profile.lifecycle||"",onChange:e=>{var v=e.target.value;updateDraftProfile({lifecycle:v});}},
-                  React.createElement("option",{value:""},"— select —"),
-                  LIFECYCLE_OPTIONS.map(function(o){return React.createElement("option",{key:o.id,value:o.id},o.label);})
-                )
-              ),
-              React.createElement("div",null,
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Scale"),
-                React.createElement("select",{className:"input",value:setupDraft.profile.scale||"",onChange:e=>{var v=e.target.value;updateDraftProfile({scale:v});}},
-                  React.createElement("option",{value:""},"— select —"),
-                  SCALE_OPTIONS.map(function(o){return React.createElement("option",{key:o.id,value:o.id},o.label);})
-                )
-              ),
-              React.createElement("div",{style:{gridColumn:"1 / -1"}},
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Client sector"),
-                React.createElement("input",{className:"input",placeholder:"e.g. Financial services, Health, Local authority",value:setupDraft.profile.sector||"",onChange:e=>{var v=e.target.value;updateDraftProfile({sector:v});}})
-              )
-            )
-          ),
-          // STEP 3 — REGULATORY
-          setupStep===3&&React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1e293b",marginBottom:6}},"Regulatory bindings"),
-            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginBottom:14}},"Tick the standards or guidance this project must comply with.  These will drive checklists and mandatory treatments downstream."),
-            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
-              REGULATORY_OPTIONS.map(function(o){
-                var on=(setupDraft.profile.regulatory||[]).indexOf(o.id)>=0;
-                return React.createElement("button",{key:o.id,onClick:()=>toggleDraftRegulatory(o.id),style:{textAlign:"left",padding:"10px 12px",borderRadius:8,border:"1px solid "+(on?"#4472C4":"#e2e8f0"),background:on?"#eef4fb":"#fff",cursor:"pointer",fontFamily:"inherit"}},
-                  React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
-                    React.createElement("div",{style:{width:18,height:18,borderRadius:4,border:"2px solid "+(on?"#4472C4":"#cbd5e1"),background:on?"#4472C4":"#fff",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700}},on?"✓":""),
-                    React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b"}},o.label)
-                  ),
-                  React.createElement("div",{style:{fontSize:10,color:"#64748b",marginTop:4,marginLeft:26}},o.hint)
-                );
-              })
-            )
-          ),
-          // STEP 4 — APPETITE & METHODOLOGY
-          setupStep===4&&React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1e293b",marginBottom:6}},"Risk appetite & methodology"),
-            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginBottom:14}},"Set the organisation's tolerance for each impact category (1 = very low tolerance, 5 = high tolerance).  These will drive ALARP checks on residual risk."),
-            React.createElement("div",{style:{display:"grid",gap:10}},
-              [["people","People / life-safety"],["financial","Financial"],["reputation","Reputational"],["operational","Operational"],["environmental","Environmental"]].map(function(row){
-                var key=row[0],label=row[1];
-                var v=(setupDraft.profile.appetite||{})[key]||3;
-                return React.createElement("div",{key:key,style:{display:"grid",gridTemplateColumns:"200px 1fr 40px",alignItems:"center",gap:12}},
-                  React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#334155"}},label),
-                  React.createElement("input",{type:"range",min:1,max:5,step:1,value:v,onChange:e=>{var nv=parseInt(e.target.value,10);setSetupDraft(d=>({...d,profile:{...d.profile,appetite:{...(d.profile.appetite||{}),[key]:nv}}}));}}),
-                  React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#4472C4",textAlign:"right"}},v)
-                );
-              })
-            ),
-            React.createElement("div",{style:{marginTop:18,display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
-              React.createElement("div",null,
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"ALARP target (residual)"),
-                React.createElement("select",{className:"input",value:setupDraft.profile.alarpTarget||"Medium",onChange:e=>{var v=e.target.value;updateDraftProfile({alarpTarget:v});}},
-                  ["VeryLow","Low","Medium","High","VeryHigh"].map(function(x){return React.createElement("option",{key:x,value:x},x);})
-                )
-              ),
-              React.createElement("div",null,
-                React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"Matrix"),
-                React.createElement("select",{className:"input",value:(setupDraft.profile.methodology||{}).matrix||"5x5",onChange:e=>{var v=e.target.value;updateDraftProfile({methodology:{...(setupDraft.profile.methodology||{}),matrix:v}});}},
-                  React.createElement("option",{value:"5x5"},"5×5"),
-                  React.createElement("option",{value:"4x4"},"4×4")
-                )
-              )
-            ),
-            React.createElement("label",{style:{display:"flex",alignItems:"center",gap:8,marginTop:14,cursor:"pointer"}},
-              React.createElement("input",{type:"checkbox",checked:!!setupDraft.profile.enforceDbtTreatment,onChange:e=>{var v=e.target.checked;updateDraftProfile({enforceDbtTreatment:v});}}),
-              React.createElement("span",{style:{fontSize:12,color:"#334155"}},"Enforce treatment for Design Basis Threats (threat score ≥3 must have at least one treatment)")
-            )
-          ),
-          // STEP 5 — SCOPE
-          setupStep===5&&React.createElement("div",null,
-            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1e293b",marginBottom:6}},"Scope & assumptions"),
-            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginBottom:14}},"Document the boundary of this assessment — what's in, what's out, and the assumptions underpinning it."),
-            React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginBottom:4}},"In-scope boundary"),
-            React.createElement("textarea",{className:"input",style:{minHeight:72},value:setupDraft.profile.scopeBoundary||"",onChange:e=>{var v=e.target.value;updateDraftProfile({scopeBoundary:v});}}),
-            React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginTop:12,marginBottom:4}},"Exclusions"),
-            React.createElement("textarea",{className:"input",style:{minHeight:60},value:setupDraft.profile.exclusions||"",onChange:e=>{var v=e.target.value;updateDraftProfile({exclusions:v});}}),
-            React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#475569",display:"block",marginTop:12,marginBottom:4}},"Assumptions"),
-            React.createElement("textarea",{className:"input",style:{minHeight:60},value:setupDraft.profile.assumptions||"",onChange:e=>{var v=e.target.value;updateDraftProfile({assumptions:v});}})
-          )
-        ),
-        // Footer nav
-        React.createElement("div",{style:{padding:"14px 24px",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#f8fafc"}},
-          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:closeSetupWizard},"Cancel"),
-          React.createElement("div",{style:{display:"flex",gap:8}},
-            setupStep>1&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>setSetupStep(setupStep-1)},"← Back"),
-            setupStep<5&&React.createElement("button",{className:"btn btn-dark btn-sm",onClick:()=>setSetupStep(setupStep+1)},"Next →"),
-            setupStep===5&&React.createElement("button",{className:"btn btn-dark btn-sm",onClick:finishSetupWizard},"✓ Finish setup")
-          )
-        )
-      )
-    ),
-
     // Header
     React.createElement("header",{className:"header no-print"},
       React.createElement("div",null,
@@ -2606,7 +2334,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("div",{className:"header-sub"},"ISO 31000 · HB167 · ISO 31010 · v"+VERSION)
       ),
       React.createElement("div",{className:"flex gap-2 items-center"},
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:openSetupWizard,title:"Project Setup Wizard — tailor the app to this project"},"🧭 Setup"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:saveFile},"💾 Save"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFile},"📂 Load"),
         ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFromGitHubBrowse,title:"Load from back-ups"},"☁️ Back-ups"),
