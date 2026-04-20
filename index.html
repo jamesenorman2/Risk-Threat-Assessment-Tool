@@ -318,8 +318,43 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.002";
-  const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
+  const VERSION="2.003";
+  // Project profile — drives tailoring of assets / threats / treatments across the app.
+  // Kept as a self-contained object so the Setup Wizard can read/write it in one place
+  // and future features (regulatory bindings, methodology toggles, LLM tailoring) hang off it.
+  const DEFAULT_PROFILE={
+    setupComplete:false,          // false until user finishes the Setup Wizard
+    devType:"",                   // primary development type (mirrored to ctx.devType for back-compat)
+    devSubType:"",                // e.g. BTR, Student, CNI, Govt
+    devTypesMulti:[],             // mixed-use: union of dev types, e.g. ["Residential","Retail"]
+    lifecycle:"",                 // design | new-build | existing | refurb | operational
+    scale:"",                     // small | medium | large | major
+    sector:"",                    // free text (client sector)
+    regulatory:[],                // e.g. ["Martyns-Law","SABRE","CTSA","JSP440"]
+    appetite:{people:3,financial:3,reputation:3,operational:3,environmental:3}, // 1-5 tolerance
+    alarpTarget:"Medium",         // target residual: VeryLow | Low | Medium | High | VeryHigh
+    enforceDbtTreatment:true,     // DBTs (threat score >=3) must have at least one treatment
+    methodology:{matrix:"5x5",scoringMode:"semiquant",critWeighted:false}, // future weighting
+    scopeBoundary:"",             // free text of in/out-of-scope
+    exclusions:"",
+    assumptions:""
+  };
+  const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:"",profile:{...DEFAULT_PROFILE}});
+  // Merge any loaded ctx onto the defaults so old saves (pre-profile) get the full schema.
+  const mergeProfile=(loaded)=>{
+    var base={...DEFAULT_PROFILE};
+    if(loaded&&typeof loaded==="object")Object.keys(loaded).forEach(function(k){base[k]=loaded[k]});
+    // preserve nested defaults if loaded object omitted them
+    base.appetite={...DEFAULT_PROFILE.appetite,...(loaded&&loaded.appetite||{})};
+    base.methodology={...DEFAULT_PROFILE.methodology,...(loaded&&loaded.methodology||{})};
+    if(!Array.isArray(base.regulatory))base.regulatory=[];
+    if(!Array.isArray(base.devTypesMulti))base.devTypesMulti=[];
+    return base;
+  };
+  const hydrateCtx=(loadedCtx)=>{
+    var c=loadedCtx&&typeof loadedCtx==="object"?loadedCtx:{};
+    return{project:c.project||"",projectNum:c.projectNum||"",ref:c.ref||"",date:c.date||"",stage:c.stage||"",assessor:c.assessor||"",client:c.client||"",scope:c.scope||"",assumptions:c.assumptions||"",notes:c.notes||"",address:c.address||"",postcode:c.postcode||"",country:c.country||"United Kingdom",devType:c.devType||"",profile:mergeProfile(c.profile)};
+  };
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
   const[assets,setAssets]=useState([]);
@@ -485,7 +520,7 @@ function App(){
     fetch("/api/db",{credentials:"same-origin",headers:{"x-api-key":"__API_SECRET__"}}).then(function(r){return r.json()}).then(function(defs){
       defaultsRef.current=defs;
       var d=localStorage.getItem("sra-rta-data");
-      if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets&&p.assets.length>0)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
+      if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(hydrateCtx(p.ctx));if(p.assets&&p.assets.length>0)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
       if(p.threats&&p.threats.length>0){var loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}))}else setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));
       if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
       if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);
@@ -624,7 +659,7 @@ function App(){
   };
 
   const applyLoadedData=(p)=>{
-    if(p.ctx)setCtx(p.ctx);if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
+    if(p.ctx)setCtx(hydrateCtx(p.ctx));if(p.assets)setAssets(p.assets);if(p.threats)setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
     if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
   };
@@ -760,7 +795,7 @@ function App(){
   };
 
   const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
-    setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
+    setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:"",profile:{...DEFAULT_PROFILE}});
     var defs=defaultsRef.current||{};setAssets((defs.DEF_ASSETS||[]).map(function(a){return{...a}}));setThreats((defs.DEF_THREATS||[]).map(function(t){return{...t}}));setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
 
@@ -2176,6 +2211,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     newAssets.forEach(function(newA){var old=oldByDesc[newA.desc];if(old&&old.id)assetIdMap[old.id]=newA.id;});
     setThreats(function(tt){return tt.map(function(t){if(!t.targets||t.targets.length===0)return t;var newTargets=t.targets.map(function(tid){return assetIdMap[tid]||null}).filter(Boolean);return{...t,targets:newTargets};});});
     setAssets(newAssets);setActiveAssetPreset(type);
+    // Promote dev type into ctx so the report, SBD selector and future tailoring all see a single source of truth.
+    setCtx(function(prev){return{...prev,devType:type,profile:{...(prev.profile||DEFAULT_PROFILE),devType:type}}});
     var carried=newAssets.filter(function(a){return a.sc&&(a.sc.opImpact||a.sc.dependencies||a.sc.impactPeople||a.sc.impactEnv)}).length;
     if(assets.length>0)showToast("Preset loaded"+(carried>0?" \u2014 "+carried+" asset scores carried over":""));
   };
