@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.002";
+  const VERSION="2.003";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -449,6 +449,13 @@ function App(){
   const treatDBAutoFetched=useRef(false);
   const threatLibAutoFetched=useRef(false);
   const[sbdCompliance,setSbdCompliance]=useState({});
+  const[showSetupWizard,setShowSetupWizard]=useState(false);
+  const[wizardStep,setWizardStep]=useState(1);
+  const[wizardDevType,setWizardDevType]=useState('');
+  const[wizardAssets,setWizardAssets]=useState([]);
+  const[wizardThreats,setWizardThreats]=useState([]);
+  const[wizardTreatScope,setWizardTreatScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+  const[treatCategoryScope,setTreatCategoryScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
 
   // Fetch live UK threat level
   const levelColors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
@@ -497,6 +504,7 @@ function App(){
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
+  useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
@@ -759,10 +767,11 @@ function App(){
     }catch(e){if(!silent){setThreatLibSync(p=>({...p,status:"error"}));showToast("Error loading threat library from GitHub");}}
   };
 
-  const clearAll=()=>{if(confirm("Clear all data and start fresh?")){
+  const clearAll=()=>{if(confirm("Clear all data and start a new assessment?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets((defs.DEF_ASSETS||[]).map(function(a){return{...a}}));setThreats((defs.DEF_THREATS||[]).map(function(t){return{...t}}));setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
-    localStorage.removeItem("sra-rta-data");showToast("Data cleared")}};
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
+    localStorage.removeItem("sra-rta-data");
+    setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}};
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -2153,6 +2162,28 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(threats.length>0)showToast("Preset loaded"+(carried>0?" \u2014 "+carried+" threat scores carried over":""));
   };
   const clearThreats=()=>{if(threatsLocked)return;setThreats([]);setActiveThreatPreset(null);};
+  const wizardSelectType=(type)=>{
+    setWizardDevType(type);
+    const pa=(assetPresetsDB[type]||[]).map((a,i)=>({...a,id:i+1,sc:{},included:true}));
+    setWizardAssets(pa);
+    const defs=defaultsRef.current||{};
+    const pn=((defs.THREAT_PRESETS||{})[type])||[];
+    const ad=defs.DEF_THREATS||[];
+    if(pn.length>0){setWizardThreats(pn.map((nm,i)=>{const d=ad.find(x=>x.n===nm);return d?{n:d.n,d:d.d,cat:d.cat,id:i+1,included:true}:null}).filter(Boolean));}
+    else if(!type){setWizardThreats([]);}
+    else{setWizardThreats(ad.map((t,i)=>({...t,id:i+1,included:true})));}
+  };
+  const applyWizard=()=>{
+    const sa=wizardAssets.filter(a=>a.included).map((a,i)=>({id:i+1,cat:a.cat,desc:a.desc,sc:{}}));
+    const st=wizardThreats.filter(t=>t.included).map((t,i)=>({n:t.n,d:t.d,cat:t.cat,id:i+1,cap:null,int:null,targets:[]}));
+    setAssets(sa);setThreats(st);
+    setActiveAssetPreset(wizardDevType||null);setActiveThreatPreset(wizardDevType||null);
+    if(wizardDevType)setCtx(c=>({...c,devType:wizardDevType}));
+    setTreatCategoryScope({...wizardTreatScope});
+    setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});
+    setShowSetupWizard(false);setWizardStep(1);
+    showToast("Assessment configured — "+sa.length+" assets, "+st.length+" threats loaded");
+  };
   const ua=(id,f,v)=>setAssets(p=>p.map(a=>a.id===id?{...a,[f]:v}:a));
   const uas=(id,c,v)=>setAssets(p=>p.map(a=>a.id===id?{...a,sc:{...a.sc,[c]:a.sc[c]===v?null:v}}:a));
   const addA=()=>setAssets(p=>[...p,{id:Math.max(0,...p.map(a=>a.id))+1,cat:"",desc:"",sc:{}}]);
@@ -2236,6 +2267,204 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   // ============================================================
   // RENDER
   // ============================================================
+  const renderSetupWizard=()=>{
+    const ol={position:"fixed",inset:0,background:"rgba(15,23,42,0.65)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16};
+    const card={background:"#fff",borderRadius:16,boxShadow:"0 24px 80px rgba(0,0,0,0.4)",width:"100%",maxWidth:760,maxHeight:"92vh",display:"flex",flexDirection:"column",overflow:"hidden"};
+    const hdr={padding:"24px 28px 16px",borderBottom:"1px solid #f1f5f9",flexShrink:0};
+    const body={padding:"18px 28px",overflowY:"auto",flex:1};
+    const ftr={padding:"14px 28px 22px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0};
+    const types=Object.keys(assetPresetsDB);
+    const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥"};
+    const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities"};
+    const stepLabels=["Development Type","Assets","Threats","Confirm & Launch"];
+    const progress=React.createElement("div",{style:{display:"flex",alignItems:"center",gap:0,marginTop:14}},
+      stepLabels.map((s,i)=>React.createElement(React.Fragment,{key:i},
+        React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:3}},
+          React.createElement("div",{style:{width:26,height:26,borderRadius:"50%",background:i+1<wizardStep?"#1B2A4A":i+1===wizardStep?"#1B2A4A":"#e2e8f0",color:i+1<=wizardStep?"#fff":"#94a3b8",fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}},i+1<wizardStep?"✓":i+1),
+          React.createElement("div",{style:{fontSize:9,color:i+1===wizardStep?"#1B2A4A":"#94a3b8",fontWeight:i+1===wizardStep?700:400,whiteSpace:"nowrap"}},s)
+        ),
+        i<stepLabels.length-1&&React.createElement("div",{style:{flex:1,height:2,background:i+1<wizardStep?"#1B2A4A":"#e2e8f0",margin:"0 6px",marginBottom:16}})
+      ))
+    );
+    const skip=React.createElement("button",{className:"btn btn-outline",style:{color:"#94a3b8",borderColor:"#e2e8f0",fontSize:12},onClick:()=>setShowSetupWizard(false)},"Skip Setup");
+    const badge=React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#64748b",letterSpacing:2,textTransform:"uppercase",marginBottom:4}},"ASSESSMENT SETUP");
+
+    if(wizardStep===1){
+      const defs=defaultsRef.current||{};
+      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+        React.createElement("div",{style:hdr},
+          badge,
+          React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"What type of development are you assessing?"),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Select a preset to auto-load relevant assets and threats as a starting point — you can customise both in the next steps."),
+          progress
+        ),
+        React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}},
+          ...types.map(type=>React.createElement("button",{key:type,onClick:()=>wizardSelectType(type),style:{border:"2px solid "+(wizardDevType===type?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===type?"#EEF2FF":"#fff",boxShadow:wizardDevType===type?"0 0 0 3px rgba(27,42,74,0.1)":"none",transition:"all 0.12s"}},
+            React.createElement("div",{style:{fontSize:22,marginBottom:6}},typeIcons[type]||"🏗️"),
+            React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},type),
+            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},typeDescs[type]||""),
+            React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5,display:"flex",gap:8}},
+              React.createElement("span",null,(assetPresetsDB[type]||[]).length+" assets"),
+              React.createElement("span",null,"·"),
+              React.createElement("span",null,(((defs.THREAT_PRESETS||{})[type])||[]).length+" threats")
+            )
+          )),
+          React.createElement("button",{key:"blank",onClick:()=>{setWizardDevType("");setWizardAssets([]);setWizardThreats([]);},style:{border:"2px solid "+(wizardDevType===""&&wizardThreats.length===0?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===""&&wizardThreats.length===0?"#EEF2FF":"#fff",transition:"all 0.12s"}},
+            React.createElement("div",{style:{fontSize:22,marginBottom:6}},"✏️"),
+            React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},"Custom / Blank"),
+            React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},"Start from scratch"),
+            React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5}},"No presets loaded")
+          )
+        ),
+        React.createElement("div",{style:ftr},skip,React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(2)},"Next: Review Assets →"))
+      ));
+    }
+
+    if(wizardStep===2){
+      const selCount=wizardAssets.filter(a=>a.included).length;
+      const toggleAll=(v)=>setWizardAssets(p=>p.map(a=>({...a,included:v})));
+      const toggleAsset=(id)=>setWizardAssets(p=>p.map(a=>a.id===id?{...a,included:!a.included}:a));
+      const moveAsset=(id,dir)=>setWizardAssets(p=>{const i=p.findIndex(a=>a.id===id);if(i<0||(dir<0&&i===0)||(dir>0&&i===p.length-1))return p;const n=[...p];[n[i],n[i+dir]]=[n[i+dir],n[i]];return n;});
+      const removeWA=(id)=>setWizardAssets(p=>p.filter(a=>a.id!==id));
+      const updateWA=(id,f,v)=>setWizardAssets(p=>p.map(a=>a.id===id?{...a,[f]:v}:a));
+      const addWA=()=>setWizardAssets(p=>[...p,{id:Date.now(),cat:"",desc:"",included:true}]);
+      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+        React.createElement("div",{style:hdr},
+          badge,
+          React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Review and customise assets"),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},wizardDevType?"Standard assets for "+wizardDevType+" developments. Tick to include, edit descriptions, or add custom rows.":"Add the asset categories relevant to this site."),
+          progress
+        ),
+        React.createElement("div",{style:body},
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#475569"}},selCount+" of "+wizardAssets.length+" assets selected"),
+            React.createElement("div",{style:{display:"flex",gap:6}},
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleAll(true)},"Select All"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleAll(false)},"None")
+            )
+          ),
+          React.createElement("div",{style:{border:"1px solid #e2e8f0",borderRadius:8,overflow:"hidden",marginBottom:10}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:12}},
+              React.createElement("thead",null,React.createElement("tr",{style:{background:"#f8fafc"}},
+                React.createElement("th",{style:{padding:"7px 8px",width:30,textAlign:"center"}},"✓"),
+                React.createElement("th",{style:{padding:"7px 8px",textAlign:"left",width:"36%"}},"Category"),
+                React.createElement("th",{style:{padding:"7px 8px",textAlign:"left"}},"Description"),
+                React.createElement("th",{style:{padding:"7px 8px",width:70,textAlign:"center"}},"Order"),
+                React.createElement("th",{style:{padding:"7px 8px",width:28}})
+              )),
+              React.createElement("tbody",null,...wizardAssets.map((a,idx)=>React.createElement("tr",{key:a.id,style:{borderTop:"1px solid #f1f5f9",opacity:a.included?1:0.45}},
+                React.createElement("td",{style:{padding:"5px 8px",textAlign:"center"}},React.createElement("input",{type:"checkbox",checked:a.included,onChange:()=>toggleAsset(a.id),style:{cursor:"pointer"}})),
+                React.createElement("td",{style:{padding:"4px 6px"}},React.createElement("input",{className:"input",value:a.cat,onChange:e=>updateWA(a.id,"cat",e.target.value),style:{padding:"3px 6px",fontSize:11},placeholder:"Category..."})),
+                React.createElement("td",{style:{padding:"4px 6px"}},React.createElement("input",{className:"input",value:a.desc,onChange:e=>updateWA(a.id,"desc",e.target.value),style:{padding:"3px 6px",fontSize:11},placeholder:"Description..."})),
+                React.createElement("td",{style:{padding:"4px 6px",textAlign:"center"}},
+                  React.createElement("div",{style:{display:"flex",gap:2,justifyContent:"center"}},
+                    React.createElement("button",{onClick:()=>moveAsset(a.id,-1),disabled:idx===0,style:{background:"none",border:"1px solid #e2e8f0",borderRadius:3,cursor:"pointer",padding:"1px 4px",color:"#64748b",fontSize:10,lineHeight:1}},"▲"),
+                    React.createElement("button",{onClick:()=>moveAsset(a.id,1),disabled:idx===wizardAssets.length-1,style:{background:"none",border:"1px solid #e2e8f0",borderRadius:3,cursor:"pointer",padding:"1px 4px",color:"#64748b",fontSize:10,lineHeight:1}},"▼")
+                  )
+                ),
+                React.createElement("td",{style:{padding:"4px 6px"}},React.createElement("button",{onClick:()=>removeWA(a.id),style:{background:"none",border:"none",cursor:"pointer",color:"#ef4444",fontSize:14,lineHeight:1,padding:"0 2px"}},"×"))
+              )))
+            )
+          ),
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:addWA},"+ Add Asset")
+        ),
+        React.createElement("div",{style:ftr},
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(1)},"← Back"),skip),
+          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(3)},"Next: Select Threats →")
+        )
+      ));
+    }
+
+    if(wizardStep===3){
+      const terrorism=wizardThreats.filter(t=>t.cat==="Terrorism");
+      const crime=wizardThreats.filter(t=>t.cat==="Crime");
+      const terrorSel=terrorism.filter(t=>t.included).length;
+      const crimeSel=crime.filter(t=>t.included).length;
+      const toggleWT=(id)=>setWizardThreats(p=>p.map(t=>t.id===id?{...t,included:!t.included}:t));
+      const toggleWTCat=(cat,v)=>setWizardThreats(p=>p.map(t=>t.cat===cat?{...t,included:v}:t));
+      const addWT=(cat)=>setWizardThreats(p=>[...p,{id:Date.now(),n:"",d:"",cat,included:true}]);
+      const removeWT=(id)=>setWizardThreats(p=>p.filter(t=>t.id!==id));
+      const updateWT=(id,f,v)=>setWizardThreats(p=>p.map(t=>t.id===id?{...t,[f]:v}:t));
+      const threatGroup=(label,list,selN,catColor)=>React.createElement("div",{style:{flex:1}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:"2px solid "+catColor}},
+          React.createElement("div",{style:{fontWeight:700,fontSize:12,color:catColor}},label+" · "+selN+"/"+list.length),
+          React.createElement("div",{style:{display:"flex",gap:4}},
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,true)},"All"),
+            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,false)},"None")
+          )
+        ),
+        ...list.map(t=>React.createElement("div",{key:t.id,style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 2px",borderRadius:5,marginBottom:2,opacity:t.included?1:0.45}},
+          React.createElement("input",{type:"checkbox",checked:t.included,onChange:()=>toggleWT(t.id),style:{marginTop:3,flexShrink:0,cursor:"pointer"}}),
+          React.createElement("div",{style:{flex:1,minWidth:0}},
+            t.n?React.createElement(React.Fragment,null,
+              React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b",lineHeight:1.3}},t.n),
+              React.createElement("div",{style:{fontSize:10,color:"#64748b",marginTop:1}},t.d)
+            ):React.createElement("input",{className:"input",value:t.n,onChange:e=>updateWT(t.id,"n",e.target.value),placeholder:"Threat name...",style:{fontSize:11,padding:"2px 6px"}})
+          ),
+          React.createElement("button",{onClick:()=>removeWT(t.id),style:{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:13,padding:"0 2px",lineHeight:1,flexShrink:0}},"×")
+        )),
+        React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginTop:8,width:"100%",fontSize:11},onClick:()=>addWT(label)},"+ Add "+label+" Threat")
+      );
+      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+        React.createElement("div",{style:hdr},
+          badge,
+          React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Select threats to assess"),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Capability & intent are scored later in the assessment. Deselect threats not relevant to this site, or add custom ones."),
+          progress
+        ),
+        React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}},
+          terrorism.length>0||true?threatGroup("Terrorism",terrorism,terrorSel,"#DC2626"):null,
+          crime.length>0||true?threatGroup("Crime",crime,crimeSel,"#2563EB"):null
+        ),
+        React.createElement("div",{style:ftr},
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(2)},"← Back"),skip),
+          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(4)},"Next: Confirm Setup →")
+        )
+      ));
+    }
+
+    if(wizardStep===4){
+      const selA=wizardAssets.filter(a=>a.included).length;
+      const selTerror=wizardThreats.filter(t=>t.included&&t.cat==="Terrorism").length;
+      const selCrime=wizardThreats.filter(t=>t.included&&t.cat==="Crime").length;
+      const tsLabels={ext_physical:"External Physical Security Measures",ext_electronic:"External Electronic / CCTV / Access Control",int_physical:"Internal Physical Security Measures",int_electronic:"Internal Electronic / Technical Systems",procedures:"Procedural & Management Measures"};
+      const statBox=(label,val,bg,col,bc)=>React.createElement("div",{style:{background:bg,borderRadius:10,padding:"14px 16px",border:"1px solid "+bc}},
+        React.createElement("div",{style:{fontSize:10,fontWeight:700,color:col,letterSpacing:1,textTransform:"uppercase",marginBottom:6}},label),
+        React.createElement("div",{style:{fontSize:18,fontWeight:800,color:col}},val)
+      );
+      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+        React.createElement("div",{style:hdr},
+          badge,
+          React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Confirm your assessment setup"),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Review your configuration and set which treatment categories are in scope for this development."),
+          progress
+        ),
+        React.createElement("div",{style:body},
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}},
+            statBox("Development Type",wizardDevType||"Custom","#f8fafc","#1B2A4A","#e2e8f0"),
+            statBox("Assets",selA+" categories","#f8fafc","#1B2A4A","#e2e8f0"),
+            statBox("Terrorism",selTerror+" threats","#FFF5F5","#DC2626","#FECACA"),
+            statBox("Crime",selCrime+" threats","#EFF6FF","#2563EB","#BFDBFE")
+          ),
+          React.createElement("div",{style:{background:"#f8fafc",borderRadius:10,padding:"16px",border:"1px solid #e2e8f0"}},
+            React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:4}},"Treatment Categories in Scope"),
+            React.createElement("p",{style:{fontSize:11,color:"#64748b",margin:"0 0 12px"}},"Tick the types of security measures relevant to this development. These shape the countermeasures recommended throughout the assessment."),
+            React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:6}},
+              Object.entries(tsLabels).map(([k,label])=>React.createElement("label",{key:k,style:{display:"flex",gap:10,alignItems:"center",padding:"8px 10px",borderRadius:7,cursor:"pointer",background:wizardTreatScope[k]?"#fff":"#f1f5f9",border:"1px solid "+(wizardTreatScope[k]?"#c7d2fe":"#e2e8f0"),transition:"all 0.1s"}},
+                React.createElement("input",{type:"checkbox",checked:!!wizardTreatScope[k],onChange:e=>setWizardTreatScope(p=>({...p,[k]:e.target.checked})),style:{flexShrink:0}}),
+                React.createElement("span",{style:{fontSize:12,fontWeight:wizardTreatScope[k]?600:400,color:wizardTreatScope[k]?"#1e293b":"#94a3b8"}},label)
+              ))
+            )
+          )
+        ),
+        React.createElement("div",{style:ftr},
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(3)},"← Back"),skip),
+          React.createElement("button",{className:"btn btn-primary",style:{padding:"10px 28px",fontSize:14,fontWeight:700},onClick:applyWizard},"Launch Assessment →")
+        )
+      ));
+    }
+    return null;
+  };
   if(!dataLoaded)return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",flexDirection:"column",gap:16,fontFamily:"Arial,sans-serif",color:"#475569"}},
     React.createElement("div",{style:{width:40,height:40,border:"4px solid #e2e8f0",borderTopColor:"#1B2A4A",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}),
     React.createElement("div",{style:{fontSize:14,fontWeight:600}},"Loading..."),
@@ -2244,6 +2473,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   return React.createElement("div",{className:"app"},
     // Toast
     toast&&React.createElement("div",{className:"toast"},toast),
+
+    // Setup Wizard
+    showSetupWizard&&renderSetupWizard(),
 
     // GitHub file browser modal
     ghBrowser.open&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center"},onClick:()=>setGhBrowser({open:false,files:[],loading:false,path:"projects"})},
@@ -2303,7 +2535,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWord},"📄 Word"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel},"📊 Excel"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:printReport},"🖨️ Print"),
-        React.createElement("button",{className:"btn btn-danger btn-sm",onClick:clearAll},"Clear")
+        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType('');setWizardAssets([]);setWizardThreats([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
+        React.createElement("button",{className:"btn btn-danger btn-sm",onClick:clearAll},"New")
       ),
       React.createElement("div",{className:"header-right"},
         React.createElement("div",null,"Security Risk Assessment"),
