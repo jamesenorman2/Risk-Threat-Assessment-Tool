@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.005";
+  const VERSION="2.004";
   // Project profile — drives tailoring of assets / threats / treatments across the app.
   // Kept as a self-contained object so the Setup Wizard can read/write it in one place
   // and future features (regulatory bindings, methodology toggles, LLM tailoring) hang off it.
@@ -2620,41 +2620,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{className:"font-mono"},ctx.project?(ctx.projectNum?ctx.project+" ("+ctx.projectNum+")":ctx.project):"No project set")
       )
     ),
-
-    // SETUP HEALTH CHECK STRIP — at-a-glance view of how tailored the project is.
-    // Always visible (except in print).  Click any pill to jump back into the
-    // Setup Wizard or the relevant tab.
-    (function(){
-      var p=(ctx&&ctx.profile)||DEFAULT_PROFILE;
-      var devType=p.devType||ctx.devType||activeAssetPreset||"";
-      var regList=Array.isArray(p.regulatory)?p.regulatory:[];
-      var regLabels=regList.map(function(id){var o=REGULATORY_OPTIONS.find(function(x){return x.id===id});return o?o.label.replace(/\s*\(.*\)$/,""):id;});
-      var assetCount=(assets||[]).length;
-      var threatCount=(threats||[]).length;
-      var dbtThreats=(threats||[]).filter(function(t){var s=Math.round(((t.cap||0)+(t.int||0))/2);return s>=3;});
-      var dbtCount=dbtThreats.length;
-      var hasMeasures=function(id){var m=treatmentMeasures&&treatmentMeasures[id];if(!m)return false;return Object.keys(m).some(function(k){return Array.isArray(m[k])&&m[k].length>0});};
-      var dbtUntreated=dbtThreats.filter(function(t){return !hasMeasures(t.id)}).length;
-      var mappedCount=(threats||[]).filter(function(t){return hasMeasures(t.id)}).length;
-      var setupOK=!!p.setupComplete;
-      var stripStyle={display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",padding:"6px 16px",background:setupOK?"#f8fafc":"#fff7ed",borderBottom:"1px solid "+(setupOK?"#e2e8f0":"#fed7aa"),fontSize:11,color:"#334155"};
-      var pill=function(opts){
-        var bg=opts.bg||"#fff",fg=opts.fg||"#1e293b",bd=opts.bd||"#e2e8f0";
-        return React.createElement("button",{key:opts.key,onClick:opts.onClick,title:opts.title||"",style:{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 9px",borderRadius:999,border:"1px solid "+bd,background:bg,color:fg,fontSize:11,fontWeight:600,cursor:opts.onClick?"pointer":"default",fontFamily:"inherit"}},opts.children);
-      };
-      return React.createElement("div",{className:"no-print",style:stripStyle},
-        !setupOK&&pill({key:"warn",bg:"#fff7ed",fg:"#9a3412",bd:"#fdba74",onClick:openSetupWizard,title:"Project profile not set — open the Setup Wizard",children:["⚠ Setup not complete · open wizard"]}),
-        setupOK&&pill({key:"dev",bg:"#eef4fb",fg:"#1e40af",bd:"#bfdbfe",onClick:openSetupWizard,title:"Edit project profile",children:["🧭 ",devType||"No dev type",p.devSubType?" · "+p.devSubType:""]}),
-        setupOK&&p.lifecycle&&pill({key:"life",onClick:openSetupWizard,children:["Lifecycle: ",(LIFECYCLE_OPTIONS.find(function(x){return x.id===p.lifecycle})||{label:p.lifecycle}).label]}),
-        setupOK&&p.scale&&pill({key:"scl",onClick:openSetupWizard,children:["Scale: ",(SCALE_OPTIONS.find(function(x){return x.id===p.scale})||{label:p.scale}).label.replace(/\s*\(.*\)$/,"")]}),
-        regLabels.length>0&&pill({key:"regs",onClick:openSetupWizard,bg:"#f0fdf4",fg:"#166534",bd:"#bbf7d0",title:regLabels.join(", "),children:["📋 ",regLabels.slice(0,2).join(" · "),regLabels.length>2?" +"+(regLabels.length-2):""]}),
-        React.createElement("span",{key:"sep",style:{flex:1}}),
-        pill({key:"a",onClick:()=>setTab("assets"),title:"Go to Assets",children:["Assets: ",assetCount]}),
-        pill({key:"t",onClick:()=>setTab("threats"),title:"Go to Threats",bg:dbtUntreated>0&&p.enforceDbtTreatment?"#fef2f2":"#fff",fg:dbtUntreated>0&&p.enforceDbtTreatment?"#991b1b":"#1e293b",bd:dbtUntreated>0&&p.enforceDbtTreatment?"#fecaca":"#e2e8f0",children:["Threats: ",threatCount,dbtCount>0?" · "+dbtCount+" DBT":"",dbtUntreated>0&&p.enforceDbtTreatment?" ("+dbtUntreated+" untreated ⚠)":""]}),
-        pill({key:"m",onClick:()=>setTab("residual"),title:"Go to Residual & Treatments",children:["Treatments mapped: ",mappedCount,"/",threatCount]}),
-        p.alarpTarget&&pill({key:"alarp",bg:"#fefce8",fg:"#854d0e",bd:"#fde68a",onClick:openSetupWizard,title:"ALARP target — edit in Setup",children:["ALARP: ",p.alarpTarget]})
-      );
-    })(),
 
     // Nav
     React.createElement("nav",{className:"nav no-print"},
