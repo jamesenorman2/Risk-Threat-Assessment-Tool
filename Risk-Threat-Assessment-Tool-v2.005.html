@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.009";
+  const VERSION="2.005";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -501,17 +501,16 @@ function App(){
       if(p.threatDB&&Array.isArray(p.threatDB)&&p.threatDB.length>0)setThreatDB(migrateLinkedAssets(p.threatDB,defs.ASSET_PRESETS));else setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));
       if(p.treatmentDB&&Array.isArray(p.treatmentDB)&&p.treatmentDB.length>0)setTreatmentDB(p.treatmentDB);else setTreatmentDB(defs.DEFAULT_TREATMENT_DB);
       if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB)&&Object.keys(p.assetPresetsDB).length>0)setAssetPresetsDB(p.assetPresetsDB);else setAssetPresetsDB(defs.ASSET_PRESETS);
-      if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
-      if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}}
+      if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}}
       else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
   useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,treatCategoryScope}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,treatCategoryScope]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance]);
 
   // Auto-load shared treatment DB from GitHub once on startup when config is ready
   useEffect(()=>{
@@ -772,7 +771,7 @@ function App(){
 
   const clearAll=()=>{if(confirm("Clear all data and start a new assessment?")){
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});
     localStorage.removeItem("sra-rta-data");
     setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}};
 
@@ -1579,38 +1578,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const postM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
     cRisks.forEach((r,i)=>{if(r.resL&&r.resI)m[5-r.resL][r.resI-1].push("R"+(i+1))});return m},[cRisks]);
 
-  // Export Word (Pro) — server-rendered .docx via /api/report
-  const exportWordPro=async()=>{
-    showToast("Generating branded Word report...");
-    try{
-      const payload={
-        _v:VERSION,
-        _date:new Date().toISOString(),
-        ctx,assets,threats,vs,is_,cd,tx,rs,acc,
-        meetings,pois,treatmentMeasures
-      };
-      const res=await fetch("/api/report",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
-      });
-      if(!res.ok){
-        let msg="Report generation failed ("+res.status+")";
-        try{const j=await res.json();if(j&&j.error)msg+=": "+j.error}catch(_){}
-        showToast(msg);return;
-      }
-      const blob=await res.blob();
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download=(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")+"_SRA.docx";
-      a.style.display="none";document.body.appendChild(a);a.click();
-      setTimeout(()=>{URL.revokeObjectURL(a.href);document.body.removeChild(a)},200);
-      showToast("Branded Word report downloaded");
-    }catch(e){
-      showToast("Report error: "+(e&&e.message||e));
-    }
-  };
-
   // Export Word
   const exportWord=async()=>{
     showToast("Generating Word document...");
@@ -2309,8 +2276,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const body={padding:"18px 28px",overflowY:"auto",flex:1};
     const ftr={padding:"14px 28px 22px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0};
     const types=Object.keys(assetPresetsDB);
+    const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥","Schools/University":"🎓",Datacentre:"🖥️",Government:"🏛️",Masterplan:"🏙️"};
     const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities","Schools/University":"Schools, universities, colleges, academies",Datacentre:"Data centres, co-location facilities, server farms",Government:"Government offices, public sector, civil service",Masterplan:"Mixed-use masterplans, estate developments, regeneration"};
-    const stepLabels=["Development Type","Site Profile","Assets","Threats","Confirm & Launch"];
+    const stepLabels=["Development Type","Assets","Threats","Site Profile","Confirm & Launch"];
     const SITE_QS=[
       {id:"perimeter",q:"Does the site have a defined perimeter?",hint:"A perimeter (fence, wall, or natural boundary) enables layered security and controlled access points.",opts:["Yes — clear perimeter","Partial / soft boundary","No defined perimeter"]},
       {id:"hvm",q:"Is Hostile Vehicle Mitigation (HVM) required or under consideration?",hint:"Typically required for crowded places, high-profile buildings, or sites where vehicles can approach within 20m of occupied areas.",opts:["Yes — confirmed requirement","Under consideration","No"]},
@@ -2339,11 +2307,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       if(answers.access_ctrl==="No"){s={...s,int_electronic:false};}
       return{threats:t,scope:s};
     };
-    const advanceSiteProfile=()=>{
-      const base=[...wizardThreats];
-      setWizardThreatsBase(base);
-      const{threats:t,scope:s}=applyQEffects(wizardAnswers,base,{ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
-      setWizardThreats(t);setWizardTreatScope(s);setWizardStep(3);
+    const advanceToConfirm=()=>{
+      const base=wizardThreatsBase.length>0?wizardThreatsBase:wizardThreats;
+      const{threats:t,scope:s}=applyQEffects(wizardAnswers,base,wizardTreatScope);
+      setWizardThreats(t);setWizardTreatScope(s);setWizardStep(5);
     };
     const progress=React.createElement("div",{style:{display:"flex",alignItems:"center",gap:0,marginTop:14}},
       stepLabels.map((s,i)=>React.createElement(React.Fragment,{key:i},
@@ -2368,6 +2335,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}},
           ...types.map(type=>React.createElement("button",{key:type,onClick:()=>wizardSelectType(type),style:{border:"2px solid "+(wizardDevType===type?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===type?"#EEF2FF":"#fff",boxShadow:wizardDevType===type?"0 0 0 3px rgba(27,42,74,0.1)":"none",transition:"all 0.12s"}},
+            React.createElement("div",{style:{fontSize:22,marginBottom:6}},typeIcons[type]||"🏗️"),
             React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},type),
             React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},typeDescs[type]||""),
             React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5,display:"flex",gap:8}},
@@ -2377,16 +2345,17 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )),
           React.createElement("button",{key:"blank",onClick:()=>{setWizardDevType("");setWizardAssets([]);setWizardThreats([]);},style:{border:"2px solid "+(wizardDevType===""?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===""&&wizardThreats.length===0?"#EEF2FF":"#fff",transition:"all 0.12s"}},
+            React.createElement("div",{style:{fontSize:22,marginBottom:6}},"✏️"),
             React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},"Custom / Blank"),
             React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},"Start from scratch"),
             React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5}},"No presets loaded")
           )
         ),
-        React.createElement("div",{style:ftr},skip,React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(2)},"Next: Site Profile →"))
+        React.createElement("div",{style:ftr},skip,React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(2)},"Next: Review Assets →"))
       ));
     }
 
-    if(wizardStep===3){
+    if(wizardStep===2){
       const selCount=wizardAssets.filter(a=>a.included).length;
       const toggleAll=(v)=>setWizardAssets(p=>p.map(a=>({...a,included:v})));
       const toggleAsset=(id)=>setWizardAssets(p=>p.map(a=>a.id===id?{...a,included:!a.included}:a));
@@ -2435,13 +2404,13 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:addWA},"+ Add Asset")
         ),
         React.createElement("div",{style:ftr},
-          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>{setWizardThreats([...wizardThreatsBase]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setWizardStep(2);}},"← Back"),skip),
-          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(4)},"Next: Select Threats →")
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(1)},"← Back"),skip),
+          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(3)},"Next: Select Threats →")
         )
       ));
     }
 
-    if(wizardStep===4){
+    if(wizardStep===3){
       const terrorism=wizardThreats.filter(t=>t.cat==="Terrorism");
       const crime=wizardThreats.filter(t=>t.cat==="Crime");
       const terrorSel=terrorism.filter(t=>t.included).length;
@@ -2483,13 +2452,13 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           crime.length>0||true?threatGroup("Crime",crime,crimeSel,"#2563EB"):null
         ),
         React.createElement("div",{style:ftr},
-          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(3)},"← Back"),skip),
-          React.createElement("button",{className:"btn btn-primary",onClick:()=>setWizardStep(5)},"Next: Confirm Setup →")
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(2)},"← Back"),skip),
+          React.createElement("button",{className:"btn btn-primary",onClick:()=>{setWizardThreatsBase([...wizardThreats]);setWizardStep(4);}},"Next: Site Profile →")
         )
       ));
     }
 
-    if(wizardStep===2){
+    if(wizardStep===4){
       const allAnswered=SITE_QS.every(q=>wizardAnswers[q.id]);
       const qCard=(q)=>React.createElement("div",{key:q.id,style:{background:"#f8fafc",borderRadius:8,padding:"12px 14px",border:"1px solid "+(wizardAnswers[q.id]?"#c7d2fe":"#e2e8f0")}},
         React.createElement("div",{style:{fontWeight:700,fontSize:12,color:"#1e293b",marginBottom:q.hint?3:8}},q.q),
@@ -2513,10 +2482,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ...SITE_QS.map(q=>qCard(q))
         ),
         React.createElement("div",{style:ftr},
-          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(1)},"← Back"),skip),
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>{setWizardThreats([...wizardThreatsBase]);setWizardStep(3);}},"← Back"),skip),
           React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
             !allAnswered&&React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},(SITE_QS.length-answered)+" questions unanswered — you can still proceed"),
-            React.createElement("button",{className:"btn btn-primary",onClick:advanceSiteProfile},"Next: Review Assets →")
+            React.createElement("button",{className:"btn btn-primary",onClick:advanceToConfirm},"Next: Confirm Setup →")
           )
         )
       ));
@@ -2574,7 +2543,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           )
         ),
         React.createElement("div",{style:ftr},
-          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>setWizardStep(4)},"← Back"),skip),
+          React.createElement("div",{style:{display:"flex",gap:8}},React.createElement("button",{className:"btn btn-outline",onClick:()=>{setWizardThreats([...wizardThreatsBase]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setWizardStep(4);}},"← Back"),skip),
           React.createElement("button",{className:"btn btn-primary",style:{padding:"10px 28px",fontSize:14,fontWeight:700},onClick:applyWizard},"Launch Assessment →")
         )
       ));
@@ -2649,7 +2618,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFile},"📂 Load"),
         ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFromGitHubBrowse,title:"Load from back-ups"},"☁️ Back-ups"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWord},"📄 Word"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWordPro,title:"Server-rendered branded Word report"},"📄 Word (Pro)"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel},"📊 Excel"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:printReport},"🖨️ Print"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
@@ -2721,24 +2689,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   ...Object.keys(assetPresetsDB).map(t=>
                     React.createElement("option",{key:t,value:t},t)
                   )
-                )
-              ),
-              // Treatment category scope toggles
-              React.createElement("div",{key:"treatScope",className:"col-span-2"},
-                React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},"Treatment Categories in Scope"),
-                React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginTop:4}},
-                  ...[
-                    {k:"ext_physical",label:"External Physical"},
-                    {k:"ext_electronic",label:"External Electronic"},
-                    {k:"int_physical",label:"Internal Physical"},
-                    {k:"int_electronic",label:"Internal Electronic"},
-                    {k:"procedures",label:"Procedures"},
-                  ].map(({k,label})=>React.createElement("label",{key:k,style:{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,fontSize:11,cursor:"pointer",
-                    background:treatCategoryScope[k]?"#1B2A4A":"#f1f5f9",color:treatCategoryScope[k]?"#fff":"#64748b",
-                    border:"1px solid "+(treatCategoryScope[k]?"#1B2A4A":"#cbd5e1"),userSelect:"none"}},
-                    React.createElement("input",{type:"checkbox",checked:!!treatCategoryScope[k],onChange:e=>setTreatCategoryScope(p=>({...p,[k]:e.target.checked})),style:{display:"none"}}),
-                    label
-                  ))
                 )
               ),
               ...["scope","assumptions"].map(k=>React.createElement("div",{key:k,className:"col-span-2"},
@@ -4146,11 +4096,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       );
                     };
                     return React.createElement("div",{style:{marginTop:6}},
-                      hasOutside&&treatCategoryScope.ext_physical&&renderCat("External Physical","\ud83c\udfd7\ufe0f",catCtrl.ext_physical,"#dbeafe","#eff6ff","#1e40af"),
-                      hasOutside&&treatCategoryScope.ext_electronic&&renderCat("External Electronic","\ud83d\udcf6",catCtrl.ext_electronic,"#bfdbfe","#eff6ff","#1d4ed8"),
-                      hasInside&&treatCategoryScope.int_physical&&renderCat("Internal Physical","\ud83d\udee1\ufe0f",catCtrl.int_physical,"#fde68a","#fffbeb","#92400e"),
-                      hasInside&&treatCategoryScope.int_electronic&&renderCat("Internal Electronic","\ud83d\udcbb",catCtrl.int_electronic,"#ddd6fe","#f5f3ff","#5b21b6"),
-                      treatCategoryScope.procedures&&renderCat("Procedures","\u2699\ufe0f",catCtrl.procedures,"#e2e8f0","#f8fafc","#475569"),
+                      hasOutside&&renderCat("External Physical","\ud83c\udfd7\ufe0f",catCtrl.ext_physical,"#dbeafe","#eff6ff","#1e40af"),
+                      hasOutside&&renderCat("External Electronic","\ud83d\udcf6",catCtrl.ext_electronic,"#bfdbfe","#eff6ff","#1d4ed8"),
+                      hasInside&&renderCat("Internal Physical","\ud83d\udee1\ufe0f",catCtrl.int_physical,"#fde68a","#fffbeb","#92400e"),
+                      hasInside&&renderCat("Internal Electronic","\ud83d\udcbb",catCtrl.int_electronic,"#ddd6fe","#f5f3ff","#5b21b6"),
+                      renderCat("Procedures","\u2699\ufe0f",catCtrl.procedures,"#e2e8f0","#f8fafc","#475569"),
                       React.createElement("button",{
                         style:{fontSize:8,padding:"2px 5px",borderRadius:3,border:"1px dashed #94a3b8",background:"transparent",color:"#475569",cursor:"pointer",fontFamily:"inherit",fontWeight:600,marginTop:4},
                         onClick:function(){
@@ -4436,11 +4386,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   // Categorised treatment buttons — filtered by asset location (5 categories)
                   (function(){
                     var cats=[
-                      {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:catTreatments.ext_physical||[],show:(assetLoc==="outside"||assetLoc==="both")&&!!treatCategoryScope.ext_physical,border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
-                      {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:catTreatments.ext_electronic||[],show:(assetLoc==="outside"||assetLoc==="both")&&!!treatCategoryScope.ext_electronic,border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
-                      {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:catTreatments.int_physical||[],show:(assetLoc==="inside"||assetLoc==="both")&&!!treatCategoryScope.int_physical,border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
-                      {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:catTreatments.int_electronic||[],show:(assetLoc==="inside"||assetLoc==="both")&&!!treatCategoryScope.int_electronic,border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
-                      {key:"procedures",label:"\u2699\ufe0f Procedures",items:catTreatments.procedures||[],show:!!treatCategoryScope.procedures,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
+                      {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:catTreatments.ext_physical||[],show:(assetLoc==="outside"||assetLoc==="both"),border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
+                      {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:catTreatments.ext_electronic||[],show:(assetLoc==="outside"||assetLoc==="both"),border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
+                      {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:catTreatments.int_physical||[],show:(assetLoc==="inside"||assetLoc==="both"),border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
+                      {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:catTreatments.int_electronic||[],show:(assetLoc==="inside"||assetLoc==="both"),border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
+                      {key:"procedures",label:"\u2699\ufe0f Procedures",items:catTreatments.procedures||[],show:true,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
                     ];
                     return cats.map(function(cat){
                       if(!cat.show||cat.items.length===0)return null;
@@ -4544,11 +4494,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       // 5-category treatment buttons for POI
                       (function(){
                         var poiCats=[
-                          {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:poiCatTreat.ext_physical||[],show:(poiLoc==="outside"||poiLoc==="both")&&!!treatCategoryScope.ext_physical,border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
-                          {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:poiCatTreat.ext_electronic||[],show:(poiLoc==="outside"||poiLoc==="both")&&!!treatCategoryScope.ext_electronic,border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
-                          {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:poiCatTreat.int_physical||[],show:(poiLoc==="inside"||poiLoc==="both")&&!!treatCategoryScope.int_physical,border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
-                          {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:poiCatTreat.int_electronic||[],show:(poiLoc==="inside"||poiLoc==="both")&&!!treatCategoryScope.int_electronic,border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
-                          {key:"procedures",label:"\u2699\ufe0f Procedures",items:poiCatTreat.procedures||[],show:!!treatCategoryScope.procedures,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
+                          {key:"ext_physical",label:"\ud83c\udfd7\ufe0f External Physical",items:poiCatTreat.ext_physical||[],show:(poiLoc==="outside"||poiLoc==="both"),border:"#dbeafe",bg:"#eff6ff",col:"#1e40af"},
+                          {key:"ext_electronic",label:"\ud83d\udcf6 External Electronic",items:poiCatTreat.ext_electronic||[],show:(poiLoc==="outside"||poiLoc==="both"),border:"#bfdbfe",bg:"#eff6ff",col:"#1d4ed8"},
+                          {key:"int_physical",label:"\ud83d\udee1\ufe0f Internal Physical",items:poiCatTreat.int_physical||[],show:(poiLoc==="inside"||poiLoc==="both"),border:"#fde68a",bg:"#fffbeb",col:"#92400e"},
+                          {key:"int_electronic",label:"\ud83d\udcbb Internal Electronic",items:poiCatTreat.int_electronic||[],show:(poiLoc==="inside"||poiLoc==="both"),border:"#ddd6fe",bg:"#f5f3ff",col:"#5b21b6"},
+                          {key:"procedures",label:"\u2699\ufe0f Procedures",items:poiCatTreat.procedures||[],show:true,border:"#e2e8f0",bg:"#f8fafc",col:"#64748b"}
                         ];
                         return poiCats.map(function(cat){
                           if(!cat.show||cat.items.length===0)return null;

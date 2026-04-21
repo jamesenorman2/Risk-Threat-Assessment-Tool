@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.009";
+  const VERSION="2.008";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1579,38 +1579,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const postM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
     cRisks.forEach((r,i)=>{if(r.resL&&r.resI)m[5-r.resL][r.resI-1].push("R"+(i+1))});return m},[cRisks]);
 
-  // Export Word (Pro) — server-rendered .docx via /api/report
-  const exportWordPro=async()=>{
-    showToast("Generating branded Word report...");
-    try{
-      const payload={
-        _v:VERSION,
-        _date:new Date().toISOString(),
-        ctx,assets,threats,vs,is_,cd,tx,rs,acc,
-        meetings,pois,treatmentMeasures
-      };
-      const res=await fetch("/api/report",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
-      });
-      if(!res.ok){
-        let msg="Report generation failed ("+res.status+")";
-        try{const j=await res.json();if(j&&j.error)msg+=": "+j.error}catch(_){}
-        showToast(msg);return;
-      }
-      const blob=await res.blob();
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download=(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")+"_SRA.docx";
-      a.style.display="none";document.body.appendChild(a);a.click();
-      setTimeout(()=>{URL.revokeObjectURL(a.href);document.body.removeChild(a)},200);
-      showToast("Branded Word report downloaded");
-    }catch(e){
-      showToast("Report error: "+(e&&e.message||e));
-    }
-  };
-
   // Export Word
   const exportWord=async()=>{
     showToast("Generating Word document...");
@@ -2649,7 +2617,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFile},"📂 Load"),
         ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFromGitHubBrowse,title:"Load from back-ups"},"☁️ Back-ups"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWord},"📄 Word"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWordPro,title:"Server-rendered branded Word report"},"📄 Word (Pro)"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel},"📊 Excel"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:printReport},"🖨️ Print"),
         React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
