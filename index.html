@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.005";
+  const VERSION="2.006";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2276,7 +2276,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const body={padding:"18px 28px",overflowY:"auto",flex:1};
     const ftr={padding:"14px 28px 22px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0};
     const types=Object.keys(assetPresetsDB);
-    const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥","Schools/University":"🎓",Datacentre:"🖥️",Government:"🏛️",Masterplan:"🏙️"};
     const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities","Schools/University":"Schools, universities, colleges, academies",Datacentre:"Data centres, co-location facilities, server farms",Government:"Government offices, public sector, civil service",Masterplan:"Mixed-use masterplans, estate developments, regeneration"};
     const stepLabels=["Development Type","Assets","Threats","Site Profile","Confirm & Launch"];
     const SITE_QS=[
@@ -2335,7 +2334,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}},
           ...types.map(type=>React.createElement("button",{key:type,onClick:()=>wizardSelectType(type),style:{border:"2px solid "+(wizardDevType===type?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===type?"#EEF2FF":"#fff",boxShadow:wizardDevType===type?"0 0 0 3px rgba(27,42,74,0.1)":"none",transition:"all 0.12s"}},
-            React.createElement("div",{style:{fontSize:22,marginBottom:6}},typeIcons[type]||"🏗️"),
             React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},type),
             React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},typeDescs[type]||""),
             React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5,display:"flex",gap:8}},
@@ -2345,7 +2343,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )),
           React.createElement("button",{key:"blank",onClick:()=>{setWizardDevType("");setWizardAssets([]);setWizardThreats([]);},style:{border:"2px solid "+(wizardDevType===""?"#1B2A4A":"#e2e8f0"),borderRadius:10,padding:"14px 12px",cursor:"pointer",textAlign:"left",background:wizardDevType===""&&wizardThreats.length===0?"#EEF2FF":"#fff",transition:"all 0.12s"}},
-            React.createElement("div",{style:{fontSize:22,marginBottom:6}},"✏️"),
             React.createElement("div",{style:{fontWeight:700,color:"#1B2A4A",fontSize:13}},"Custom / Blank"),
             React.createElement("div",{style:{fontSize:11,color:"#64748b",marginTop:3}},"Start from scratch"),
             React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:5}},"No presets loaded")
