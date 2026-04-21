@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.004";
+  const VERSION="2.005";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -2276,8 +2276,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const body={padding:"18px 28px",overflowY:"auto",flex:1};
     const ftr={padding:"14px 28px 22px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0};
     const types=Object.keys(assetPresetsDB);
-    const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥"};
-    const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities"};
+    const typeIcons={Residential:"🏠",Commercial:"🏢",Transport:"🚂",Hotel:"🏨",Hospital:"🏥","Schools/University":"🎓",Datacentre:"🖥️",Government:"🏛️",Masterplan:"🏙️"};
+    const typeDescs={Residential:"Apartments, houses, mixed-use residential",Commercial:"Offices, business parks, retail & leisure",Transport:"Rail, bus, airports, transit hubs",Hotel:"Hotels, hospitality, serviced apartments",Hospital:"Hospitals, clinics, healthcare facilities","Schools/University":"Schools, universities, colleges, academies",Datacentre:"Data centres, co-location facilities, server farms",Government:"Government offices, public sector, civil service",Masterplan:"Mixed-use masterplans, estate developments, regeneration"};
     const stepLabels=["Development Type","Assets","Threats","Site Profile","Confirm & Launch"];
     const SITE_QS=[
       {id:"perimeter",q:"Does the site have a defined perimeter?",hint:"A perimeter (fence, wall, or natural boundary) enables layered security and controlled access points.",opts:["Yes — clear perimeter","Partial / soft boundary","No defined perimeter"]},
