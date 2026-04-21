@@ -15,10 +15,15 @@ from datetime import datetime
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/mpl")
 os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+
+# Lazy-imported inside chart helpers so an install/runtime issue surfaces as a
+# clear 500 error rather than a cold-start crash that yields an opaque 500.
+def _mpl():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as _plt
+    from matplotlib.patches import Rectangle as _Rect
+    return _plt, _Rect
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
@@ -246,12 +251,31 @@ def _page_break(doc):
 
 # --- Chart helpers ---
 
+def _try_picture(doc, builder, width):
+    """Embed a chart; on failure insert a small italic note and continue.
+
+    Lets the report render even if matplotlib fails to import on the runtime.
+    """
+    try:
+        buf = builder()
+        doc.add_picture(buf, width=width)
+    except Exception as e:
+        p = doc.add_paragraph()
+        run = p.add_run(f"[Chart unavailable: {type(e).__name__}]")
+        run.font.name = "Calibri"
+        run.font.size = Pt(8)
+        run.italic = True
+        run.font.color.rgb = GREY_MID
+
+
+
 def _hex_to_rgb(h):
     return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
 
 
 def chart_risk_matrix(risks, *, residual=False, title=""):
     """5x5 matrix heatmap. Cells coloured by risk level; threat IDs listed in cell."""
+    plt, Rectangle = _mpl()
     fig, ax = plt.subplots(figsize=(6.5, 4.8), dpi=150)
     for i in range(5):
         for j in range(5):
@@ -294,6 +318,7 @@ def chart_risk_matrix(risks, *, residual=False, title=""):
 
 def chart_profile(risks, *, residual=False, title=""):
     """Bar chart of counts per level."""
+    plt, _ = _mpl()
     order = ["Very Low", "Low", "Medium", "High", "Very High"]
     key = "resRat" if residual else "rat"
     counts = [sum(1 for r in risks if r.get(key) == lv) for lv in order]
@@ -322,6 +347,7 @@ def chart_profile(risks, *, residual=False, title=""):
 
 def chart_pre_post(risks):
     """Grouped bar: pre vs post residual counts side-by-side."""
+    plt, _ = _mpl()
     order = ["Very Low", "Low", "Medium", "High", "Very High"]
     pre = [sum(1 for r in risks if r.get("rat") == lv) for lv in order]
     post = [sum(1 for r in risks if r.get("resRat") == lv) for lv in order]
@@ -469,8 +495,8 @@ def _build_exec_summary(doc, ctx, risks, pois):
     _add_para(doc, intro, size=10, align="justify", space_after=120)
 
     _add_heading(doc, "Risk Profile Overview", 2)
-    profile_img = chart_profile(risks, residual=False, title="Pre-Treatment Risk Profile")
-    doc.add_picture(profile_img, width=Cm(16))
+    _try_picture(doc, lambda: chart_profile(risks, residual=False,
+                                            title="Pre-Treatment Risk Profile"), Cm(16))
 
     # Pre/post comparison narrative
     reduced = sum(1 for r in risks
@@ -482,7 +508,7 @@ def _build_exec_summary(doc, ctx, risks, pois):
               f"{len([r for r in risks if r.get('resRat')])} assessed threats show a "
               f"reduction in risk rating. Residual risk distribution is shown below.",
               size=10, align="justify", space_after=120)
-    doc.add_picture(chart_pre_post(risks), width=Cm(16))
+    _try_picture(doc, lambda: chart_pre_post(risks), Cm(16))
 
     _page_break(doc)
 
@@ -533,9 +559,9 @@ def _build_threats_table(doc, risks):
 
     doc.add_paragraph()
     _add_heading(doc, "Pre-Mitigation Risk Matrix", 2)
-    doc.add_picture(chart_risk_matrix(risks, residual=False,
-                                      title="Likelihood × Impact (Pre-Mitigation)"),
-                    width=Cm(15))
+    _try_picture(doc, lambda: chart_risk_matrix(risks, residual=False,
+                                                title="Likelihood × Impact (Pre-Mitigation)"),
+                 Cm(15))
     _page_break(doc)
 
 
@@ -660,9 +686,9 @@ def _build_residual(doc, risks):
 
     doc.add_paragraph()
     _add_heading(doc, "Post-Mitigation Risk Matrix", 2)
-    doc.add_picture(chart_risk_matrix(risks, residual=True,
-                                      title="Likelihood × Impact (Residual)"),
-                    width=Cm(15))
+    _try_picture(doc, lambda: chart_risk_matrix(risks, residual=True,
+                                                title="Likelihood × Impact (Residual)"),
+                 Cm(15))
 
 
 # --- Top-level build ---
@@ -723,6 +749,19 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(msg)))
             self.end_headers()
             self.wfile.write(msg)
+
+    def do_GET(self):
+        msg = json.dumps({
+            "ok": True,
+            "endpoint": "/api/report",
+            "method": "POST",
+            "python": os.sys.version.split()[0],
+        }).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(msg)))
+        self.end_headers()
+        self.wfile.write(msg)
 
     def do_OPTIONS(self):
         self.send_response(204)
