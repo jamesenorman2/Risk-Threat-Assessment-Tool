@@ -1,6 +1,7 @@
 export default async function middleware(req) {
-  // API route handles its own auth via x-api-key header
-  if (new URL(req.url).pathname === '/api/db') return;
+  // API routes handle their own auth via x-api-key header
+  const path = new URL(req.url).pathname;
+  if (path === '/api/db' || path === '/api/report') return;
 
   // Check session cookie first — set after successful Basic Auth login
   const cookieStr = req.headers.get("cookie") || "";

@@ -318,7 +318,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.011";
+  const VERSION="2.012";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1592,7 +1592,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       const res=await fetch("/api/report",{
         method:"POST",
         credentials:"same-origin",
-        headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type":"application/json","x-api-key":"__API_SECRET__"},
         body:JSON.stringify(payload)
       });
       if(!res.ok){

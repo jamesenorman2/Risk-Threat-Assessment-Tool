@@ -727,8 +727,28 @@ def _safe_filename(name):
 
 # --- Vercel handler ---
 
+def _unauthorized(self):
+    msg = json.dumps({"error": "unauthorized"}).encode("utf-8")
+    self.send_response(401)
+    self.send_header("Content-Type", "application/json")
+    self.send_header("Content-Length", str(len(msg)))
+    self.end_headers()
+    self.wfile.write(msg)
+
+
 class handler(BaseHTTPRequestHandler):
+    def _authorized(self):
+        expected = os.environ.get("APP_PASSWORD") or ""
+        if not expected:
+            # No password configured on the server — fail closed.
+            return False
+        provided = self.headers.get("x-api-key") or ""
+        return provided == expected
+
     def do_POST(self):
+        if not self._authorized():
+            _unauthorized(self)
+            return
         try:
             length = int(self.headers.get("content-length", 0))
             body = self.rfile.read(length) if length else b"{}"
