@@ -378,6 +378,76 @@ select.input{padding:4px 8px;font-size:13px}
 .legacy-tab-wrap{padding:24px 28px;background:var(--bg-warm);min-height:100%}
 /* Print overrides for sentinel */
 @media print{.sentinel-header,.sentinel-sidebar{display:none!important}.sentinel-app{display:block!important;height:auto!important}.sentinel-main{overflow:visible!important}}
+/* Brand without product name */
+.sentinel-brand-name-only{font-size:12px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+/* Hamburger (hidden on desktop) */
+.mob-menu-btn{display:none;background:transparent;border:none;color:#d0d6e0;cursor:pointer;padding:6px;border-radius:4px;flex-shrink:0}
+.mob-menu-btn:hover{background:rgba(255,255,255,.08)}
+/* Mobile-compact next btn (icon only, hidden on desktop) */
+.mob-next-compact{display:none}
+/* stb-lbl: button text that hides on small screens */
+.stb-lbl{display:inline}
+/* ── Tablet (≤900px) — collapse less-used toolbar groups ── */
+@media(max-width:900px){
+  .stb-hide-md{display:none!important}
+  .sentinel-bc .bc-ws,.sentinel-bc .bc-sep:first-of-type,.sentinel-bc .bc-client{display:none}
+}
+/* ── Mobile (≤768px) — drawer sidebar, stacked layout ── */
+@media(max-width:768px){
+  .sentinel-app{grid-template-columns:1fr;grid-template-rows:52px 1fr}
+  /* Sidebar becomes a fixed off-screen drawer */
+  .sentinel-sidebar{
+    position:fixed;top:52px;left:-260px;width:260px;height:calc(100vh - 52px);
+    z-index:200;transition:left .25s ease;box-shadow:4px 0 24px rgba(0,0,0,.4);
+  }
+  .sentinel-sidebar.mob-open{left:0}
+  /* Backdrop */
+  .mob-backdrop{
+    position:fixed;inset:0;top:52px;background:rgba(0,0,0,.5);
+    z-index:199;
+  }
+  /* Show hamburger, collapse brand, hide labels */
+  .mob-menu-btn{display:flex;align-items:center}
+  .sentinel-brand{min-width:0;gap:6px}
+  .sentinel-brand-name-only{display:none}
+  .stb-lbl{display:none}
+  .stb-hide-md{display:none!important}
+  .stb-sep{display:none}
+  /* Show icon-only next btn, hide full next btn */
+  .sentinel-next-btn:not(.mob-next-compact){display:none!important}
+  .mob-next-compact{display:flex!important}
+  /* Main content body — single column */
+  .sentinel-body{grid-template-columns:1fr;padding:12px 14px 32px}
+  /* Stepper — scrollable on mobile */
+  .sentinel-stepper{overflow-x:auto;padding:0 14px;gap:0;justify-content:flex-start}
+  .step-item{padding:0 6px;flex-shrink:0}
+  .stepper-wf{display:none}
+  /* Section strip */
+  .ss-strip{padding:14px 16px 12px;flex-direction:column;gap:6px;align-items:flex-start}
+  .ss-meta{display:none}
+  .ss-title{font-size:18px}
+  /* Fields grid — single column */
+  .s-fields-grid{grid-template-columns:1fr!important}
+  .s-field.wide{grid-column:1!important}
+  /* Meetings table — hide attendees column */
+  .mtg-hd,.mtg-row{grid-template-columns:96px 1fr 28px!important}
+  .mtg-att{display:none}
+  /* Sidecar — after left column */
+  .sidecar{order:99}
+  /* Legacy tab wrap */
+  .legacy-tab-wrap{padding:14px 12px}
+  /* Reduce card padding */
+  .s-panel-bd{padding:12px}
+}
+/* ── Small phone (≤480px) ── */
+@media(max-width:480px){
+  .sentinel-header{padding:0 10px;gap:8px}
+  .sentinel-logo{width:22px;height:22px;font-size:9px;flex-shrink:0}
+  .ss-title{font-size:16px}
+  .sentinel-body{padding:10px 10px 24px}
+  .s-panel-hd{padding:10px 12px}
+  .s-panel-bd{padding:10px 12px}
+}
 </style>
 
 <script>
@@ -546,6 +616,7 @@ function sIcon(name,size){
     calendar:`<rect x="2" y="3.5" width="12" height="10" rx="1"/><path d="M2 6.5h12M5.5 2v3M10.5 2v3"/>`,
     trash:`<path d="M2.5 4.5h11M6 4.5V3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1.5M4 4.5l.7 9a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5l.7-9"/>`,
     edit:`<path d="M11 2.5l2.5 2.5L5.5 13 2.5 13.5 3 10.5 11 2.5z"/>`,
+    menu:`<path d="M2 4h12M2 8h12M2 12h12"/>`,
   };
   const d=paths[name]||"";
   // Return a React element via dangerouslySetInnerHTML on a span wrapper
@@ -573,18 +644,19 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 // MAIN APP
 // ============================================================
-// ── SentinelHeader ──────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad}){
+// ── AppHeader ────────────────────────────────────────────────────────
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
-    // Brand
+    // Hamburger (mobile only)
+    React.createElement("button",{className:"mob-menu-btn",onClick:onMenuToggle,"aria-label":"Menu"},
+      React.createElement("span",{style:{display:"flex"}},sIcon("menu"))
+    ),
+    // Brand — no product name, just the tool type
     React.createElement("div",{className:"sentinel-brand"},
-      React.createElement("div",{className:"sentinel-logo"},"S·T"),
-      React.createElement("div",null,
-        React.createElement("div",{className:"sentinel-brand-name"},"Sentinel"),
-        React.createElement("div",{className:"sentinel-brand-sub"},"Risk & Threat Assessment")
-      )
+      React.createElement("div",{className:"sentinel-logo"},"SR"),
+      React.createElement("div",{className:"sentinel-brand-name-only"},"Risk & Threat Assessment")
     ),
     // Breadcrumb
     React.createElement("div",{className:"sentinel-bc"},
@@ -599,30 +671,30 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,on
     React.createElement("div",{className:"stb-wrap"},
       React.createElement("div",{className:"stb-group"},
         React.createElement("button",{className:"stb-btn stb-btn-primary",onClick:onSave,title:"Save"},
-          sIcon("save")," Save"),
+          sIcon("save"),React.createElement("span",{className:"stb-lbl"}," Save")),
         React.createElement("div",{className:"stb-div"}),
         React.createElement("button",{className:"stb-btn",onClick:onLoad,title:"Load"},
-          sIcon("upload")," Load")
+          sIcon("upload"),React.createElement("span",{className:"stb-lbl"}," Load"))
       ),
-      ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group"},
+      ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group stb-hide-md"},
         React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
           sIcon("db")," Back-ups")
       ),
-      React.createElement("div",{className:"stb-group"},
+      React.createElement("div",{className:"stb-group stb-hide-md"},
         React.createElement("button",{className:"stb-btn",onClick:onExportWord,title:"Export Word"},
           sIcon("docs")," Word"),
         React.createElement("div",{className:"stb-div"}),
         React.createElement("button",{className:"stb-btn",onClick:onExportExcel,title:"Export Excel"},
           sIcon("grid")," Excel")
       ),
-      React.createElement("div",{className:"stb-group"},
+      React.createElement("div",{className:"stb-group stb-hide-md"},
         React.createElement("button",{className:"stb-btn",onClick:onPrint,title:"Print"},
           sIcon("print")," Print"),
         React.createElement("div",{className:"stb-div"}),
         React.createElement("button",{className:"stb-btn",onClick:onSetup,title:"Setup wizard"},
           sIcon("sparkle")," Setup")
       ),
-      React.createElement("div",{className:"stb-group"},
+      React.createElement("div",{className:"stb-group stb-hide-md"},
         React.createElement("button",{className:"stb-btn",onClick:onClear,title:"New assessment",style:{color:"#f08080"}},
           "New")
       ),
@@ -630,16 +702,22 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,on
       React.createElement("button",{className:"sentinel-next-btn",onClick:onNext},
         "Next: ",nextLabel," ",sIcon("arrowR")
       ),
+      React.createElement("button",{className:"sentinel-next-btn mob-next-compact",onClick:onNext,title:"Next: "+nextLabel},
+        sIcon("arrowR")
+      ),
       React.createElement("div",{className:"sentinel-avatar"},initials)
     )
   );
 }
 
 // ── SentinelSidebar ─────────────────────────────────────────────────
-function SentinelSidebar({ctx,activeTab,onTabChange}){
+function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose}){
   const num=ctx.projectNum||"SRA-XXXX-XXXX";
   const stage=(ctx.stage||"Stage 1").replace(/^Stage\s+(\d)/i,"Stage $1");
-  return React.createElement("aside",{className:"sentinel-sidebar"},
+  return React.createElement(React.Fragment,null,
+    // Mobile backdrop
+    mobileOpen&&React.createElement("div",{className:"mob-backdrop",onClick:onMobileClose}),
+    React.createElement("aside",{className:"sentinel-sidebar"+(mobileOpen?" mob-open":"")},
     // Project card
     React.createElement("div",{className:"spc"},
       React.createElement("div",{className:"spc-label"},"Project"),
@@ -680,7 +758,8 @@ function SentinelSidebar({ctx,activeTab,onTabChange}){
       React.createElement("br"),
       React.createElement("span",{style:{color:"#6b7688"}},"by "+(ctx.assessor||"analyst")+" (local)")
     )
-  );
+  ) // closes aside
+  ); // closes Fragment
 }
 
 // ── SentinelStepper ─────────────────────────────────────────────────
@@ -972,7 +1051,7 @@ function SentinelContextScreen({
         React.createElement(SPanel,{num:"1.1",title:"Project Details",
           actions:React.createElement(PanelAction,{icon:"copy",label:"From template"})
         },
-          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:pad}},
+          React.createElement("div",{className:"s-fields-grid",style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:pad}},
             React.createElement(SField,{label:"Project name",    value:ctx.project,    onChange:function(e){upCtx("project",e.target.value)}}),
             React.createElement(SField,{label:"Project number",  value:ctx.projectNum, onChange:function(e){upCtx("projectNum",e.target.value)},mono:true}),
             React.createElement(SField,{label:"Support reference",value:ctx.ref,       onChange:function(e){upCtx("ref",e.target.value)},mono:true}),
@@ -1046,7 +1125,7 @@ function SentinelContextScreen({
 
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.014";
+  const VERSION="2.015";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1187,6 +1266,7 @@ function App(){
   // Sentinel treatment category toggles (P·E·S·R·T)
   const[sentinelTreatCats,setSentinelTreatCats]=useState(["proc","elec","phys","resp","train"]);
   function toggleSentinelTreat(key){setSentinelTreatCats(function(prev){return prev.includes(key)?prev.filter(function(k){return k!==key}):[...prev,key]});}
+  const[mobileNavOpen,setMobileNavOpen]=useState(false);
   const[wizardAnswers,setWizardAnswers]=useState({});
   const[wizardThreatsBase,setWizardThreatsBase]=useState([]);
 
@@ -3387,10 +3467,16 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onSetup:function(){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);},
       onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
       ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
+      onMenuToggle:function(){setMobileNavOpen(function(v){return !v;})},
     }),
 
     // ── Sentinel Sidebar ──
-    React.createElement(SentinelSidebar,{ctx:ctx, activeTab:tab, onTabChange:setTab}),
+    React.createElement(SentinelSidebar,{
+      ctx:ctx, activeTab:tab,
+      onTabChange:function(id){setTab(id);setMobileNavOpen(false);},
+      mobileOpen:mobileNavOpen,
+      onMobileClose:function(){setMobileNavOpen(false);},
+    }),
 
     // ── Main area ──
     React.createElement("main",{className:"sentinel-main"},
