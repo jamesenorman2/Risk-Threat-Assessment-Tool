@@ -19,7 +19,7 @@
 <title>Security Risk &amp; Threat Assessment Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',system-ui,sans-serif;background:#ffffff;color:#1e293b;font-size:14px;line-height:1.5}
@@ -214,6 +214,170 @@ select.input{padding:4px 8px;font-size:13px}
   .grid-7{gap:4px!important}
   .matrix-cell{min-height:50px!important;font-size:12px!important}
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SENTINEL REDESIGN — design tokens + layout
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --ink-0:#0a0e14;--ink-1:#111824;--ink-2:#1a2332;--ink-3:#2a3649;
+  --bg-warm:#f5f3ee;--s-surface:#ffffff;--s-surface-2:#fafaf6;
+  --s-line:#e4e2db;--s-muted:#6b7280;--s-muted-2:#9aa3af;
+  --accent:#b8381f;--accent-soft:rgba(184,56,31,.08);
+  --sev-low:#2ecc71;--sev-med:#f1c40f;--sev-high:#e67e22;--sev-crit:#c0392b;
+  --ok:#1f7a4d;--warn:#c47a0b;--info:#2d5b8c;
+}
+/* Layout shell */
+.sentinel-app{display:grid;grid-template-columns:232px 1fr;grid-template-rows:52px 1fr;height:100vh;overflow:hidden;font-family:'Inter Tight',system-ui,sans-serif;font-feature-settings:'ss01','cv11';background:var(--bg-warm);color:var(--ink-1);font-size:13px}
+/* Top bar */
+.sentinel-header{grid-column:1/-1;height:52px;background:var(--ink-0);color:#fff;display:flex;align-items:center;padding:0 16px;gap:16px;border-bottom:1px solid #000;z-index:100;flex-shrink:0}
+.sentinel-brand{display:flex;align-items:center;gap:10px;min-width:216px}
+.sentinel-logo{width:26px;height:26px;border-radius:4px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px;letter-spacing:.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);flex-shrink:0;font-family:'Inter Tight',sans-serif}
+.sentinel-brand-name{font-size:12.5px;font-weight:600;letter-spacing:.01em}
+.sentinel-brand-sub{font-size:10px;color:#8591a6;letter-spacing:.12em;text-transform:uppercase;margin-top:-1px}
+.sentinel-bc{display:flex;align-items:center;gap:8px;flex:1;color:#c9d1de;font-size:12px}
+.sentinel-bc .bc-ws{color:#6b7688}.sentinel-bc .bc-sep{color:#3a4558}.sentinel-bc .bc-client{color:#8591a6}.sentinel-bc .bc-proj{color:#fff;font-weight:500}
+.sentinel-bc .bc-badge{margin-left:8px;font-size:10px;letter-spacing:.1em;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,.06);color:#a8b3c8;border:1px solid rgba(255,255,255,.08)}
+.stb-wrap{display:flex;align-items:center;gap:6px}
+.stb-group{display:flex;align-items:center;background:rgba(255,255,255,.04);border-radius:4px;padding:2px;border:1px solid rgba(255,255,255,.06)}
+.stb-btn{height:26px;padding:0 8px;background:transparent;color:#d0d6e0;border:none;border-radius:3px;cursor:pointer;font-size:11.5px;font-weight:500;font-family:'Inter Tight',inherit;display:flex;align-items:center;gap:5px}
+.stb-btn:hover{background:rgba(255,255,255,.08)}
+.stb-btn-primary{background:rgba(184,56,31,.18)!important;color:#ffb8a8!important}
+.stb-div{width:1px;height:14px;background:rgba(255,255,255,.1)}
+.stb-sep{width:1px;height:24px;background:rgba(255,255,255,.08);margin:0 4px}
+.sentinel-next-btn{height:32px;padding:0 14px;border-radius:4px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Inter Tight',inherit;box-shadow:0 0 0 1px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.15)}
+.sentinel-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#c47a0b,#b8381f);display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;margin-left:4px;flex-shrink:0}
+/* Sidebar */
+.sentinel-sidebar{background:var(--ink-0);color:#c9d1de;border-right:1px solid rgba(255,255,255,.05);padding:12px 10px;overflow-y:auto;display:flex;flex-direction:column}
+.spc{padding:12px;border-radius:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:14px;flex-shrink:0}
+.spc-label{font-size:10px;color:#6b7688;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.spc-num{font-size:12px;color:#fff;font-weight:600;line-height:1.3;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.spc-stage{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#8591a6}
+.spc-dot{width:6px;height:6px;border-radius:50%;background:#c47a0b;box-shadow:0 0 0 3px rgba(196,122,11,.2);display:inline-block;flex-shrink:0}
+.spc-bar{margin-top:10px;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.spc-bar-fill{height:100%;background:#c47a0b}
+.spc-foot{margin-top:4px;font-size:10px;color:#6b7688;display:flex;justify-content:space-between}
+.sidebar-group{margin-bottom:10px}
+.sidebar-group-lbl{font-size:9.5px;color:#556479;letter-spacing:.14em;text-transform:uppercase;padding:6px 8px 4px;font-weight:600}
+.sni{display:flex;align-items:center;gap:9px;width:100%;padding:6px 8px;background:transparent;color:#a8b3c8;border:none;border-radius:4px;font-size:12px;font-family:'Inter Tight',inherit;text-align:left;cursor:pointer;border-left:2px solid transparent;position:relative}
+.sni:hover{background:rgba(255,255,255,.04)}
+.sni.sni-active{background:rgba(184,56,31,.14);color:#fff;border-left-color:var(--accent);padding-left:6px;font-weight:500}
+.sni-icon{color:#6b7688;display:flex;flex-shrink:0}
+.sni.sni-active .sni-icon{color:var(--accent)}
+.sni-lbl{flex:1}
+.sni-badge{font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.06);color:#8591a6;font-weight:500}
+.sni-badge-pulse{background:rgba(184,56,31,.2);color:#e85a3e}
+.sidebar-autosave{margin-top:auto;padding:10px;border-radius:6px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);font-size:10px;color:#8591a6;line-height:1.4;margin-top:16px;flex-shrink:0}
+/* Main area */
+.sentinel-main{overflow-y:auto;background:var(--bg-warm);display:flex;flex-direction:column}
+/* Section header strip */
+.ss-strip{padding:20px 28px 16px;background:var(--s-surface);border-bottom:1px solid var(--s-line);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-shrink:0}
+.ss-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ss-num{font-size:10px;letter-spacing:.16em;color:var(--accent);font-weight:600}
+.ss-iso{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--accent-soft);color:var(--accent);border:1px solid rgba(184,56,31,.2);letter-spacing:.08em;font-weight:600}
+.ss-title{margin:0;font-size:24px;font-weight:600;letter-spacing:-.015em;color:var(--ink-1);font-family:'Inter Tight',sans-serif}
+.ss-sub{margin:4px 0 0;font-size:12.5px;color:var(--s-muted);max-width:580px}
+.ss-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--s-muted)}
+/* Stepper */
+.sentinel-stepper{padding:0 28px;background:var(--s-surface);border-bottom:1px solid var(--s-line);display:flex;align-items:center;height:40px;flex-shrink:0}
+.step-item{display:flex;align-items:center;gap:8px;padding:0 10px;height:100%}
+.step-n{width:20px;height:20px;border-radius:3px;display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0}
+.step-n-done{background:#1f7a4d;color:#fff}
+.step-n-cur{background:var(--accent);color:#fff}
+.step-n-fut{background:transparent;border:1px solid var(--s-line);color:var(--s-muted)}
+.step-lbl{font-size:11.5px}
+.step-lbl-done{color:var(--ink-1)}
+.step-lbl-cur{color:var(--ink-1);font-weight:600}
+.step-lbl-fut{color:var(--s-muted)}
+.step-con{flex:0 0 24px;height:1px;background:var(--s-line)}
+.step-con-done{background:#1f7a4d}
+.stepper-wf{margin-left:auto;font-size:10.5px;color:var(--s-muted);letter-spacing:.08em;text-transform:uppercase}
+/* Body grid */
+.sentinel-body{padding:20px 28px 40px;display:grid;grid-template-columns:1fr 320px;gap:20px}
+.sentinel-left{display:flex;flex-direction:column;gap:16px}
+/* Panel */
+.s-panel{background:var(--s-surface);border:1px solid var(--s-line);border-radius:6px;overflow:hidden}
+.s-panel-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--s-line);background:var(--s-surface)}
+.s-panel-num{font-size:10px;letter-spacing:.1em;color:var(--s-muted);font-family:'JetBrains Mono',monospace;font-weight:500}
+.s-panel-title{margin:0;font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.s-panel-sub{font-size:11px;color:var(--s-muted)}
+.s-panel-meta{font-size:10.5px;color:var(--s-muted)}
+.s-panel-bd{padding:16px}
+.s-panel-action{padding:4px 8px;font-size:11px;border-radius:3px;background:transparent;color:var(--s-muted);border:1px solid var(--s-line);cursor:pointer;font-family:'Inter Tight',inherit;display:flex;align-items:center;gap:5px}
+.s-panel-action:hover{background:var(--s-surface-2)}
+/* Fields */
+.s-field{display:flex;flex-direction:column}
+.s-field.wide{grid-column:span 2}
+.s-field-lbl{font-size:10.5px;color:var(--s-muted);letter-spacing:.04em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:5px}
+.s-field-in{height:38px;padding:0 10px;background:var(--s-surface);color:var(--ink-1);border:1px solid var(--s-line);border-radius:4px;font-size:12.5px;width:100%;font-family:'Inter Tight',inherit;outline:none}
+.s-field-in:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.s-field-in.mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+.s-field-in.has-icon{padding-right:32px}
+.s-field-in.has-sel{padding-right:32px}
+.s-field-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--s-muted);display:flex;pointer-events:none}
+.s-field-wrap{position:relative}
+.s-pill{padding:2px 7px;font-size:11px;border-radius:3px;background:rgba(196,122,11,.1);color:#a85f08;border:1px solid rgba(196,122,11,.2);font-weight:500}
+/* Textarea */
+.s-ta-wrap{margin-bottom:10px}
+.s-ta-lbl{font-size:10.5px;color:var(--s-muted);letter-spacing:.04em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:5px}
+.s-ta{width:100%;padding:10px;background:var(--s-surface);color:var(--ink-1);border:1px solid var(--s-line);border-radius:4px;font-size:12.5px;line-height:1.5;font-family:'Inter Tight',inherit;outline:none;resize:vertical}
+.s-ta:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+/* Treatment categories */
+.treat-row{margin-top:0;padding-top:12px;border-top:1px solid var(--s-line)}
+.treat-lbl-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.treat-lbl{font-size:11px;color:var(--s-muted);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.treat-hint{font-size:10.5px;color:var(--s-muted)}
+.treat-chips{display:flex;gap:6px;flex-wrap:wrap}
+.treat-btn{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;border-radius:4px;border:1px solid var(--s-line);cursor:pointer;font-size:11.5px;font-family:'Inter Tight',inherit;background:transparent;color:var(--s-muted);transition:none}
+.treat-btn:hover{background:var(--s-surface-2)}
+.treat-btn.on{background:var(--ink-0);color:#fff;border-color:var(--ink-0);font-weight:500}
+.treat-glyph{width:20px;height:20px;border-radius:3px;display:grid;place-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:var(--s-line);color:var(--s-muted);flex-shrink:0}
+.treat-glyph.on{background:var(--accent);color:#fff}
+/* Meetings table */
+.mtg-table{border:1px solid var(--s-line);border-radius:4px;overflow:hidden;font-size:12px}
+.mtg-hd{display:grid;grid-template-columns:110px 1fr 200px 28px;padding:8px 12px;background:var(--s-surface-2);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--s-muted);border-bottom:1px solid var(--s-line)}
+.mtg-row{display:grid;grid-template-columns:110px 1fr 200px 28px;padding:9px 12px;align-items:center;border-bottom:1px solid var(--s-line);background:var(--s-surface)}
+.mtg-row:last-child{border-bottom:none}
+.mtg-date{color:var(--s-muted);font-family:'JetBrains Mono',monospace;font-size:11px}
+.mtg-desc{color:var(--ink-1);font-weight:500}
+.mtg-att{color:var(--s-muted);font-size:11.5px}
+.mtg-more{background:transparent;border:none;color:var(--s-muted);cursor:pointer;display:flex;padding:4px}
+/* Add button */
+.sentinel-add{margin-top:10px;padding:7px 11px;border-radius:4px;background:transparent;color:var(--ink-1);border:1px dashed var(--s-line);font-size:11.5px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter Tight',inherit}
+.sentinel-add:hover{border-color:var(--s-muted)}
+/* AI card */
+.ai-card{padding:14px;border-radius:4px;background:var(--s-surface-2);border:1px solid var(--s-line);display:flex;gap:12px;align-items:flex-start}
+.ai-icon{width:32px;height:32px;border-radius:4px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex-shrink:0}
+.ai-title{font-size:12.5px;font-weight:600;margin-bottom:3px}
+.ai-sub{font-size:11.5px;color:var(--s-muted);line-height:1.5}
+.ai-btns{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.ai-btn-dark{padding:6px 10px;border-radius:3px;font-size:11.5px;background:var(--ink-1);color:var(--s-surface);border:none;display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Inter Tight',inherit;font-weight:500}
+.ai-btn-outline{padding:6px 10px;border-radius:3px;font-size:11.5px;background:var(--s-surface);color:var(--ink-1);border:1px solid var(--s-line);display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Inter Tight',inherit}
+.ai-btn-ghost{padding:6px 10px;border-radius:3px;font-size:11.5px;background:transparent;color:var(--s-muted);border:1px solid var(--s-line);display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Inter Tight',inherit;margin-left:auto}
+/* Sidecar */
+.sidecar{display:flex;flex-direction:column;gap:14px}
+.sidecar-card{padding:14px;border-radius:6px;background:var(--s-surface);border:1px solid var(--s-line)}
+.sidecar-lbl{font-size:10.5px;color:var(--s-muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+/* Checklist */
+.chk-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.chk-box{width:14px;height:14px;border-radius:3px;display:grid;place-items:center;font-size:9px;flex-shrink:0;color:#fff}
+.chk-box-done{border:1px solid var(--ok);background:var(--ok)}
+.chk-box-open{border:1px solid var(--s-line);background:transparent}
+.chk-lbl{flex:1}
+.chk-note{font-size:10.5px;color:var(--s-muted)}
+/* Posture bars */
+.posture-bars{display:flex;gap:4px;margin-bottom:10px}
+.posture-seg{padding:8px 8px 6px;border-radius:3px;min-width:22px;color:#fff}
+.posture-n{font-size:16px;font-weight:600;font-feature-settings:'tnum'}
+.posture-s{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+/* Reference links */
+.ref-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--s-line);cursor:pointer}
+.ref-row:last-child{border-bottom:none}
+.ref-t{font-size:12px;color:var(--ink-1);font-weight:500}
+.ref-s{font-size:10.5px;color:var(--s-muted)}
+/* Legacy tab wrapper */
+.legacy-tab-wrap{padding:24px 28px;background:var(--bg-warm);min-height:100%}
+/* Print overrides for sentinel */
+@media print{.sentinel-header,.sentinel-sidebar{display:none!important}.sentinel-app{display:block!important;height:auto!important}.sentinel-main{overflow:visible!important}}
 </style>
 
 <script>
@@ -300,6 +464,99 @@ function HelpBox({title,description,scaleItems}){
   );
 }
 
+// ── Sentinel navigation structure ──────────────────────────────────
+const SENTINEL_NAV=[
+  {group:"Project",items:[
+    {id:"context",    label:"Context",                   icon:"home",  badge:null},
+    {id:"crime",      label:"Crime & Terrorism",          icon:"bolt",  badge:null},
+    {id:"assets",     label:"Assets",                    icon:"cube",  badge:null},
+    {id:"threats",    label:"Threats",                   icon:"shield",badge:null},
+    {id:"poi",        label:"Points of Interest",        icon:"flag",  badge:null},
+    {id:"vulnerability",label:"Attractiveness / Vuln.", icon:"eye",   badge:null},
+  ]},
+  {group:"Analysis",items:[
+    {id:"impact",     label:"Impact",                    icon:"chart", badge:null},
+    {id:"controls",   label:"Existing Controls",         icon:"check", badge:null},
+    {id:"register",   label:"Risk Register",             icon:"list",  badge:null,pulse:true},
+    {id:"residual",   label:"Residual Risk & Treatments",icon:"beaker",badge:null},
+  ]},
+  {group:"Outputs",items:[
+    {id:"summary",    label:"Summary",                   icon:"docs",  badge:null},
+    {id:"dashboard",  label:"Dashboard",                 icon:"grid",  badge:null},
+    {id:"sbd",        label:"SBD Requirements",          icon:"book",  badge:null},
+  ]},
+  {group:"System",items:[
+    {id:"methodology",label:"Methodology",               icon:"book",  badge:null},
+    {id:"database",   label:"Database",                  icon:"db",    badge:null},
+    {id:"settings",   label:"Settings",                  icon:"cog",   badge:null},
+  ]},
+];
+const SENTINEL_TREATS=[
+  {key:"proc", label:"Procedures",       glyph:"P"},
+  {key:"elec", label:"Electronic Sys.",  glyph:"E"},
+  {key:"phys", label:"Physical Struct.", glyph:"S"},
+  {key:"resp", label:"Response",         glyph:"R"},
+  {key:"train",label:"Training",         glyph:"T"},
+];
+const SENTINEL_STEPS=[
+  {n:1,label:"Context",  done:true},
+  {n:2,label:"Criteria", done:false,current:true},
+  {n:3,label:"Assets",   done:false},
+  {n:4,label:"Threats",  done:false},
+  {n:5,label:"Analysis", done:false},
+  {n:6,label:"Treatments",done:false},
+  {n:7,label:"Report",   done:false},
+];
+
+// ── Inline SVG icon helper (stroke 1.5, 16px) ──────────────────────
+function sIcon(name,size){
+  size=size||16;
+  const w=`width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+  const paths={
+    home:`<path d="M2.5 7L8 2.5 13.5 7V13a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V7z"/><path d="M6.5 13.5V9.5h3v4"/>`,
+    bolt:`<path d="M8.5 1.5L3 9h4l-.5 5.5L12 7H8z"/>`,
+    shield:`<path d="M8 1.5l5 2v4c0 3-2.2 5.4-5 6.5-2.8-1.1-5-3.5-5-6.5v-4l5-2z"/>`,
+    flag:`<path d="M3 14V2"/><path d="M3 2.5h9l-1.5 3 1.5 3H3"/>`,
+    cube:`<path d="M8 1.5l5.5 3v7L8 14.5 2.5 11.5v-7z"/><path d="M2.5 4.5L8 7.5l5.5-3M8 7.5v7"/>`,
+    eye:`<path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/>`,
+    chart:`<path d="M2 14V2M14 14H2"/><rect x="4" y="8" width="2" height="5"/><rect x="8" y="5" width="2" height="8"/><rect x="12" y="10" width="2" height="3"/>`,
+    check:`<path d="M3 8l3.5 3.5L13 5"/>`,
+    list:`<path d="M5 3.5h9M5 8h9M5 12.5h9"/><circle cx="2.5" cy="3.5" r=".5" fill="currentColor"/><circle cx="2.5" cy="8" r=".5" fill="currentColor"/><circle cx="2.5" cy="12.5" r=".5" fill="currentColor"/>`,
+    beaker:`<path d="M6 1.5v4L2.5 12a1 1 0 0 0 .9 1.5h9.2a1 1 0 0 0 .9-1.5L10 5.5v-4"/><path d="M5 1.5h6"/>`,
+    docs:`<path d="M3.5 1.5h6L12.5 4.5V14a.5.5 0 0 1-.5.5H3.5a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 11h3"/>`,
+    grid:`<rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/>`,
+    book:`<path d="M2.5 2.5h5a2 2 0 0 1 2 2v9a1.5 1.5 0 0 0-1.5-1.5h-5.5v-9.5zM13.5 2.5h-5a2 2 0 0 0-2 2v9a1.5 1.5 0 0 1 1.5-1.5h5.5v-9.5z"/>`,
+    db:`<ellipse cx="8" cy="3.5" rx="5" ry="2"/><path d="M3 3.5v5c0 1.1 2.2 2 5 2s5-.9 5-2v-5"/><path d="M3 8.5v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4"/>`,
+    cog:`<circle cx="8" cy="8" r="2"/><path d="M8 1.5v2M8 12.5v2M14.5 8h-2M3.5 8h-2M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4M12.6 12.6l-1.4-1.4M4.8 4.8L3.4 3.4"/>`,
+    save:`<path d="M2.5 2.5h8l3 3V13a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5z"/><rect x="4.5" y="8.5" width="7" height="5"/><path d="M5 2.5v3h5v-3"/>`,
+    upload:`<path d="M8 10V2M4.5 5L8 1.5 11.5 5"/><path d="M2.5 13h11"/>`,
+    download:`<path d="M8 2v8M4.5 7L8 10.5 11.5 7"/><path d="M2.5 13h11"/>`,
+    print:`<path d="M4 6V2.5h8V6"/><rect x="2" y="6" width="12" height="6" rx="1"/><rect x="4.5" y="9" width="7" height="5"/>`,
+    plus:`<path d="M8 3v10M3 8h10"/>`,
+    more:`<circle cx="3" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="13" cy="8" r="1" fill="currentColor" stroke="none"/>`,
+    arrowR:`<path d="M3 8h10M9 4l4 4-4 4"/>`,
+    chevD:`<path d="M3 6l5 5 5-5"/>`,
+    copy:`<rect x="5" y="5" width="8.5" height="8.5" rx="1"/><path d="M11 5V3a.5.5 0 0 0-.5-.5H3a.5.5 0 0 0-.5.5v7.5a.5.5 0 0 0 .5.5h2"/>`,
+    paste:`<rect x="3.5" y="3" width="9" height="11" rx="1"/><path d="M5.5 3V2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1"/>`,
+    sparkle:`<path d="M8 1.5L9.2 6 13.5 8 9.2 10 8 14.5 6.8 10 2.5 8 6.8 6z"/>`,
+    clock:`<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/>`,
+    user:`<circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c.5-2.3 2.6-4 5-4s4.5 1.7 5 4"/>`,
+    link:`<path d="M7 9a3 3 0 0 0 4.2 0l1.8-1.8a3 3 0 0 0-4.2-4.2L8 3.8"/><path d="M9 7a3 3 0 0 0-4.2 0L3 8.8a3 3 0 0 0 4.2 4.2L8 12.2"/>`,
+    ext:`<path d="M6 3H3.5a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10"/><path d="M9.5 2.5h3.5V6M13.5 2.5L8 8"/>`,
+    calendar:`<rect x="2" y="3.5" width="12" height="10" rx="1"/><path d="M2 6.5h12M5.5 2v3M10.5 2v3"/>`,
+    trash:`<path d="M2.5 4.5h11M6 4.5V3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1.5M4 4.5l.7 9a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5l.7-9"/>`,
+    edit:`<path d="M11 2.5l2.5 2.5L5.5 13 2.5 13.5 3 10.5 11 2.5z"/>`,
+  };
+  const d=paths[name]||"";
+  // Return a React element via dangerouslySetInnerHTML on a span wrapper
+  return React.createElement("svg",{
+    width:size,height:size,viewBox:"0 0 16 16",fill:"none",
+    stroke:"currentColor",strokeWidth:"1.5",strokeLinecap:"round",
+    strokeLinejoin:"round","aria-hidden":"true",
+    dangerouslySetInnerHTML:{__html:d},
+  });
+}
+
 const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n:"2"},{id:"assets",l:"Assets",n:"3"},{id:"threats",l:"Threats",n:"4"},
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Attractiveness, Vulnerability & Likelihood",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
@@ -316,9 +573,480 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 // MAIN APP
 // ============================================================
+// ── SentinelHeader ──────────────────────────────────────────────────
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad}){
+  const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
+  const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
+  return React.createElement("header",{className:"sentinel-header"},
+    // Brand
+    React.createElement("div",{className:"sentinel-brand"},
+      React.createElement("div",{className:"sentinel-logo"},"S·T"),
+      React.createElement("div",null,
+        React.createElement("div",{className:"sentinel-brand-name"},"Sentinel"),
+        React.createElement("div",{className:"sentinel-brand-sub"},"Risk & Threat Assessment")
+      )
+    ),
+    // Breadcrumb
+    React.createElement("div",{className:"sentinel-bc"},
+      React.createElement("span",{className:"bc-ws"},"Workspace"),
+      React.createElement("span",{className:"bc-sep"},"/"),
+      React.createElement("span",{className:"bc-client"},ctx.client||"No client"),
+      React.createElement("span",{className:"bc-sep"},"/"),
+      React.createElement("span",{className:"bc-proj"},ctx.project||"Untitled Assessment"),
+      ctx.stage&&React.createElement("span",{className:"bc-badge"},stageShort)
+    ),
+    // Toolbar
+    React.createElement("div",{className:"stb-wrap"},
+      React.createElement("div",{className:"stb-group"},
+        React.createElement("button",{className:"stb-btn stb-btn-primary",onClick:onSave,title:"Save"},
+          sIcon("save")," Save"),
+        React.createElement("div",{className:"stb-div"}),
+        React.createElement("button",{className:"stb-btn",onClick:onLoad,title:"Load"},
+          sIcon("upload")," Load")
+      ),
+      ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group"},
+        React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
+          sIcon("db")," Back-ups")
+      ),
+      React.createElement("div",{className:"stb-group"},
+        React.createElement("button",{className:"stb-btn",onClick:onExportWord,title:"Export Word"},
+          sIcon("docs")," Word"),
+        React.createElement("div",{className:"stb-div"}),
+        React.createElement("button",{className:"stb-btn",onClick:onExportExcel,title:"Export Excel"},
+          sIcon("grid")," Excel")
+      ),
+      React.createElement("div",{className:"stb-group"},
+        React.createElement("button",{className:"stb-btn",onClick:onPrint,title:"Print"},
+          sIcon("print")," Print"),
+        React.createElement("div",{className:"stb-div"}),
+        React.createElement("button",{className:"stb-btn",onClick:onSetup,title:"Setup wizard"},
+          sIcon("sparkle")," Setup")
+      ),
+      React.createElement("div",{className:"stb-group"},
+        React.createElement("button",{className:"stb-btn",onClick:onClear,title:"New assessment",style:{color:"#f08080"}},
+          "New")
+      ),
+      React.createElement("div",{className:"stb-sep"}),
+      React.createElement("button",{className:"sentinel-next-btn",onClick:onNext},
+        "Next: ",nextLabel," ",sIcon("arrowR")
+      ),
+      React.createElement("div",{className:"sentinel-avatar"},initials)
+    )
+  );
+}
+
+// ── SentinelSidebar ─────────────────────────────────────────────────
+function SentinelSidebar({ctx,activeTab,onTabChange}){
+  const num=ctx.projectNum||"SRA-XXXX-XXXX";
+  const stage=(ctx.stage||"Stage 1").replace(/^Stage\s+(\d)/i,"Stage $1");
+  return React.createElement("aside",{className:"sentinel-sidebar"},
+    // Project card
+    React.createElement("div",{className:"spc"},
+      React.createElement("div",{className:"spc-label"},"Project"),
+      React.createElement("div",{className:"spc-num"},num),
+      React.createElement("div",{className:"spc-stage"},
+        React.createElement("span",{className:"spc-dot"}),
+        stage
+      ),
+      React.createElement("div",{className:"spc-bar"},
+        React.createElement("div",{className:"spc-bar-fill",style:{width:"42%"}})
+      ),
+      React.createElement("div",{className:"spc-foot"},
+        React.createElement("span",null,"Progress"),
+        React.createElement("span",null,"42%")
+      )
+    ),
+    // Nav groups
+    SENTINEL_NAV.map(function(section){
+      return React.createElement("div",{key:section.group,className:"sidebar-group"},
+        React.createElement("div",{className:"sidebar-group-lbl"},section.group),
+        section.items.map(function(item){
+          const active=activeTab===item.id;
+          return React.createElement("button",{
+            key:item.id,
+            className:"sni"+(active?" sni-active":""),
+            onClick:function(){onTabChange(item.id)},
+          },
+            React.createElement("span",{className:"sni-icon"},sIcon(item.icon)),
+            React.createElement("span",{className:"sni-lbl"},item.label),
+            item.badge&&React.createElement("span",{className:"sni-badge"+(item.pulse?" sni-badge-pulse":"")},item.badge)
+          );
+        })
+      );
+    }),
+    // Autosave
+    React.createElement("div",{className:"sidebar-autosave"},
+      "Auto-saved ",React.createElement("span",{style:{color:"#fff"}},"2 min ago"),
+      React.createElement("br"),
+      React.createElement("span",{style:{color:"#6b7688"}},"by "+(ctx.assessor||"analyst")+" (local)")
+    )
+  );
+}
+
+// ── SentinelStepper ─────────────────────────────────────────────────
+function SentinelStepper(){
+  return React.createElement("div",{className:"sentinel-stepper"},
+    SENTINEL_STEPS.map(function(s,i){
+      const state=s.done?"done":s.current?"cur":"fut";
+      return React.createElement(React.Fragment,{key:s.n},
+        React.createElement("div",{className:"step-item"},
+          React.createElement("div",{className:"step-n step-n-"+state},s.done?"✓":s.n),
+          React.createElement("div",{className:"step-lbl step-lbl-"+state},s.label)
+        ),
+        i<SENTINEL_STEPS.length-1&&React.createElement("div",{
+          className:"step-con"+(s.done?" step-con-done":"")
+        })
+      );
+    }),
+    React.createElement("div",{className:"stepper-wf"},"Workflow — ISO 31000")
+  );
+}
+
+// ── SPanel ──────────────────────────────────────────────────────────
+function SPanel({num,title,subtitle,meta,actions,children}){
+  return React.createElement("section",{className:"s-panel"},
+    React.createElement("header",{className:"s-panel-hd"},
+      num&&React.createElement("div",{className:"s-panel-num"},num),
+      React.createElement("div",{style:{flex:1,display:"flex",alignItems:"baseline",gap:8}},
+        React.createElement("h3",{className:"s-panel-title"},title),
+        subtitle&&React.createElement("span",{className:"s-panel-sub"},subtitle),
+        meta&&React.createElement("span",{className:"s-panel-meta"},meta)
+      ),
+      actions&&React.createElement("div",{style:{display:"flex",gap:4,flexShrink:0}},actions)
+    ),
+    React.createElement("div",{className:"s-panel-bd"},children)
+  );
+}
+
+// ── PanelAction button ──────────────────────────────────────────────
+function PanelAction({icon,label,onClick}){
+  return React.createElement("button",{className:"s-panel-action",onClick:onClick||function(){}},
+    sIcon(icon),label
+  );
+}
+
+// ── SField ──────────────────────────────────────────────────────────
+function SField({label,value,onChange,mono,iconRight,isSelect,selectOptions,isPill,wide}){
+  const cls="s-field-in"+(mono?" mono":"")+(iconRight?" has-icon":"")+(isSelect?" has-sel":"");
+  let inner;
+  if(isSelect){
+    inner=React.createElement("div",{className:"s-field-wrap"},
+      React.createElement("select",{className:cls,value:value||"",onChange:onChange||function(){}},
+        (selectOptions||[]).map(function(o){return React.createElement("option",{key:o,value:o},o)})
+      ),
+      React.createElement("span",{className:"s-field-icon"},sIcon("chevD"))
+    );
+  } else if(isPill){
+    inner=React.createElement("div",{className:"s-field-wrap"},
+      React.createElement("div",{className:"s-field-in",style:{display:"flex",alignItems:"center"}},
+        React.createElement("span",{className:"s-pill"},value)
+      )
+    );
+  } else {
+    inner=React.createElement("div",{className:"s-field-wrap"},
+      React.createElement("input",{className:cls,value:value||"",onChange:onChange||function(){},readOnly:!onChange}),
+      iconRight&&React.createElement("span",{className:"s-field-icon"},sIcon(iconRight))
+    );
+  }
+  return React.createElement("div",{className:"s-field"+(wide?" wide":"")},
+    React.createElement("label",{className:"s-field-lbl"},label),
+    inner
+  );
+}
+
+// ── STextArea ───────────────────────────────────────────────────────
+function STextArea({label,value,onChange,rows,placeholder}){
+  return React.createElement("div",{className:"s-ta-wrap"},
+    label&&React.createElement("label",{className:"s-ta-lbl"},label),
+    React.createElement("textarea",{
+      className:"s-ta",
+      value:value||"",
+      rows:rows||3,
+      placeholder:placeholder||"",
+      onChange:onChange||function(){},
+    })
+  );
+}
+
+// ── TreatmentChips ──────────────────────────────────────────────────
+function TreatmentChips({active,onToggle}){
+  return React.createElement("div",{className:"treat-row"},
+    React.createElement("div",{className:"treat-lbl-row"},
+      React.createElement("span",{className:"treat-lbl"},"Treatment categories in scope"),
+      React.createElement("span",{className:"treat-hint"},"— all apply by default")
+    ),
+    React.createElement("div",{className:"treat-chips"},
+      SENTINEL_TREATS.map(function(t){
+        const on=(active||[]).includes(t.key);
+        return React.createElement("button",{
+          key:t.key,
+          className:"treat-btn"+(on?" on":""),
+          onClick:function(){onToggle&&onToggle(t.key)},
+        },
+          React.createElement("span",{className:"treat-glyph"+(on?" on":"")},t.glyph),
+          t.label,
+          on&&React.createElement("span",{style:{color:"var(--accent)",marginLeft:2,display:"flex"}},sIcon("check"))
+        );
+      })
+    )
+  );
+}
+
+// ── MeetingsPanel content ───────────────────────────────────────────
+function MeetingsPanel({meetings,onAdd,onRemove}){
+  return React.createElement(React.Fragment,null,
+    React.createElement("div",{className:"mtg-table"},
+      React.createElement("div",{className:"mtg-hd"},
+        React.createElement("div",null,"Date"),
+        React.createElement("div",null,"Meeting / purpose"),
+        React.createElement("div",null,"Attendees"),
+        React.createElement("div",null)
+      ),
+      (meetings||[]).length===0&&React.createElement("div",{style:{padding:"14px 12px",fontSize:12,color:"var(--s-muted)",fontStyle:"italic"}},"No meetings recorded yet."),
+      (meetings||[]).map(function(m,i){
+        return React.createElement("div",{key:i,className:"mtg-row"},
+          React.createElement("div",{className:"mtg-date"},m.date||"—"),
+          React.createElement("div",{className:"mtg-desc"},m.desc||m.description||""),
+          React.createElement("div",{className:"mtg-att"},m.attendees||""),
+          React.createElement("button",{className:"mtg-more",onClick:function(){onRemove&&onRemove(i)},title:"Remove"},sIcon("trash"))
+        );
+      })
+    ),
+    React.createElement("button",{className:"sentinel-add",onClick:onAdd||function(){}},
+      sIcon("plus")," Add meeting"
+    )
+  );
+}
+
+// ── AreaAnalysisCard ────────────────────────────────────────────────
+function AreaAnalysisCard({onCopyPrompt,onPasteResponse}){
+  return React.createElement("div",{className:"ai-card"},
+    React.createElement("div",{className:"ai-icon"},sIcon("sparkle")),
+    React.createElement("div",{style:{flex:1}},
+      React.createElement("div",{className:"ai-title"},"AI area-intelligence briefing"),
+      React.createElement("div",{className:"ai-sub"},
+        "Copy the structured prompt for your preferred LLM, then paste the response below to auto-populate regional threat context."
+      ),
+      React.createElement("div",{className:"ai-btns"},
+        React.createElement("button",{className:"ai-btn-dark",onClick:onCopyPrompt||function(){}},sIcon("copy")," Copy prompt"),
+        React.createElement("button",{className:"ai-btn-outline",onClick:onPasteResponse||function(){}},sIcon("paste")," Paste response"),
+        React.createElement("button",{className:"ai-btn-ghost"},sIcon("ext")," Open ChatGPT")
+      )
+    )
+  );
+}
+
+// ── SideCar ─────────────────────────────────────────────────────────
+function SideCar({risks}){
+  // Derive preliminary posture from risks array (or use placeholder)
+  const counts={low:0,med:0,high:0,crit:0};
+  (risks||[]).forEach(function(r){
+    const sev=r.sev||r.severity;
+    if(sev&&counts[sev]!==undefined)counts[sev]++;
+  });
+  const total=(risks||[]).length;
+  const hasRisks=total>0;
+  const postureCols=[
+    {key:"low", label:"Low",  n:hasRisks?counts.low:8,  bg:"var(--sev-low)"},
+    {key:"med", label:"Med",  n:hasRisks?counts.med:14, bg:"var(--sev-med)"},
+    {key:"high",label:"High", n:hasRisks?counts.high:5, bg:"var(--sev-high)"},
+    {key:"crit",label:"Crit", n:hasRisks?counts.crit:1, bg:"var(--sev-crit)"},
+  ];
+  const totalPosture=postureCols.reduce(function(s,c){return s+c.n},0)||1;
+  const checklist=[
+    {label:"Project identifiers",    done:true},
+    {label:"Client & site",          done:true},
+    {label:"Consignment / dev type", done:true},
+    {label:"Scope boundaries",       done:true},
+    {label:"Key assumptions",        done:false},
+    {label:"≥ 2 stakeholder meetings",done:true, note:"recorded"},
+    {label:"Area analysis",          done:false, note:"awaiting paste"},
+  ];
+  const pctDone=Math.round(checklist.filter(function(c){return c.done}).length/checklist.length*100);
+  const circumference=2*Math.PI*22;
+  return React.createElement("aside",{className:"sidecar"},
+    // Completion donut
+    React.createElement("div",{className:"sidecar-card"},
+      React.createElement("div",{className:"sidecar-lbl"},"Section completion"),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12}},
+        React.createElement("svg",{width:56,height:56,viewBox:"0 0 56 56"},
+          React.createElement("circle",{cx:28,cy:28,r:22,fill:"none",stroke:"var(--s-line)",strokeWidth:5}),
+          React.createElement("circle",{cx:28,cy:28,r:22,fill:"none",stroke:"var(--accent)",strokeWidth:5,
+            strokeDasharray:`${circumference*(pctDone/100)} ${circumference}`,
+            strokeLinecap:"round",transform:"rotate(-90 28 28)",
+            style:{transition:"stroke-dasharray .6s"}
+          }),
+          React.createElement("text",{x:28,y:32,textAnchor:"middle",fontSize:14,fontWeight:600,fill:"var(--ink-1)",fontFamily:"Inter Tight"},pctDone+"%")
+        ),
+        React.createElement("div",{style:{flex:1,fontSize:11.5,color:"var(--s-muted)",lineHeight:1.5}},
+          React.createElement("div",{style:{color:"var(--ink-1)",fontWeight:500,marginBottom:3}},pctDone>=80?"Almost there":"In progress"),
+          (7-checklist.filter(function(c){return c.done}).length)+" required fields remaining."
+        )
+      )
+    ),
+    // Required checklist
+    React.createElement("div",{className:"sidecar-card"},
+      React.createElement("div",{className:"sidecar-lbl"},"Required for this section"),
+      checklist.map(function(c,i){
+        return React.createElement("div",{key:i,className:"chk-row",style:{color:c.done?"var(--ink-1)":"var(--s-muted)"}},
+          React.createElement("div",{className:"chk-box "+(c.done?"chk-box-done":"chk-box-open")},c.done&&"✓"),
+          React.createElement("span",{className:"chk-lbl"},c.label),
+          c.note&&React.createElement("span",{className:"chk-note"},c.note)
+        );
+      })
+    ),
+    // Preliminary posture
+    React.createElement("div",{className:"sidecar-card"},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}},
+        React.createElement("div",{className:"sidecar-lbl",style:{marginBottom:0}},"Preliminary posture"),
+        React.createElement("div",{style:{fontSize:10,color:"var(--s-muted)"}},"provisional")
+      ),
+      React.createElement("div",{className:"posture-bars"},
+        postureCols.map(function(s){
+          return React.createElement("div",{key:s.key,className:"posture-seg",style:{flex:s.n,background:s.bg}},
+            React.createElement("div",{className:"posture-n"},s.n),
+            React.createElement("div",{className:"posture-s"},s.label)
+          );
+        })
+      ),
+      React.createElement("div",{style:{fontSize:11,color:"var(--s-muted)",lineHeight:1.5}},
+        totalPosture+" risks identified. Distribution shifts once Criteria weights are applied."
+      )
+    ),
+    // Related references
+    React.createElement("div",{className:"sidecar-card"},
+      React.createElement("div",{className:"sidecar-lbl"},"Related references"),
+      [
+        {t:"ISO 31000:2018 §5.3",s:"Establishing context"},
+        {t:"NaCTSO Q1 2026 bulletin",s:"UK maritime threat"},
+        {t:"Previous assessment",s:"Prior SRA on file"},
+      ].map(function(r,i){
+        return React.createElement("div",{key:i,className:"ref-row"},
+          React.createElement("span",{style:{color:"var(--s-muted)",display:"flex"}},sIcon("link")),
+          React.createElement("div",{style:{flex:1,minWidth:0}},
+            React.createElement("div",{className:"ref-t"},r.t),
+            React.createElement("div",{className:"ref-s"},r.s)
+          ),
+          React.createElement("span",{style:{color:"var(--s-muted)",display:"flex"}},sIcon("ext"))
+        );
+      })
+    )
+  );
+}
+
+// ── SentinelContextScreen ───────────────────────────────────────────
+function SentinelContextScreen({
+  ctx,setCtx,
+  meetings,setMeetings,
+  treatmentCats,onToggleTreat,
+  risks,
+  copyAreaPrompt,pasteAreaResponse,
+  COUNTRIES,DEV_TYPES,
+}){
+  function upCtx(k,v){setCtx(function(p){return Object.assign({},p,{[k]:v})});}
+  const pad=14;
+  return React.createElement("div",null,
+    // Section header strip
+    React.createElement("div",{className:"ss-strip"},
+      React.createElement("div",null,
+        React.createElement("div",{className:"ss-eyebrow"},
+          React.createElement("span",{className:"ss-num"},"01 · CONTEXT"),
+          React.createElement("span",{className:"ss-iso"},"ISO 31000 · 5.3")
+        ),
+        React.createElement("h1",{className:"ss-title"},"Context & Criteria"),
+        React.createElement("p",{className:"ss-sub"},"Define scope, objectives and risk appetite. This section anchors every downstream assessment.")
+      ),
+      React.createElement("div",{className:"ss-meta"},
+        React.createElement("span",{style:{display:"flex",alignItems:"center",gap:4}},sIcon("clock")," Last edited just now"),
+        React.createElement("span",{style:{color:"var(--s-line)"}},"·"),
+        React.createElement("span",{style:{display:"flex",alignItems:"center",gap:4}},sIcon("user")," "+(ctx.assessor||"Analyst"))
+      )
+    ),
+    // Stepper
+    React.createElement(SentinelStepper,null),
+    // Two-column body
+    React.createElement("div",{className:"sentinel-body"},
+      // LEFT column
+      React.createElement("div",{className:"sentinel-left"},
+        // 1.1 Project Details
+        React.createElement(SPanel,{num:"1.1",title:"Project Details",
+          actions:React.createElement(PanelAction,{icon:"copy",label:"From template"})
+        },
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:pad}},
+            React.createElement(SField,{label:"Project name",    value:ctx.project,    onChange:function(e){upCtx("project",e.target.value)}}),
+            React.createElement(SField,{label:"Project number",  value:ctx.projectNum, onChange:function(e){upCtx("projectNum",e.target.value)},mono:true}),
+            React.createElement(SField,{label:"Support reference",value:ctx.ref,       onChange:function(e){upCtx("ref",e.target.value)},mono:true}),
+            React.createElement(SField,{label:"Assessment date",  value:ctx.date,       onChange:function(e){upCtx("date",e.target.value)},iconRight:"calendar"}),
+            React.createElement(SField,{label:"RMS stage",        value:ctx.stage,      isPill:true}),
+            React.createElement(SField,{label:"Revision",         value:ctx.revision||ctx.ref, onChange:function(e){upCtx("revision",e.target.value)}}),
+            React.createElement(SField,{label:"Client",           value:ctx.client,     onChange:function(e){upCtx("client",e.target.value)}}),
+            React.createElement(SField,{label:"Site address",     value:ctx.address,    onChange:function(e){upCtx("address",e.target.value)}}),
+            React.createElement(SField,{label:"Province / region",value:ctx.postcode,   onChange:function(e){upCtx("postcode",e.target.value)}}),
+            React.createElement(SField,{label:"Country",          value:ctx.country,    isSelect:true,
+              selectOptions:COUNTRIES||["United Kingdom","United States","Australia","Other"],
+              onChange:function(e){upCtx("country",e.target.value)}}),
+            React.createElement(SField,{label:"Development / consignment type",value:ctx.devType,isSelect:true,wide:true,
+              selectOptions:DEV_TYPES||["","Mixed — liquid bulk, containerised","Residential","Commercial","Industrial","Mixed-use","Other"],
+              onChange:function(e){upCtx("devType",e.target.value)}})
+          ),
+          React.createElement(TreatmentChips,{active:treatmentCats,onToggle:onToggleTreat})
+        ),
+        // 1.2 Scope & Assumptions
+        React.createElement(SPanel,{num:"1.2",title:"Scope & Assumptions"},
+          React.createElement(STextArea,{label:"Scope boundaries",value:ctx.scope,rows:3,
+            onChange:function(e){upCtx("scope",e.target.value)},
+            placeholder:"Describe what is included in scope…"}),
+          React.createElement(STextArea,{label:"Key assumptions",value:ctx.assumptions,rows:3,
+            onChange:function(e){upCtx("assumptions",e.target.value)},
+            placeholder:"List key assumptions underpinning the assessment…"})
+        ),
+        // 1.3 Analyst Notes
+        React.createElement(SPanel,{num:"1.3",title:"Analyst Notes",
+          actions:React.createElement(React.Fragment,null,
+            React.createElement(PanelAction,{icon:"sparkle",label:"Summarize"}),
+            React.createElement(PanelAction,{icon:"copy",label:"AI Prompt"})
+          )
+        },
+          React.createElement(STextArea,{label:"",value:ctx.notes,rows:3,
+            onChange:function(e){upCtx("notes",e.target.value)},
+            placeholder:"General notes, observations not captured elsewhere…"})
+        ),
+        // 1.4 Stakeholder Meetings
+        React.createElement(SPanel,{num:"1.4",title:"Stakeholder Meetings & Consultations",
+          meta:(meetings||[]).length+" recorded"
+        },
+          React.createElement(MeetingsPanel,{
+            meetings:meetings,
+            onAdd:function(){
+              setMeetings(function(p){return p.concat([{date:"",desc:"",attendees:"",description:""}])});
+            },
+            onRemove:function(i){
+              setMeetings(function(p){return p.filter(function(_,j){return j!==i})});
+            },
+          })
+        ),
+        // 1.5 Area Analysis
+        React.createElement(SPanel,{num:"1.5",title:"Area Analysis",subtitle:"Regional intelligence & threat posture",
+          actions:React.createElement(React.Fragment,null,
+            React.createElement(PanelAction,{icon:"copy",label:"Copy prompt",onClick:copyAreaPrompt}),
+            React.createElement(PanelAction,{icon:"paste",label:"Paste response",onClick:pasteAreaResponse})
+          )
+        },
+          React.createElement(AreaAnalysisCard,{
+            onCopyPrompt:copyAreaPrompt,
+            onPasteResponse:pasteAreaResponse,
+          })
+        )
+      ),
+      // RIGHT column — sidecar
+      React.createElement(SideCar,{risks:risks})
+    )
+  );
+}
+
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.013";
+  const VERSION="2.014";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -456,6 +1184,9 @@ function App(){
   const[wizardThreats,setWizardThreats]=useState([]);
   const[wizardTreatScope,setWizardTreatScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
   const[treatCategoryScope,setTreatCategoryScope]=useState({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+  // Sentinel treatment category toggles (P·E·S·R·T)
+  const[sentinelTreatCats,setSentinelTreatCats]=useState(["proc","elec","phys","resp","train"]);
+  function toggleSentinelTreat(key){setSentinelTreatCats(function(prev){return prev.includes(key)?prev.filter(function(k){return k!==key}):[...prev,key]});}
   const[wizardAnswers,setWizardAnswers]=useState({});
   const[wizardThreatsBase,setWizardThreatsBase]=useState([]);
 
@@ -2587,7 +3318,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     React.createElement("div",{style:{fontSize:14,fontWeight:600}},"Loading..."),
     React.createElement("style",null,"@keyframes spin{to{transform:rotate(360deg)}}")
   );
-  return React.createElement("div",{className:"app"},
+  // Compute next nav label for the header CTA
+  const _sentinelAllItems=SENTINEL_NAV.flatMap(function(s){return s.items});
+  const _curIdx=_sentinelAllItems.findIndex(function(it){return it.id===tab});
+  const _nextItem=_sentinelAllItems[_curIdx+1]||_sentinelAllItems[0];
+  const COUNTRIES_LIST=["United Kingdom","United States","United Arab Emirates","Saudi Arabia","Qatar","Bahrain","Kuwait","Oman","Australia","Canada","Ireland","France","Germany","Netherlands","Belgium","Singapore","Hong Kong","India","Other"];
+  const DEV_TYPES_LIST=["","Residential","Commercial","Industrial","Mixed-use","Maritime / Port","Critical infrastructure","Other"];
+
+  return React.createElement("div",{className:"sentinel-app"},
     // Toast
     toast&&React.createElement("div",{className:"toast"},toast),
 
@@ -2639,225 +3377,33 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       )
     ),
 
-    // Header
-    React.createElement("header",{className:"header no-print"},
-      React.createElement("div",null,
-          React.createElement("h1",null,"Security Risk & Threat Assessment Tool"),
-          React.createElement("div",{className:"header-sub"},"ISO 31000 · HB167 · ISO 31010 · v"+VERSION)
-      ),
-      React.createElement("div",{className:"flex gap-2 items-center"},
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:saveFile},"💾 Save"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFile},"📂 Load"),
-        ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:loadFromGitHubBrowse,title:"Load from back-ups"},"☁️ Back-ups"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWord},"📄 Word"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportWordPro,title:"Server-rendered branded Word report"},"📄 Word (Pro)"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel},"📊 Excel"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:printReport},"🖨️ Print"),
-        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}},"\u2728 Setup"),
-        React.createElement("button",{className:"btn btn-danger btn-sm",onClick:clearAll},"New")
-      ),
-      React.createElement("div",{className:"header-right"},
-        React.createElement("div",null,"Security Risk Assessment"),
-        React.createElement("div",{className:"font-mono"},ctx.project?(ctx.projectNum?ctx.project+" ("+ctx.projectNum+")":ctx.project):"No project set")
-      )
-    ),
 
-    // Nav
-    React.createElement("nav",{className:"nav no-print"},
-      TABS.map(t=>React.createElement("button",{key:t.id,className:tab===t.id?"active":"",onClick:()=>setTab(t.id)},
-        React.createElement("span",{className:"nav-num"},t.n+"."),t.l))
-    ),
+    // ── Sentinel Header ──
+    React.createElement(SentinelHeader,{
+      ctx:ctx, VERSION:VERSION,
+      onSave:saveFile, onLoad:loadFile,
+      onExportWord:exportWord, onExportExcel:exportExcel,
+      onPrint:printReport,
+      onSetup:function(){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);},
+      onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
+      ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
+    }),
 
-    // Content
-    React.createElement("main",{className:"content"},
+    // ── Sentinel Sidebar ──
+    React.createElement(SentinelSidebar,{ctx:ctx, activeTab:tab, onTabChange:setTab}),
 
-      // CONTEXT
-      tab==="context"&&React.createElement("div",{id:"section-context"},
-        React.createElement("h2",{className:"section-title"},"Context & Criteria"),
-        React.createElement("p",{className:"section-sub"},"ISO 31000 Clause 6.3 — Define scope, objectives and risk appetite"),
-        
-        // Project details card
-        React.createElement("div",{className:"card"},
-          React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
-            React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b"}},"Project Details")
-          ),
-          React.createElement("div",{style:{padding:20}},
-            React.createElement("div",{className:"grid grid-2",style:{gap:16}},
-              ...Object.entries({project:"Project Name",projectNum:"Project Number",ref:"Report Reference",date:"Date",stage:"RIBA Stage",assessor:"Assessor (SQSS)",client:"Client",address:"Site Address",postcode:"Postcode"}).map(([k,l])=>
-                React.createElement("div",{key:k},
-                  React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},l),
-                  k==="date"?
-                    React.createElement("input",{type:"date",className:"input",value:ctx[k],onChange:e=>setCtx(p=>({...p,[k]:e.target.value}))}):
-                    React.createElement("input",{className:"input",value:ctx[k],onChange:e=>setCtx(p=>({...p,[k]:e.target.value}))})
-                )
-              ),
-              // Country
-              React.createElement("div",{key:"country"},
-                React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},"Country"),
-                React.createElement("select",{className:"input",value:ctx.country||"United Kingdom",onChange:e=>setCtx(p=>({...p,country:e.target.value}))},
-                  ...["United Kingdom","United States","United Arab Emirates","Saudi Arabia","Qatar","Bahrain","Kuwait","Oman","Australia","Canada","Ireland","France","Germany","Netherlands","Belgium","Singapore","Hong Kong","India","Other"].map(c=>
-                    React.createElement("option",{key:c,value:c},c)
-                  )
-                )
-              ),
-              // Development Type
-              React.createElement("div",{key:"devType"},
-                React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},"Development Type"),
-                React.createElement("select",{className:"input",value:ctx.devType||"",onChange:e=>{
-                  var type=e.target.value;
-                  setCtx(p=>({...p,devType:type}));
-                  if(type){
-                    // Check if there are any existing scores to warn about
-                    var hasAssetScores=assets.some(function(a){return a.sc&&(a.sc.opImpact||a.sc.dependencies||a.sc.impactPeople||a.sc.impactEnv)});
-                    var hasThreatScores=threats.some(function(t){return t.cap||t.int});
-                    if(hasAssetScores||hasThreatScores){
-                      if(!confirm("Changing development type to '"+type+"' will update the asset and threat lists.\n\nExisting scores will be preserved where names match.\n\nContinue?"))return;
-                    }
-                    // Call fill functions with _skipConfirm flag
-                    fillPreset(type,true);
-                    fillThreatPreset(type,true);
-                  }
-                }},
-                  React.createElement("option",{value:""},"— Select —"),
-                  ...Object.keys(assetPresetsDB).map(t=>
-                    React.createElement("option",{key:t,value:t},t)
-                  )
-                )
-              ),
-              // Treatment category scope toggles
-              React.createElement("div",{key:"treatScope",className:"col-span-2"},
-                React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},"Treatment Categories in Scope"),
-                React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginTop:4}},
-                  ...[
-                    {k:"ext_physical",label:"External Physical"},
-                    {k:"ext_electronic",label:"External Electronic"},
-                    {k:"int_physical",label:"Internal Physical"},
-                    {k:"int_electronic",label:"Internal Electronic"},
-                    {k:"procedures",label:"Procedures"},
-                  ].map(({k,label})=>React.createElement("label",{key:k,style:{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,fontSize:11,cursor:"pointer",
-                    background:treatCategoryScope[k]?"#1B2A4A":"#f1f5f9",color:treatCategoryScope[k]?"#fff":"#64748b",
-                    border:"1px solid "+(treatCategoryScope[k]?"#1B2A4A":"#cbd5e1"),userSelect:"none"}},
-                    React.createElement("input",{type:"checkbox",checked:!!treatCategoryScope[k],onChange:e=>setTreatCategoryScope(p=>({...p,[k]:e.target.checked})),style:{display:"none"}}),
-                    label
-                  ))
-                )
-              ),
-              ...["scope","assumptions"].map(k=>React.createElement("div",{key:k,className:"col-span-2"},
-                React.createElement("label",{className:"sr-label",style:{textAlign:"left"}},k==="scope"?"Scope Boundaries":"Key Assumptions"),
-                React.createElement("textarea",{className:"input",rows:2,value:ctx[k],onChange:e=>setCtx(p=>({...p,[k]:e.target.value}))})
-              ))
-            )
-          )
-        ),
-
-        // Notes card
-        React.createElement("div",{className:"card",style:{marginTop:16}},
-          React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
-            React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b"}},"Notes")
-          ),
-          React.createElement("div",{style:{padding:20}},
-            React.createElement("textarea",{className:"input",rows:5,value:ctx.notes,
-              onChange:e=>setCtx(p=>({...p,notes:e.target.value})),
-              placeholder:"General notes, observations, key decisions, risk appetite discussions..."})
-          )
-        ),
-
-        // Stakeholder meetings card
-        React.createElement("div",{className:"card",style:{marginTop:16}},
-          React.createElement("div",{style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center"}},
-            React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b"}},"Stakeholder Meetings & Consultations"),
-            React.createElement("span",{style:{fontSize:11,color:"#94a3b8"}},"ISO 31000 Clause 6.2 — Communication and Consultation")
-          ),
-          React.createElement("table",null,
-            React.createElement("thead",null,React.createElement("tr",null,
-              React.createElement("th",{style:{width:130}},"Date"),
-              React.createElement("th",{className:"left"},"Meeting Description"),
-              React.createElement("th",{className:"left"},"Attendees"),
-              React.createElement("th",{style:{width:30}},"")
-            )),
-            React.createElement("tbody",null,
-              meetings.map(m=>React.createElement("tr",{key:m.id},
-                React.createElement("td",null,
-                  React.createElement("input",{type:"date",className:"input",style:{fontSize:12},value:m.date,onChange:e=>updateMeeting(m.id,"date",e.target.value)})
-                ),
-                React.createElement("td",null,
-                  React.createElement("input",{className:"input-ghost w-full",value:m.desc,onChange:e=>updateMeeting(m.id,"desc",e.target.value),placeholder:"e.g. DOCO/CTSA consultation, Design team workshop..."})
-                ),
-                React.createElement("td",null,
-                  React.createElement("input",{className:"input-ghost w-full",value:m.attendees,onChange:e=>updateMeeting(m.id,"attendees",e.target.value),placeholder:"Names and roles..."})
-                ),
-                React.createElement("td",null,
-                  React.createElement("button",{className:"btn-x",onClick:()=>removeMeeting(m.id)},"×")
-                )
-              )),
-              meetings.length===0&&React.createElement("tr",null,
-                React.createElement("td",{colSpan:4,style:{textAlign:"center",padding:16,color:"#94a3b8",fontSize:12}},"No meetings recorded. Click '+ Add Meeting' to get started.")
-              )
-            )
-          ),
-          React.createElement("div",{style:{padding:"8px 12px",borderTop:"1px solid #f1f5f9"}},
-            React.createElement("button",{className:"btn-add",onClick:addMeeting},"+ Add Meeting"))
-        )
-      ),
-
-      // AREA ANALYSIS (on context tab)
-      tab==="context"&&React.createElement("div",{className:"card",style:{marginTop:16}},
-        React.createElement("div",{className:"flex justify-between items-center",style:{padding:"12px 16px",borderBottom:"1px solid #f1f5f9"}},
-          React.createElement("h3",{style:{fontSize:13,fontWeight:700,color:"#1e293b"}},"Area Analysis"),
-          React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
-            areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-              var html="<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;font-family:Arial;font-size:9pt;width:100%'>";
-              html+="<tr style='background:#1B2A4A;color:#fff'><th colspan='2'>Area Analysis \u2014 "+(ctx.address||ctx.project||"Site")+"</th></tr>";
-              areaCriteria.forEach(function(crit){
-                var text=(areaAnalysis[crit.id]||"").replace(/\n/g,"<br/>");
-                if(text)html+="<tr><td style='font-weight:bold;width:150px;vertical-align:top;background:#f8fafc'>"+crit.label+"</td><td>"+text+"</td></tr>";
-              });
-              html+="</table>";
-              var blob=new Blob([html],{type:"text/html"});
-              navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Area analysis copied for Word")}).catch(function(){
-                var text=areaCriteria.map(function(c){return c.label+":\n"+(areaAnalysis[c.id]||"")}).join("\n\n");
-                navigator.clipboard.writeText(text).then(function(){showToast("Copied as text")});
-              });
-            }},"📋 Copy for Word"),
-            areaAnalysis&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>{setAreaAnalysis(null);setAreaError(null);showToast("Area analysis cleared")}},"\u2715 Clear"),
-            !areaAnalysis&&React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
-              var blank={};areaCriteria.forEach(function(c){blank[c.id]=""});
-              setAreaAnalysis(blank);setAreaError(null);showToast("Blank fields created");
-            }},"✏️ Manual Entry"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:copyAreaPrompt},"📋 Copy AI Prompt"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:pasteAreaResponse},"📥 Paste AI Response")
-          )
-        ),
-        React.createElement("div",{style:{padding:16}},
-          React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:10}},
-            "Area intelligence for the security assessment. Click 'Manual Entry' to type directly, or 'Copy AI Prompt' \u2192 paste into Oscar \u2192 'Paste AI Response'. All fields are editable."
-          ),
-          areaError&&React.createElement("div",{style:{padding:10,background:"#fffbeb",borderRadius:6,color:"#92400e",fontSize:12,marginBottom:12}},"\u2139 "+areaError),
-          !areaAnalysis&&React.createElement("div",{style:{padding:20,textAlign:"center",color:"#94a3b8",fontSize:12}},
-            ctx.address||ctx.postcode?
-              "Click 'Manual Entry' to type directly, or 'Copy AI Prompt' to generate via Oscar.":
-              "Add site address above first, then create area analysis."
-          ),
-          areaAnalysis&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
-            ...areaCriteria.map(function(crit){
-              var text=areaAnalysis[crit.id]||"";
-              var icons={};
-              return React.createElement("div",{key:crit.id,style:{padding:12,background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0"}},
-                React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#1e293b",marginBottom:4}},
-                  crit.label
-                ),
-                React.createElement("textarea",{style:{width:"100%",minHeight:70,fontSize:11,color:"#475569",lineHeight:1.5,border:"1px solid #e2e8f0",borderRadius:6,padding:8,fontFamily:"inherit",resize:"vertical",background:"#fff"},
-                  value:text,onChange:function(e){updateAreaField(crit.id,e.target.value)},
-                  placeholder:"Enter analysis for "+crit.label+"..."
-                })
-              );
-            })
-          ),
-          areaAnalysis&&React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginTop:8,fontStyle:"italic"}},
-            "Area analysis content is editable. Verify all information independently."
-          )
-        )
-      ),
+    // ── Main area ──
+    React.createElement("main",{className:"sentinel-main"},
+      tab==="context"
+        ? React.createElement(SentinelContextScreen,{
+            ctx:ctx, setCtx:setCtx,
+            meetings:meetings, setMeetings:setMeetings,
+            treatmentCats:sentinelTreatCats, onToggleTreat:toggleSentinelTreat,
+            risks:threats,
+            copyAreaPrompt:copyAreaPrompt, pasteAreaResponse:pasteAreaResponse,
+            COUNTRIES:COUNTRIES_LIST, DEV_TYPES:DEV_TYPES_LIST,
+          })
+        : React.createElement("div",{className:"legacy-tab-wrap"},
 
             // CRIME ANALYSIS
       tab==="crime"&&React.createElement("div",null,
@@ -6781,6 +7327,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       React.createElement("footer",{className:"no-print",style:{textAlign:"center",padding:"24px 0 16px",borderTop:"1px solid #e2e8f0",marginTop:32,fontSize:11,color:"#94a3b8"}},
         React.createElement("div",null,"© "+new Date().getFullYear()+" All Rights Reserved."),
         React.createElement("div",{style:{marginTop:4}},"J. Norman — v"+VERSION)
+      )
       )
     )
   );
