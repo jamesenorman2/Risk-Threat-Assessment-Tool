@@ -898,18 +898,21 @@ function MeetingsPanel({meetings,onAdd,onRemove}){
 }
 
 // ── AreaAnalysisCard ────────────────────────────────────────────────
-function AreaAnalysisCard({onCopyPrompt,onPasteResponse}){
+function AreaAnalysisCard({onCopyPrompt,onPasteResponse,onGenerate,onOpenSettings,busy,providerLabel}){
   return React.createElement("div",{className:"ai-card"},
     React.createElement("div",{className:"ai-icon"},sIcon("sparkle")),
     React.createElement("div",{style:{flex:1}},
       React.createElement("div",{className:"ai-title"},"AI area-intelligence briefing"),
       React.createElement("div",{className:"ai-sub"},
-        "Copy the structured prompt for your preferred LLM, then paste the response below to auto-populate regional threat context."
+        "Generate regional threat context automatically using a free on-device or BYOK provider — or copy the prompt into ChatGPT/Gemini/Claude and paste the response back."
       ),
       React.createElement("div",{className:"ai-btns"},
-        React.createElement("button",{className:"ai-btn-dark",onClick:onCopyPrompt||function(){}},sIcon("copy")," Copy prompt"),
+        React.createElement("button",{className:"ai-btn-dark",onClick:onGenerate||function(){},disabled:!!busy,title:"Generate with "+(providerLabel||"free AI")},
+          sIcon("sparkle")," ",busy?"Generating…":"Generate with AI"
+        ),
+        React.createElement("button",{className:"ai-btn-outline",onClick:onCopyPrompt||function(){}},sIcon("copy")," Copy prompt"),
         React.createElement("button",{className:"ai-btn-outline",onClick:onPasteResponse||function(){}},sIcon("paste")," Paste response"),
-        React.createElement("button",{className:"ai-btn-ghost"},sIcon("ext")," Open ChatGPT")
+        React.createElement("button",{className:"ai-btn-ghost",onClick:onOpenSettings||function(){},title:"AI provider & key"},sIcon("ext")," "+(providerLabel||"AI settings"))
       )
     )
   );
@@ -1019,7 +1022,7 @@ function SentinelContextScreen({
   meetings,setMeetings,
   treatmentCats,onToggleTreat,
   risks,
-  copyAreaPrompt,pasteAreaResponse,
+  copyAreaPrompt,pasteAreaResponse,generateAreaWithAI,onOpenAiSettings,aiBusy,aiProviderLabel,
   COUNTRIES,DEV_TYPES,
 }){
   function upCtx(k,v){setCtx(function(p){return Object.assign({},p,{[k]:v})});}
@@ -1107,6 +1110,7 @@ function SentinelContextScreen({
         // 1.5 Area Analysis
         React.createElement(SPanel,{num:"1.5",title:"Area Analysis",subtitle:"Regional intelligence & threat posture",
           actions:React.createElement(React.Fragment,null,
+            React.createElement(PanelAction,{icon:"sparkle",label:aiBusy?"Generating…":"Generate",onClick:generateAreaWithAI}),
             React.createElement(PanelAction,{icon:"copy",label:"Copy prompt",onClick:copyAreaPrompt}),
             React.createElement(PanelAction,{icon:"paste",label:"Paste response",onClick:pasteAreaResponse})
           )
@@ -1114,6 +1118,10 @@ function SentinelContextScreen({
           React.createElement(AreaAnalysisCard,{
             onCopyPrompt:copyAreaPrompt,
             onPasteResponse:pasteAreaResponse,
+            onGenerate:generateAreaWithAI,
+            onOpenSettings:onOpenAiSettings,
+            busy:aiBusy,
+            providerLabel:aiProviderLabel,
           })
         )
       ),
@@ -1125,7 +1133,7 @@ function SentinelContextScreen({
 
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.015";
+  const VERSION="2.016";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -1206,6 +1214,13 @@ function App(){
   const[treatmentMeasures,setTreatmentMeasures]=useState({});
   const[sbdType,setSbdType]=useState("residential");
   const[toast,setToast]=useState(null);
+  const[aiSettings,setAiSettings]=useState(function(){
+    try{var s=localStorage.getItem("rta_ai_settings");if(s)return JSON.parse(s);}catch(e){}
+    return{provider:"auto",geminiKey:"",groqKey:"",openrouterKey:""};
+  });
+  const[showAiSettings,setShowAiSettings]=useState(false);
+  const[aiBusy,setAiBusy]=useState(false);
+  useEffect(function(){try{localStorage.setItem("rta_ai_settings",JSON.stringify(aiSettings));}catch(e){}},[aiSettings]);
   const[crimeData,setCrimeData]=useState(null);
   const[crimeRaw,setCrimeRaw]=useState(null);
   const[crimeLoading,setCrimeLoading]=useState(false);
@@ -2256,10 +2271,76 @@ function App(){
 
 
 
-  const copyAreaPrompt=function(){
+  // Resolve which provider we will actually use given current settings + browser.
+  const resolveAiProvider=function(){
+    var s=aiSettings||{};
+    var hasBuiltIn=(typeof window!=="undefined")&&(("LanguageModel" in window)||(window.ai&&window.ai.languageModel));
+    if(s.provider==="gemini"&&s.geminiKey)return{id:"gemini",label:"Google Gemini (free tier)"};
+    if(s.provider==="groq"&&s.groqKey)return{id:"groq",label:"Groq (free tier)"};
+    if(s.provider==="openrouter"&&s.openrouterKey)return{id:"openrouter",label:"OpenRouter (free model)"};
+    if(s.provider==="window-ai"&&hasBuiltIn)return{id:"window-ai",label:"Chrome built-in AI"};
+    // auto: prefer built-in, then first configured key
+    if(hasBuiltIn)return{id:"window-ai",label:"Chrome built-in AI"};
+    if(s.geminiKey)return{id:"gemini",label:"Google Gemini (free tier)"};
+    if(s.groqKey)return{id:"groq",label:"Groq (free tier)"};
+    if(s.openrouterKey)return{id:"openrouter",label:"OpenRouter (free model)"};
+    return{id:null,label:"AI settings"};
+  };
+
+  // Call the resolved provider with a prompt, return the raw text.
+  const aiGenerate=async function(prompt){
+    var p=resolveAiProvider();
+    if(!p.id)throw new Error("No AI provider is configured. Open AI settings to pick one.");
+    if(p.id==="window-ai"){
+      var LM=window.LanguageModel||(window.ai&&window.ai.languageModel);
+      if(!LM)throw new Error("Chrome built-in AI is not available in this browser.");
+      var avail=LM.availability?await LM.availability():"available";
+      if(avail==="unavailable")throw new Error("Chrome built-in AI is not available on this device.");
+      var session=await LM.create();
+      try{return await session.prompt(prompt);}finally{try{session.destroy&&session.destroy();}catch(e){}}
+    }
+    if(p.id==="gemini"){
+      var gr=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+encodeURIComponent(aiSettings.geminiKey),{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.4,responseMimeType:"application/json"}})
+      });
+      if(!gr.ok)throw new Error("Gemini error "+gr.status+": "+(await gr.text()).slice(0,300));
+      var gj=await gr.json();
+      return(((gj.candidates||[])[0]||{}).content||{}).parts?.[0]?.text||"";
+    }
+    if(p.id==="groq"){
+      var qr=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+        method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+aiSettings.groqKey},
+        body:JSON.stringify({model:"llama-3.1-8b-instant",temperature:0.4,response_format:{type:"json_object"},messages:[{role:"user",content:prompt}]})
+      });
+      if(!qr.ok)throw new Error("Groq error "+qr.status+": "+(await qr.text()).slice(0,300));
+      var qj=await qr.json();
+      return qj.choices?.[0]?.message?.content||"";
+    }
+    if(p.id==="openrouter"){
+      var or=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+        method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+aiSettings.openrouterKey,"HTTP-Referer":location.origin,"X-Title":"Risk-Threat Assessment Tool"},
+        body:JSON.stringify({model:"google/gemini-2.0-flash-exp:free",temperature:0.4,messages:[{role:"user",content:prompt}]})
+      });
+      if(!or.ok)throw new Error("OpenRouter error "+or.status+": "+(await or.text()).slice(0,300));
+      var oj=await or.json();
+      return oj.choices?.[0]?.message?.content||"";
+    }
+    throw new Error("Unknown provider: "+p.id);
+  };
+
+  // Parse the raw AI response as JSON (tolerant of fences / leading prose).
+  const parseAiJson=function(text){
+    var clean=String(text||"").replace(/```json|```/g,"").trim();
+    var s=clean.indexOf("{"),e=clean.lastIndexOf("}");
+    if(s>=0&&e>s)clean=clean.substring(s,e+1);
+    return JSON.parse(clean);
+  };
+
+  const buildAreaPrompt=function(){
     const location=`${ctx.address||""}, ${ctx.postcode||""}`.trim().replace(/^,\s*/,"")||"[ENTER ADDRESS]";
     const criteriaPrompts=areaCriteria.map(c=>`## ${c.label}\n${c.prompt}`).join("\n\n");
-    const prompt=`You are a UK security consultant producing an area analysis for a Security Risk Assessment (SRA) at: ${location}, United Kingdom.
+    return `You are a UK security consultant producing an area analysis for a Security Risk Assessment (SRA) at: ${location}, United Kingdom.
 
 The development type is: ${activeAssetPreset||"mixed use"}.
 
@@ -2268,8 +2349,26 @@ For each section below, provide a factual, professional description relevant to 
 ${criteriaPrompts}
 
 IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explanation) with these exact keys: ${areaCriteria.map(c=>'"'+c.id+'"').join(", ")}. Each value should be the analysis text string.`;
+  };
+
+  const generateAreaWithAI=async function(){
+    if(aiBusy)return;
+    var p=resolveAiProvider();
+    if(!p.id){setShowAiSettings(true);return;}
+    setAiBusy(true);setAreaError(null);
+    try{
+      var text=await aiGenerate(buildAreaPrompt());
+      var parsed=parseAiJson(text);
+      setAreaAnalysis(parsed);
+      showToast("Generated with "+p.label);
+    }catch(e){
+      setAreaError("AI generation failed: "+(e&&e.message?e.message:e)+". You can still use Copy prompt / Paste response.");
+    }finally{setAiBusy(false);}
+  };
+
+  const copyAreaPrompt=function(){
+    const prompt=buildAreaPrompt();
     navigator.clipboard.writeText(prompt).then(function(){showToast("Prompt copied to clipboard! Paste into ChatGPT, Gemini, Claude, or Copilot")}).catch(function(){
-      // Fallback for older browsers
       var ta=document.createElement("textarea");ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
       showToast("Prompt copied!");
     });
@@ -3457,6 +3556,65 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       )
     ),
 
+    // AI Settings modal
+    showAiSettings&&(function(){
+      var hasBuiltIn=(typeof window!=="undefined")&&(("LanguageModel" in window)||(window.ai&&window.ai.languageModel));
+      var s=aiSettings;
+      var up=function(k,v){setAiSettings(function(p){return Object.assign({},p,{[k]:v})});};
+      var row=function(label,helpNode,inputNode){
+        return React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4,marginBottom:14}},
+          React.createElement("label",{style:{fontSize:11,fontWeight:600,color:"#334155"}},label),
+          inputNode,
+          helpNode&&React.createElement("div",{style:{fontSize:11,color:"#64748b",lineHeight:1.5}},helpNode)
+        );
+      };
+      var resolved=resolveAiProvider();
+      return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center"},onClick:function(){setShowAiSettings(false);}},
+        React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:520,maxHeight:"85vh",overflow:"auto",padding:"20px 22px"},onClick:function(e){e.stopPropagation();}},
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#0f172a"}},"AI settings"),
+              React.createElement("div",{style:{fontSize:11,color:"#64748b"}},"Keys are stored only in this browser (localStorage). They never leave your device except to call the provider you pick.")
+            ),
+            React.createElement("button",{onClick:function(){setShowAiSettings(false);},style:{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#94a3b8"}},"✕")
+          ),
+          row("Provider",null,
+            React.createElement("select",{value:s.provider||"auto",onChange:function(e){up("provider",e.target.value);},style:{padding:"8px 10px",borderRadius:6,border:"1px solid #cbd5e1",fontSize:13}},
+              React.createElement("option",{value:"auto"},"Auto (use built-in, then first configured key)"),
+              React.createElement("option",{value:"window-ai",disabled:!hasBuiltIn},"Chrome built-in AI"+(hasBuiltIn?"":" — not available in this browser")),
+              React.createElement("option",{value:"gemini"},"Google Gemini (free tier, BYOK)"),
+              React.createElement("option",{value:"groq"},"Groq (free tier, BYOK)"),
+              React.createElement("option",{value:"openrouter"},"OpenRouter (free model, BYOK)")
+            )
+          ),
+          row("Google Gemini API key",
+            React.createElement("span",null,"Free tier available at ",React.createElement("a",{href:"https://aistudio.google.com/apikey",target:"_blank",rel:"noopener"},"aistudio.google.com/apikey")," — sign in with any Google account."),
+            React.createElement("input",{type:"password",value:s.geminiKey||"",onChange:function(e){up("geminiKey",e.target.value);},placeholder:"AIza…",style:{padding:"8px 10px",borderRadius:6,border:"1px solid #cbd5e1",fontSize:13,fontFamily:"monospace"}})
+          ),
+          row("Groq API key",
+            React.createElement("span",null,"Free tier available at ",React.createElement("a",{href:"https://console.groq.com/keys",target:"_blank",rel:"noopener"},"console.groq.com/keys"),"."),
+            React.createElement("input",{type:"password",value:s.groqKey||"",onChange:function(e){up("groqKey",e.target.value);},placeholder:"gsk_…",style:{padding:"8px 10px",borderRadius:6,border:"1px solid #cbd5e1",fontSize:13,fontFamily:"monospace"}})
+          ),
+          row("OpenRouter API key",
+            React.createElement("span",null,"Free models available at ",React.createElement("a",{href:"https://openrouter.ai/keys",target:"_blank",rel:"noopener"},"openrouter.ai/keys"),"."),
+            React.createElement("input",{type:"password",value:s.openrouterKey||"",onChange:function(e){up("openrouterKey",e.target.value);},placeholder:"sk-or-…",style:{padding:"8px 10px",borderRadius:6,border:"1px solid #cbd5e1",fontSize:13,fontFamily:"monospace"}})
+          ),
+          React.createElement("div",{style:{background:"#f1f5f9",borderRadius:6,padding:"10px 12px",fontSize:11.5,color:"#334155",lineHeight:1.6,marginBottom:14}},
+            React.createElement("strong",null,"Active provider: "),resolved.label,
+            !hasBuiltIn&&React.createElement("div",{style:{marginTop:4,color:"#64748b"}},"Tip: Chrome's built-in AI runs fully offline and costs nothing. Enable it in chrome://flags/#prompt-api-for-gemini-nano on Chrome 128+.")
+          ),
+          React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",gap:8}},
+            React.createElement("button",{onClick:function(){setShowAiSettings(false);},style:{padding:"8px 14px",borderRadius:6,border:"1px solid #cbd5e1",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}},"Close"),
+            React.createElement("button",{onClick:async function(){
+              try{setAiBusy(true);var t=await aiGenerate("Reply with the single word OK.");showToast("AI OK — "+resolved.label+" responded: "+String(t).slice(0,40));}
+              catch(e){showToast("AI test failed: "+(e&&e.message?e.message:e));}
+              finally{setAiBusy(false);}
+            },disabled:aiBusy||!resolved.id,style:{padding:"8px 14px",borderRadius:6,border:"none",background:"#0f172a",color:"#fff",fontSize:12,fontWeight:600,cursor:resolved.id?"pointer":"not-allowed",opacity:resolved.id?1:0.5}},aiBusy?"Testing…":"Test connection")
+          )
+        )
+      );
+    })(),
+
 
     // ── Sentinel Header ──
     React.createElement(SentinelHeader,{
@@ -3487,6 +3645,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             treatmentCats:sentinelTreatCats, onToggleTreat:toggleSentinelTreat,
             risks:threats,
             copyAreaPrompt:copyAreaPrompt, pasteAreaResponse:pasteAreaResponse,
+            generateAreaWithAI:generateAreaWithAI, onOpenAiSettings:function(){setShowAiSettings(true);},
+            aiBusy:aiBusy, aiProviderLabel:resolveAiProvider().label,
             COUNTRIES:COUNTRIES_LIST, DEV_TYPES:DEV_TYPES_LIST,
           })
         : React.createElement("div",{className:"legacy-tab-wrap"},

@@ -4,6 +4,14 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.016 — 2026-04-24
+**Area AI briefing: free on-device + BYOK generation**
+- New "Generate with AI" button on the Area Analysis card auto-populates the briefing instead of requiring copy/paste
+- Providers supported: Chrome built-in AI (on-device, free, no key); Google Gemini, Groq, OpenRouter (BYOK — all have free tiers)
+- New AI Settings modal lets users pick a provider and paste a key; keys are stored in browser localStorage only
+- Test Connection button verifies the configured provider
+- Existing Copy prompt / Paste response flow retained as a fallback
+
 ## v2.008 — 2026-04-21
 **Setup wizard: site profile moved to step 2**
 - Site profile questions now appear immediately after development type selection, before assets and threats are reviewed
