@@ -1124,7 +1124,7 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.021";
+const VERSION="2.022";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -4585,11 +4585,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16,position:"sticky",top:45,zIndex:50}},
           React.createElement("h4",{style:{marginBottom:8}},"Impact Scoring Key"),
           React.createElement("div",{style:{overflowX:"auto"}},
-            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13,tableLayout:"fixed"}},
               React.createElement("thead",null,
                 React.createElement("tr",null,
-                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:100}},"Criterion"),
-                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0",width:24}},
+                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:110}},"Criterion"),
+                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0"}},
                     React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:24,height:24,borderRadius:5,background:SC[s].bg,color:SC[s].t,fontWeight:700,fontSize:12}},s)
                   ))
                 )
@@ -4597,7 +4597,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("tbody",null,
                 IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f1f5f9"}},
                   React.createElement("td",{style:{padding:"5px 8px",fontWeight:700,color:"#1e293b",whiteSpace:"nowrap"}},ICL[c]),
-                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4}},(scales[c]||{})[s]||""))
+                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4,textAlign:"center"}},(scales[c]||{})[s]||""))
                 ))
               )
             )
@@ -4617,12 +4617,21 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
               )
             ),
-            React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
-              React.createElement("div",{className:"grid grid-5"},
-                ...IC.map(c=>React.createElement("div",{key:c,className:"gap-col"},
-                  React.createElement("div",{className:"crit-label"},ICL[c]),
-                  React.createElement(ScoreBar,{value:im[c],onChange:val=>si(t.id,c,val),size:"sm",tips:scales[c]})
-                ))
+            React.createElement("div",{className:"card-body",style:{paddingTop:6,paddingBottom:6}},
+              React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}},
+                React.createElement("tbody",null,
+                  IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f8fafc"}},
+                    React.createElement("td",{style:{width:110,padding:"5px 8px",fontWeight:700,color:"#1e293b",fontSize:12,whiteSpace:"nowrap"}},ICL[c]),
+                    ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{textAlign:"center",padding:"4px 6px"}},
+                      React.createElement("button",{
+                        className:"score-btn sm"+(im[c]===s?" sel":""),
+                        style:{backgroundColor:SC[s].bg,color:SC[s].t},
+                        title:(scales[c]||{})[s]||"",
+                        onClick:()=>si(t.id,c,im[c]===s?null:s)
+                      },s)
+                    ))
+                  ))
+                )
               )
             )
           );
