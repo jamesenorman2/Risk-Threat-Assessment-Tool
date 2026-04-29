@@ -464,6 +464,7 @@ document.addEventListener('keydown', function(e) {
 </head>
 <body>
 <div id="root"></div>
+<div id="version-label" class="no-print" style="position:fixed;bottom:12px;left:14px;font-size:10px;color:#94a3b8;line-height:1.5;pointer-events:none;z-index:9999;font-family:system-ui,sans-serif"></div>
 <script type="text/javascript">
 /* ========================================================================
  * Security Risk & Threat Assessment Tool
@@ -1125,7 +1126,7 @@ function SentinelContextScreen({
 
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.018";
+  const VERSION="2.019";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -7413,10 +7414,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       React.createElement("footer",{className:"no-print",style:{textAlign:"center",padding:"24px 0 16px",borderTop:"1px solid #e2e8f0",marginTop:32,fontSize:11,color:"#94a3b8"}},
         React.createElement("div",null,"© "+new Date().getFullYear()+" All Rights Reserved."),
         React.createElement("div",{style:{marginTop:4}},"J. Norman — v"+VERSION)
-      ),
-      React.createElement("div",{className:"no-print",style:{position:"fixed",bottom:12,left:14,fontSize:10,color:"#94a3b8",lineHeight:1.4,pointerEvents:"none",zIndex:90}},
-        React.createElement("div",null,"© J Norman "+new Date().getFullYear()),
-        React.createElement("div",null,"v"+VERSION)
       )
       )
     )
@@ -7424,6 +7421,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 }
 
 ReactDOM.render(React.createElement(App),document.getElementById("root"));
+(function(){var el=document.getElementById("version-label");if(el){var yr=new Date().getFullYear();el.innerHTML="<div>© J Norman "+yr+"</div><div>v"+VERSION+"</div>";}})();
 </script>
 </body>
 </html>
