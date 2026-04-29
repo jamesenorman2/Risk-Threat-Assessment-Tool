@@ -1125,7 +1125,7 @@ function SentinelContextScreen({
 
 function App(){
   const[tab,setTab]=useState("context");
-  const VERSION="2.016";
+  const VERSION="2.017";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4581,7 +4581,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-impact","Impact assessment captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
-        React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16}},
+        React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16,position:"sticky",top:45,zIndex:50}},
           React.createElement("h4",{style:{marginBottom:8}},"Impact Scoring Key"),
           React.createElement("div",{style:{overflowX:"auto"}},
             React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
