@@ -231,7 +231,7 @@ select.input{padding:4px 8px;font-size:13px}
 /* Top bar */
 .sentinel-header{grid-column:1/-1;height:52px;background:var(--ink-0);color:#fff;display:flex;align-items:center;padding:0 16px;gap:16px;border-bottom:1px solid #000;z-index:100;flex-shrink:0}
 .sentinel-brand{display:flex;align-items:center;gap:10px;min-width:216px}
-.sentinel-logo{width:32px;height:26px;border-radius:4px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:10px;letter-spacing:.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);flex-shrink:0;font-family:'Inter Tight',sans-serif}
+.sentinel-logo{width:26px;height:26px;border-radius:4px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px;letter-spacing:.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);flex-shrink:0;font-family:'Inter Tight',sans-serif}
 .sentinel-brand-name{font-size:12.5px;font-weight:600;letter-spacing:.01em}
 .sentinel-brand-sub{font-size:10px;color:#8591a6;letter-spacing:.12em;text-transform:uppercase;margin-top:-1px}
 .sentinel-bc{display:flex;align-items:center;gap:8px;flex:1;color:#c9d1de;font-size:12px}
@@ -464,7 +464,6 @@ document.addEventListener('keydown', function(e) {
 </head>
 <body>
 <div id="root"></div>
-<div id="version-label" class="no-print" style="position:fixed;bottom:12px;left:14px;font-size:10px;color:#94a3b8;line-height:1.5;pointer-events:none;z-index:9999;font-family:system-ui,sans-serif"></div>
 <script type="text/javascript">
 /* ========================================================================
  * Security Risk & Threat Assessment Tool
@@ -656,7 +655,7 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,on
     ),
     // Brand — no product name, just the tool type
     React.createElement("div",{className:"sentinel-brand"},
-      React.createElement("div",{className:"sentinel-logo"},"RTA"),
+      React.createElement("div",{className:"sentinel-logo"},"SR"),
       React.createElement("div",{className:"sentinel-brand-name-only"},"Risk & Threat Assessment")
     ),
     // Breadcrumb
@@ -1124,9 +1123,9 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.024";
 function App(){
   const[tab,setTab]=useState("context");
+  const VERSION="2.018";
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -4585,11 +4584,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16,position:"sticky",top:45,zIndex:50}},
           React.createElement("h4",{style:{marginBottom:8}},"Impact Scoring Key"),
           React.createElement("div",{style:{overflowX:"auto"}},
-            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13,tableLayout:"fixed"}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:13}},
               React.createElement("thead",null,
                 React.createElement("tr",null,
-                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:110}},"Criterion"),
-                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0"}},
+                  React.createElement("th",{style:{textAlign:"left",padding:"5px 8px",borderBottom:"1px solid #e2e8f0",color:"#1e293b",fontWeight:700,width:100}},"Criterion"),
+                  ...[1,2,3,4,5].map(s=>React.createElement("th",{key:s,style:{textAlign:"center",padding:"5px 6px",borderBottom:"1px solid #e2e8f0",width:24}},
                     React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:24,height:24,borderRadius:5,background:SC[s].bg,color:SC[s].t,fontWeight:700,fontSize:12}},s)
                   ))
                 )
@@ -4597,7 +4596,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("tbody",null,
                 IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f1f5f9"}},
                   React.createElement("td",{style:{padding:"5px 8px",fontWeight:700,color:"#1e293b",whiteSpace:"nowrap"}},ICL[c]),
-                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4,textAlign:"center"}},(scales[c]||{})[s]||""))
+                  ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4}},(scales[c]||{})[s]||""))
                 ))
               )
             )
@@ -4617,21 +4616,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
               )
             ),
-            React.createElement("div",{className:"card-body",style:{paddingTop:6,paddingBottom:6}},
-              React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}},
-                React.createElement("tbody",null,
-                  IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f8fafc"}},
-                    React.createElement("td",{style:{width:110,padding:"5px 8px",fontWeight:700,color:"#1e293b",fontSize:12,whiteSpace:"nowrap"}},ICL[c]),
-                    ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{textAlign:"center",padding:"4px 6px"}},
-                      React.createElement("button",{
-                        className:"score-btn sm"+(im[c]===s?" sel":""),
-                        style:{backgroundColor:SC[s].bg,color:SC[s].t},
-                        title:(scales[c]||{})[s]||"",
-                        onClick:()=>si(t.id,c,im[c]===s?null:s)
-                      },s)
-                    ))
-                  ))
-                )
+            React.createElement("div",{className:"card-body",style:{paddingTop:8,paddingBottom:8}},
+              React.createElement("div",{className:"grid grid-5"},
+                ...IC.map(c=>React.createElement("div",{key:c,className:"gap-col"},
+                  React.createElement("div",{className:"crit-label"},ICL[c]),
+                  React.createElement(ScoreBar,{value:im[c],onChange:val=>si(t.id,c,val),size:"sm",tips:scales[c]})
+                ))
               )
             )
           );
@@ -4996,20 +4986,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           const insufficientCapWarning=ctrlGap==="Insufficient"&&rsc.l&&r.lik&&(r.lik-rsc.l)>1;
           const justification=residualJustifications[r.id]||"";
           return React.createElement("div",{key:r.id,className:"card",style:{marginBottom:isHigh&&targetedAssets.length>0?12:4}},
-            React.createElement("table",{style:{marginBottom:0,tableLayout:"fixed",width:"100%"}},
-              React.createElement("colgroup",null,
-                React.createElement("col",{style:{width:40}}),
-                React.createElement("col",null),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:80}})
-              ),
+            React.createElement("table",{style:{marginBottom:0}},
               i===0&&React.createElement("thead",null,React.createElement("tr",null,
                 React.createElement("th",{style:{width:40}},"R#"),React.createElement("th",{className:"left"},"Threat"),
                 React.createElement("th",{style:{width:50}},"Pre-L"),React.createElement("th",{style:{width:50}},"Pre-I"),React.createElement("th",{style:{width:80}},"Pre-Rating"),
@@ -7436,6 +7413,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       React.createElement("footer",{className:"no-print",style:{textAlign:"center",padding:"24px 0 16px",borderTop:"1px solid #e2e8f0",marginTop:32,fontSize:11,color:"#94a3b8"}},
         React.createElement("div",null,"© "+new Date().getFullYear()+" All Rights Reserved."),
         React.createElement("div",{style:{marginTop:4}},"J. Norman — v"+VERSION)
+      ),
+      React.createElement("div",{className:"no-print",style:{position:"fixed",bottom:12,left:14,fontSize:10,color:"#94a3b8",lineHeight:1.4,pointerEvents:"none",zIndex:90}},
+        React.createElement("div",null,"© J Norman "+new Date().getFullYear()),
+        React.createElement("div",null,"v"+VERSION)
       )
       )
     )
@@ -7443,7 +7424,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 }
 
 ReactDOM.render(React.createElement(App),document.getElementById("root"));
-(function(){var el=document.getElementById("version-label");if(el){var yr=new Date().getFullYear();el.innerHTML="<div>© J Norman "+yr+"</div><div>v"+VERSION+"</div>";}})();
 </script>
 </body>
 </html>
