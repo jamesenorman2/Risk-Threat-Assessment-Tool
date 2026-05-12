@@ -3,8 +3,20 @@
 POST /api/report with an assessment JSON body (same shape as a saved project
 file in projects/). Returns a .docx download.
 
-Report order: cover -> executive summary -> threats table -> treatments ->
-residual risk.
+Report order: cover -> executive summary -> section 6 (Security Risk Assessment)
+  6.1 Assessment Methodology
+  6.2 Asset Identification
+  6.3 Asset Criticality
+  6.4 Threats
+    6.4.1 Common Threat Actors in the UK
+    6.4.2 Threat Register
+    6.4.3 Threat-Asset Mapping
+  6.5 Attractiveness, Vulnerability & Likelihood
+  6.6 Points of Interest
+  6.7 Impact Assessment
+  6.8 Existing Controls
+  6.9 Risk Register (Pre Mitigation)
+  6.10 Security Treatments
 """
 from http.server import BaseHTTPRequestHandler
 import io
@@ -16,8 +28,6 @@ from datetime import datetime
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/mpl")
 os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
 
-# Lazy-imported inside chart helpers so an install/runtime issue surfaces as a
-# clear 500 error rather than a cold-start crash that yields an opaque 500.
 def _mpl():
     import matplotlib
     matplotlib.use("Agg")
@@ -63,11 +73,40 @@ RM = [
     ["Very Low", "Very Low", "Low", "Low", "Medium"],
 ]
 TAC = ["visibility", "status", "access", "collateral", "crime", "history"]
+TAC_LABELS = {
+    "visibility": "Visibility", "status": "Status", "access": "Access",
+    "collateral": "Collateral", "crime": "Crime Profile", "history": "Historical",
+}
 IC = ["disruption", "fatalities", "reputation", "financial", "property"]
-AC = ["opImpact", "dependencies", "impactPeople", "impactEnv"]
+IC_LABELS = {
+    "disruption": "Disruption", "fatalities": "Fatalities", "reputation": "Reputation",
+    "financial": "Financial", "property": "Property",
+}
+AC_KEYS = ["opImpact", "dependencies", "impactPeople", "impactEnv"]
+AC_LABELS = {
+    "opImpact": "Op. Impact", "dependencies": "Dependencies",
+    "impactPeople": "People", "impactEnv": "Environment",
+}
+
+CRIT_HEX = {
+    "Critical": "C00000", "High": "ED7D31", "Medium": "FFC000",
+    "Low": "70AD47", "Negligible": "4472C4",
+}
+CRIT_FG = {
+    "Critical": RGBColor(0xFF, 0xFF, 0xFF), "High": RGBColor(0xFF, 0xFF, 0xFF),
+    "Medium": RGBColor(0x1A, 0x1A, 0x1A), "Low": RGBColor(0xFF, 0xFF, 0xFF),
+    "Negligible": RGBColor(0xFF, 0xFF, 0xFF),
+}
+
+GAP_HEX = {"Adequate": "E2EFDA", "Partial": "FFF2CC", "Insufficient": "FFC7CE"}
+GAP_FG = {
+    "Adequate": RGBColor(0x16, 0xA3, 0x4A),
+    "Partial": RGBColor(0xD9, 0x77, 0x06),
+    "Insufficient": RGBColor(0xDC, 0x26, 0x26),
+}
 
 
-# --- Computation helpers (mirror of index.html logic) ---
+# --- Computation helpers ---
 
 def _avg(values):
     vals = [v for v in values if v is not None and v != 0 and v != ""]
@@ -84,6 +123,20 @@ def _get_rr(lik, imp):
     if not (1 <= lik_i <= 5 and 1 <= imp_i <= 5):
         return None
     return RM[5 - lik_i][imp_i - 1]
+
+
+def _asset_rank(score):
+    if score is None:
+        return ""
+    if score >= 4.5:
+        return "Critical"
+    if score >= 3.5:
+        return "High"
+    if score >= 2.5:
+        return "Medium"
+    if score >= 1.5:
+        return "Low"
+    return "Negligible"
 
 
 def compute_risks(state):
@@ -249,13 +302,18 @@ def _page_break(doc):
     p.add_run().add_break(WD_BREAK.PAGE)
 
 
+def _hdr_row(tbl, headers, widths_cm):
+    for col, w in zip(tbl.columns, widths_cm):
+        col.width = Cm(w)
+    for i, h in enumerate(headers):
+        _set_cell_text(tbl.rows[0].cells[i], h, bold=True, size=8,
+                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A",
+                       align="center")
+
+
 # --- Chart helpers ---
 
 def _try_picture(doc, builder, width):
-    """Embed a chart; on failure insert a small italic note and continue.
-
-    Lets the report render even if matplotlib fails to import on the runtime.
-    """
     try:
         buf = builder()
         doc.add_picture(buf, width=width)
@@ -268,13 +326,11 @@ def _try_picture(doc, builder, width):
         run.font.color.rgb = GREY_MID
 
 
-
 def _hex_to_rgb(h):
     return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
 
 
 def chart_risk_matrix(risks, *, residual=False, title=""):
-    """5x5 matrix heatmap. Cells coloured by risk level; threat IDs listed in cell."""
     plt, Rectangle = _mpl()
     fig, ax = plt.subplots(figsize=(6.5, 4.8), dpi=150)
     for i in range(5):
@@ -317,7 +373,6 @@ def chart_risk_matrix(risks, *, residual=False, title=""):
 
 
 def chart_profile(risks, *, residual=False, title=""):
-    """Bar chart of counts per level."""
     plt, _ = _mpl()
     order = ["Very Low", "Low", "Medium", "High", "Very High"]
     key = "resRat" if residual else "rat"
@@ -346,7 +401,6 @@ def chart_profile(risks, *, residual=False, title=""):
 
 
 def chart_pre_post(risks):
-    """Grouped bar: pre vs post residual counts side-by-side."""
     plt, _ = _mpl()
     order = ["Very Low", "Low", "Medium", "High", "Very High"]
     pre = [sum(1 for r in risks if r.get("rat") == lv) for lv in order]
@@ -382,7 +436,7 @@ def chart_pre_post(risks):
     return buf
 
 
-# --- Page sections ---
+# --- Cover & Executive Summary ---
 
 def _build_cover(doc, ctx, risks):
     section = doc.sections[0]
@@ -391,11 +445,9 @@ def _build_cover(doc, ctx, risks):
     section.left_margin = Cm(2.2)
     section.right_margin = Cm(2.2)
 
-    # Spacer
     for _ in range(3):
         doc.add_paragraph()
 
-    # Eyebrow
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run("SECURITY RISK & THREAT ASSESSMENT")
@@ -403,7 +455,6 @@ def _build_cover(doc, ctx, risks):
     run.font.color.rgb = GREY_MID
     _set_para_spacing(p, after=120)
 
-    # Project title
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run(ctx.get("project") or "Assessment")
@@ -411,7 +462,6 @@ def _build_cover(doc, ctx, risks):
     run.font.color.rgb = NAVY
     _set_para_spacing(p, after=80)
 
-    # Address
     addr = " ".join([x for x in (ctx.get("address"), ctx.get("postcode")) if x])
     if addr:
         p = doc.add_paragraph()
@@ -420,7 +470,6 @@ def _build_cover(doc, ctx, risks):
         run.font.name = "Calibri"; run.font.size = Pt(12); run.font.color.rgb = GREY_DARK
         _set_para_spacing(p, after=200)
 
-    # Details table
     dbts = [r for r in risks if r.get("dbt")]
     scored = [r for r in risks if r.get("sc") is not None]
 
@@ -460,7 +509,6 @@ def _build_cover(doc, ctx, risks):
     _fill_block(tbl.rows[1].cells[0], left_lines)
     _fill_block(tbl.rows[1].cells[1], right_lines)
 
-    # Footer line
     for _ in range(4):
         doc.add_paragraph()
     p = doc.add_paragraph()
@@ -479,10 +527,6 @@ def _build_exec_summary(doc, ctx, risks, pois):
     terror = [r for r in risks if r.get("cat") == "Terrorism"]
     crime = [r for r in risks if r.get("cat") and r.get("cat") != "Terrorism"]
     headline = [r for r in risks if r.get("rat") in ("Very High", "High")]
-    counts_pre = {lv: sum(1 for r in risks if r.get("rat") == lv)
-                  for lv in ["Very Low", "Low", "Medium", "High", "Very High"]}
-    counts_post = {lv: sum(1 for r in risks if r.get("resRat") == lv)
-                   for lv in ["Very Low", "Low", "Medium", "High", "Very High"]}
 
     intro = (
         f"This Security Risk Assessment evaluates {len(scored)} threats "
@@ -498,7 +542,6 @@ def _build_exec_summary(doc, ctx, risks, pois):
     _try_picture(doc, lambda: chart_profile(risks, residual=False,
                                             title="Pre-Treatment Risk Profile"), Cm(16))
 
-    # Pre/post comparison narrative
     reduced = sum(1 for r in risks
                   if r.get("rat") and r.get("resRat") and
                   ["Very Low", "Low", "Medium", "High", "Very High"].index(r["resRat"]) <
@@ -513,65 +556,511 @@ def _build_exec_summary(doc, ctx, risks, pois):
     _page_break(doc)
 
 
-def _build_threats_table(doc, risks):
-    _add_heading(doc, "Threat Register", 1)
+# --- Section 6: Security Risk Assessment ---
+
+def _build_s6_header(doc):
+    _add_heading(doc, "6  Security Risk Assessment", 1)
+
+
+def _build_methodology(doc):
+    _add_heading(doc, "6.1  Assessment Methodology", 2)
     _add_para(doc,
-              "Threats identified and assessed using the capability + intent methodology. "
+              "This Security Risk Assessment has been conducted using the established SRA methodology, "
+              "developed in full alignment with internationally recognised risk management standards. "
+              "The methodology provides a structured, evidence-based framework following a logical sequence: "
+              "establishing the security context and stakeholder consultation; asset identification and "
+              "criticality ranking; threat identification categorised into Terrorism and Crime; Points of "
+              "Interest mapping; threat analysis based on capability and intent; target attractiveness and "
+              "vulnerability assessment; likelihood and impact scoring; risk rating via the 5×5 matrix; "
+              "control effectiveness evaluation; risk treatment; and residual risk assessment.",
+              size=10, align="justify", space_after=100)
+
+    _add_heading(doc, "ISO 31000:2018 — Risk Management Guidelines", 3)
+    _add_para(doc,
+              "The SRA implements ISO 31000:2018: Scope, Context and Criteria (Clause 6.3); Risk Assessment "
+              "comprising identification, analysis and evaluation (Clause 6.4); Risk Treatment via the TAAR "
+              "framework (Clause 6.5); Communication and Consultation (Clause 6.2); and Monitoring and "
+              "Review (Clause 6.6).",
+              size=10, align="justify", space_after=80)
+
+    _add_heading(doc, "AS/NZS HB 167:2006 — Security Risk Management", 3)
+    _add_para(doc,
+              "Structured around HB167: critical asset identification and ranking; dual-axis "
+              "capability/intent threat assessment and DBT filtering; target attractiveness across six "
+              "criteria; vulnerability assessment; likelihood determination; consequence analysis; existing "
+              "control evaluation; and residual risk post-treatment.",
+              size=10, align="justify", space_after=80)
+
+    _add_heading(doc, "ISO/IEC 31010:2019 — Risk Assessment Techniques", 3)
+    _add_para(doc,
+              "Primary technique: semi-quantitative consequence/likelihood matrix (Technique B.29), "
+              "supplemented by structured threat/scenario analysis (B.2) and expert judgement (B.1). "
+              "Known limitations are acknowledged and mitigated through structured scoring descriptors "
+              "and iterative reassessment.",
+              size=10, align="justify", space_after=80)
+
+    _add_heading(doc, "Calculation Methodology", 3)
+
+    rows = [
+        ("Threat Score", "ROUND((Capability + Intent) / 2). Design Basis Threats identified at score ≥ 3."),
+        ("Target Attractiveness", "Average of: Visibility, Status, Threat Access, Collateral Exposure, Crime Profile, Historical Precedence."),
+        ("Likelihood", "ROUND((Threat Score + Target Attractiveness + Vulnerability) / 3)."),
+        ("Impact", "Average of: Disruption, Fatalities, Reputational Damage, Financial Loss, Property Damage. Life-safety override applies where Fatalities ≥ 4."),
+        ("Risk Rating", "5×5 Likelihood vs Impact matrix lookup."),
+        ("Control Gap", "Average of Effectiveness + Confidence: ≥ 4 = Adequate, 3–3.9 = Partial, < 3 = Insufficient."),
+    ]
+    tbl = doc.add_table(rows=1 + len(rows), cols=2)
+    _borders(tbl)
+    tbl.columns[0].width = Cm(5.0)
+    tbl.columns[1].width = Cm(11.5)
+    _set_cell_text(tbl.rows[0].cells[0], "Component", bold=True, size=8,
+                   color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
+    _set_cell_text(tbl.rows[0].cells[1], "Formula / Description", bold=True, size=8,
+                   color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
+    for i, (component, formula) in enumerate(rows, 1):
+        fill = "F8FAFC" if i % 2 == 0 else None
+        _set_cell_text(tbl.rows[i].cells[0], component, bold=True, size=8,
+                       color=NAVY, fill=fill)
+        _set_cell_text(tbl.rows[i].cells[1], formula, size=8, fill=fill)
+    doc.add_paragraph()
+
+
+def _build_asset_identification(doc, state):
+    _add_heading(doc, "6.2  Asset Identification", 2)
+    assets = [a for a in (state.get("assets", []) or []) if a.get("cat")]
+    if not assets:
+        _add_para(doc, "No assets recorded.", italic=True, color=GREY_MID)
+        return
+
+    _add_para(doc,
+              "The following assets have been identified as being present at or associated with the "
+              "site and are relevant to this security risk assessment.",
+              size=10, align="justify", space_after=80)
+
+    headers = ["#", "Asset Category", "Description"]
+    tbl = doc.add_table(rows=1 + len(assets), cols=3)
+    _borders(tbl)
+    tbl.columns[0].width = Cm(1.0)
+    tbl.columns[1].width = Cm(5.5)
+    tbl.columns[2].width = Cm(10.0)
+    for i, h in enumerate(headers):
+        _set_cell_text(tbl.rows[0].cells[i], h, bold=True, size=8,
+                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A",
+                       align="center")
+    for idx, a in enumerate(assets, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        _set_cell_text(tbl.rows[idx].cells[0], str(idx), size=8, align="center", fill=fill)
+        _set_cell_text(tbl.rows[idx].cells[1], a.get("cat") or "", size=8, fill=fill)
+        _set_cell_text(tbl.rows[idx].cells[2], a.get("desc") or "", size=8, fill=fill)
+    doc.add_paragraph()
+
+
+def _build_asset_criticality(doc, state):
+    _add_heading(doc, "6.3  Asset Criticality", 2)
+    assets = [a for a in (state.get("assets", []) or []) if a.get("cat")]
+    if not assets:
+        _add_para(doc, "No assets recorded.", italic=True, color=GREY_MID)
+        return
+
+    _add_para(doc,
+              "Each asset is rated across four criteria to determine its criticality ranking. "
+              "Assets scoring 4.5+ are Critical, 3.5+ High, 2.5+ Medium, 1.5+ Low, and below 1.5 Negligible.",
+              size=10, align="justify", space_after=80)
+
+    col_labels = [AC_LABELS[k] for k in AC_KEYS]
+    headers = ["#", "Asset"] + col_labels + ["Score", "Ranking"]
+    tbl = doc.add_table(rows=1 + len(assets), cols=len(headers))
+    _borders(tbl)
+    widths = [0.8, 4.5, 1.5, 1.8, 1.5, 1.8, 1.2, 1.9]
+    for col, w in zip(tbl.columns, widths):
+        col.width = Cm(w)
+    for i, h in enumerate(headers):
+        _set_cell_text(tbl.rows[0].cells[i], h, bold=True, size=8,
+                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A", align="center")
+
+    for idx, a in enumerate(assets, 1):
+        sc_obj = a.get("sc") or {}
+        scores = [sc_obj.get(k) for k in AC_KEYS]
+        avg_score = _avg(scores)
+        rank = _asset_rank(avg_score)
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], str(idx), size=8, align="center", fill=fill)
+        _set_cell_text(row[1], a.get("cat") or "", size=8, fill=fill)
+        for col_i, sc_val in enumerate(scores, 2):
+            if sc_val:
+                hex_fill = LEVEL_HEX.get(SCORE_LEVEL.get(int(round(sc_val))), "")
+                fg = LEVEL_FG.get(SCORE_LEVEL.get(int(round(sc_val))))
+                _set_cell_text(row[col_i], str(sc_val), size=8, align="center",
+                                bold=True, color=fg, fill=hex_fill)
+            else:
+                _set_cell_text(row[col_i], "", size=8, align="center", fill=fill)
+        _set_cell_text(row[6], str(avg_score) if avg_score else "", size=8,
+                       align="center", bold=True, fill=fill)
+        if rank:
+            _set_cell_text(row[7], rank, size=8, align="center", bold=True,
+                           color=CRIT_FG.get(rank), fill=CRIT_HEX.get(rank))
+        else:
+            _set_cell_text(row[7], "", size=8, align="center", fill=fill)
+    doc.add_paragraph()
+
+
+def _build_common_threat_actors(doc):
+    _add_heading(doc, "6.4.1  Common Threat Actors in the UK", 3)
+    _add_para(doc,
+              "The following provides an overview of the principal threat actor categories relevant to "
+              "security risk assessments in the United Kingdom context.",
+              size=10, align="justify", space_after=80)
+
+    _add_heading(doc, "Terrorism", 3)
+    _add_para(doc,
+              "The UK terrorism threat is assessed by MI5 on a five-level scale. The primary threat "
+              "emanates from Islamist extremist groups, including networks inspired by or affiliated with "
+              "Al-Qa'ida and Islamic State. Extreme right-wing terrorism represents a growing and significant "
+              "threat, with individuals and small cells targeting minority communities and institutions. "
+              "Dissident Irish Republican groups, including the New IRA and Continuity IRA, continue to "
+              "operate primarily in Northern Ireland with occasional activity on the mainland. "
+              "These actors employ a range of methodologies including vehicle-borne and person-borne "
+              "improvised explosive devices (VBIED/PBIED), marauding terrorist firearms attacks (MTFA), "
+              "stabbing attacks, and hostile reconnaissance preceding planned operations.",
+              size=10, align="justify", space_after=80)
+
+    _add_heading(doc, "Crime", 3)
+    _add_para(doc,
+              "Organised crime groups (OCGs) operate across the UK and pose threats including "
+              "robbery, theft, fraud, cybercrime, and drug-related violence. Opportunistic criminals "
+              "exploit poor physical security, inadequate surveillance, and uncontrolled access points. "
+              "Insider threats — whether motivated by financial gain, coercion, or grievance — represent "
+              "a particular risk where access controls or personnel vetting is insufficient. "
+              "Cybercriminals increasingly target physical security systems and operational technology. "
+              "The threat landscape is further shaped by lone-actor offenders, stalking and harassment, "
+              "and civil disorder that may affect high-profile or publicly visible sites.",
+              size=10, align="justify", space_after=80)
+
+    doc.add_paragraph()
+
+
+def _build_threat_register(doc, risks):
+    _add_heading(doc, "6.4.2  Threat Register", 3)
+    _add_para(doc,
+              "Threats identified and assessed using the capability and intent methodology. "
               "Design Basis Threats (DBT) are those with a combined score of 3 or higher.",
-              size=9, italic=True, color=GREY_MID, space_after=100)
+              size=9, italic=True, color=GREY_MID, space_after=80)
 
     filtered = [r for r in risks if r.get("n")]
     if not filtered:
         _add_para(doc, "No threats recorded.", italic=True, color=GREY_MID)
         return
 
-    headers = ["#", "Type", "Threat", "Cap", "Int", "Score", "Level", "DBT"]
+    headers = ["#", "Type", "Threat", "Description", "Cap", "Int", "Score", "Level", "DBT"]
     tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
     _borders(tbl)
-
-    widths_cm = [1.0, 2.0, 6.0, 1.0, 1.0, 1.2, 1.8, 1.2]
-    for col, w in zip(tbl.columns, widths_cm):
-        col.width = Cm(w)
-
-    for i, h in enumerate(headers):
-        _set_cell_text(tbl.rows[0].cells[i], h, bold=True, size=8,
-                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A",
-                       align="center")
+    widths_cm = [0.8, 1.8, 3.5, 5.5, 0.8, 0.8, 1.0, 1.8, 1.0]
+    _hdr_row(tbl, headers, widths_cm)
 
     for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
         row = tbl.rows[idx].cells
-        _set_cell_text(row[0], f"T{idx}", size=8, align="center")
-        _set_cell_text(row[1], r.get("cat") or "", size=8, align="center")
-        _set_cell_text(row[2], r.get("n") or "", size=8, align="left")
-        _set_cell_text(row[3], r.get("cap") or "", size=8, align="center")
-        _set_cell_text(row[4], r.get("int") or "", size=8, align="center")
-        _set_cell_text(row[5], r.get("sc") or "", size=8, align="center", bold=True)
+        _set_cell_text(row[0], f"T{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("cat") or "", size=8, align="center", fill=fill)
+        _set_cell_text(row[2], r.get("n") or "", size=8, fill=fill)
+        _set_cell_text(row[3], r.get("d") or "", size=8, fill=fill)
+        _set_cell_text(row[4], r.get("cap") or "", size=8, align="center", fill=fill)
+        _set_cell_text(row[5], r.get("int") or "", size=8, align="center", fill=fill)
+        _set_cell_text(row[6], r.get("sc") or "", size=8, align="center", bold=True, fill=fill)
         lv = r.get("lv") or ""
         if lv:
-            _set_cell_text(row[6], lv, size=8, align="center", bold=True,
+            _set_cell_text(row[7], lv, size=8, align="center", bold=True,
                            color=LEVEL_FG[lv], fill=LEVEL_HEX[lv])
         else:
-            _set_cell_text(row[6], "", size=8, align="center")
+            _set_cell_text(row[7], "", size=8, align="center", fill=fill)
         dbt = "YES" if r.get("dbt") else ("No" if r.get("sc") is not None else "")
-        _set_cell_text(row[7], dbt, size=8, align="center", bold=r.get("dbt"),
+        _set_cell_text(row[8], dbt, size=8, align="center", bold=r.get("dbt"),
                        color=RGBColor(0xDC, 0x26, 0x26) if r.get("dbt") else None,
-                       fill="FFC7CE" if r.get("dbt") else None)
+                       fill="FFC7CE" if r.get("dbt") else fill)
+    doc.add_paragraph()
+
+
+def _build_threat_asset_mapping(doc, risks, state):
+    _add_heading(doc, "6.4.3  Threat-Asset Mapping", 3)
+    _add_para(doc,
+              "The table below maps each identified threat to the assets it targets, showing the "
+              "exposure of individual assets to specific threat types.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    assets = state.get("assets", []) or []
+    assets_by_id = {str(a.get("id")): a for a in assets}
+    filtered = [r for r in risks if r.get("n")]
+
+    if not filtered:
+        _add_para(doc, "No threats recorded.", italic=True, color=GREY_MID)
+        doc.add_paragraph()
+        return
+
+    headers = ["#", "Threat", "Type", "Targeted Assets"]
+    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 4.0, 1.8, 10.0]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"T{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("n") or "", size=8, fill=fill)
+        _set_cell_text(row[2], r.get("cat") or "", size=8, align="center", fill=fill)
+        target_names = []
+        for tid in (r.get("targets") or []):
+            a = assets_by_id.get(str(tid))
+            if a and a.get("cat"):
+                label = a["cat"]
+                if a.get("desc"):
+                    label += f" — {a['desc']}"
+                target_names.append(label)
+        _set_cell_text(row[3], "; ".join(target_names) if target_names else "—",
+                       size=8, fill=fill)
+    doc.add_paragraph()
+
+
+def _build_attractiveness_vulnerability(doc, risks, state):
+    _add_heading(doc, "6.5  Attractiveness, Vulnerability & Likelihood", 2)
+    _add_para(doc,
+              "Target attractiveness is scored across six criteria. Combined with the threat score and "
+              "site vulnerability, this determines the overall likelihood rating.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    vs = state.get("vs", {}) or {}
+    filtered = [r for r in risks if r.get("n")]
+    if not filtered:
+        _add_para(doc, "No vulnerability data recorded.", italic=True, color=GREY_MID)
+        return
+
+    tac_short = ["Vis", "Stat", "Acc", "Coll", "Crime", "Hist"]
+    headers = ["#", "Threat", "T", "Vis", "Stat", "Acc", "Coll", "Crime", "Hist", "TA", "Vuln", "L"]
+    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 4.5, 0.8, 0.8, 0.8, 0.8, 0.8, 1.0, 0.8, 0.8, 0.8, 0.8]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        v = vs.get(str(r.get("id")), {}) or {}
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"T{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("n") or "", size=8, fill=fill)
+
+        def _score_cell(cell, val):
+            if val:
+                lv = SCORE_LEVEL.get(int(round(val)))
+                _set_cell_text(cell, str(val), size=8, align="center", bold=True,
+                               color=LEVEL_FG.get(lv), fill=LEVEL_HEX.get(lv))
+            else:
+                _set_cell_text(cell, "", size=8, align="center", fill=fill)
+
+        _score_cell(row[2], r.get("sc"))
+        for col_i, tac_key in enumerate(TAC, 3):
+            _score_cell(row[col_i], v.get(tac_key))
+        _score_cell(row[9], r.get("ta"))
+        _score_cell(row[10], r.get("vu"))
+        _score_cell(row[11], r.get("lik"))
+    doc.add_paragraph()
+
+
+def _build_points_of_interest(doc, state):
+    _add_heading(doc, "6.6  Points of Interest", 2)
+    pois = state.get("pois", []) or []
+    threats = state.get("threats", []) or []
+    threats_by_id = {str(t.get("id")): t for t in threats}
+
+    if not pois:
+        _add_para(doc, "No Points of Interest recorded.", italic=True, color=GREY_MID)
+        return
+
+    _add_para(doc,
+              "Points of Interest (POIs) are locations or features within or adjacent to the site "
+              "that present specific security considerations.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    headers = ["#", "POI Name", "Location / Description", "Applicable Threats"]
+    tbl = doc.add_table(rows=1 + len(pois), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 3.5, 6.0, 6.2]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, poi in enumerate(pois, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        threat_names = []
+        for tid in (poi.get("threats") or []):
+            t = threats_by_id.get(str(tid))
+            if t and t.get("n"):
+                threat_names.append(t["n"])
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"POI-{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], poi.get("name") or "", size=8, fill=fill)
+        _set_cell_text(row[2], poi.get("desc") or "", size=8, fill=fill)
+        _set_cell_text(row[3], ", ".join(threat_names) if threat_names else "—",
+                       size=8, fill=fill)
+    doc.add_paragraph()
+
+
+def _build_impact_assessment(doc, risks, state):
+    _add_heading(doc, "6.7  Impact Assessment", 2)
+    _add_para(doc,
+              "Impact is assessed across five consequence categories. A life-safety override applies "
+              "where Fatalities score ≥ 4 and the average impact is below 4.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    is_ = state.get("is_", {}) or {}
+    filtered = [r for r in risks if r.get("n")]
+    if not filtered:
+        _add_para(doc, "No impact data recorded.", italic=True, color=GREY_MID)
+        return
+
+    ic_short = ["Disruption", "Fatalities", "Reputation", "Financial", "Property"]
+    headers = ["#", "Threat"] + ic_short + ["Impact", "Override?"]
+    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 4.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.2, 1.5]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        im = is_.get(str(r.get("id")), {}) or {}
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"T{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("n") or "", size=8, fill=fill)
+
+        def _score_cell(cell, val):
+            if val:
+                lv = SCORE_LEVEL.get(int(round(val)))
+                _set_cell_text(cell, str(val), size=8, align="center", bold=True,
+                               color=LEVEL_FG.get(lv), fill=LEVEL_HEX.get(lv))
+            else:
+                _set_cell_text(cell, "", size=8, align="center", fill=fill)
+
+        for col_i, ic_key in enumerate(IC, 2):
+            _score_cell(row[col_i], im.get(ic_key))
+        _score_cell(row[7], r.get("imp"))
+        override = "YES" if r.get("lifeSafetyOverride") else ""
+        _set_cell_text(row[8], override, size=8, align="center", bold=bool(override),
+                       color=RGBColor(0xDC, 0x26, 0x26) if override else None,
+                       fill="FFC7CE" if override else fill)
+    doc.add_paragraph()
+
+
+def _build_existing_controls(doc, risks, state):
+    _add_heading(doc, "6.8  Existing Controls", 2)
+    _add_para(doc,
+              "Existing security controls are evaluated for effectiveness and confidence. "
+              "The gap assessment indicates whether current controls are Adequate, Partial, or Insufficient.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    cd = state.get("cd", {}) or {}
+    filtered = [r for r in risks if r.get("n")]
+    if not filtered:
+        _add_para(doc, "No control data recorded.", italic=True, color=GREY_MID)
+        return
+
+    headers = ["T#", "Threat", "Controls Description", "Eff", "Conf", "Score", "Gap"]
+    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 3.5, 7.5, 0.8, 0.8, 0.9, 2.2]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        c = cd.get(str(r.get("id")), {}) or {}
+        eff, conf = c.get("eff"), c.get("conf")
+        gap_score = round((eff + conf) / 2 * 10) / 10 if (eff and conf) else None
+        gap = ("Adequate" if gap_score >= 4 else
+               "Partial" if gap_score >= 3 else
+               "Insufficient" if gap_score else "")
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"T{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("n") or "", size=8, fill=fill)
+        _set_cell_text(row[2], c.get("desc") or "", size=8, fill=fill)
+
+        def _score_cell(cell, val):
+            if val:
+                lv = SCORE_LEVEL.get(int(round(val)))
+                _set_cell_text(cell, str(val), size=8, align="center", bold=True,
+                               color=LEVEL_FG.get(lv), fill=LEVEL_HEX.get(lv))
+            else:
+                _set_cell_text(cell, "", size=8, align="center", fill=fill)
+
+        _score_cell(row[3], eff)
+        _score_cell(row[4], conf)
+        _set_cell_text(row[5], str(gap_score) if gap_score else "", size=8,
+                       align="center", bold=True, fill=fill)
+        if gap:
+            _set_cell_text(row[6], gap, size=8, align="center", bold=True,
+                           color=GAP_FG.get(gap), fill=GAP_HEX.get(gap))
+        else:
+            _set_cell_text(row[6], "", size=8, align="center", fill=fill)
+    doc.add_paragraph()
+
+
+def _build_risk_register(doc, risks):
+    _add_heading(doc, "6.9  Risk Register (Pre Mitigation)", 2)
+    _add_para(doc,
+              "Pre-treatment risk ratings derived from the 5×5 Likelihood vs Impact matrix. "
+              "Threat Score (T), Target Attractiveness (TA), and Vulnerability (V) combine to produce the Likelihood (L) rating.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
+
+    filtered = [r for r in risks if r.get("n")]
+    if not filtered:
+        _add_para(doc, "No risk data recorded.", italic=True, color=GREY_MID)
+        return
+
+    headers = ["R#", "Type", "Threat", "T", "TA", "V", "L", "I", "Rating", "Treatment"]
+    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+    _borders(tbl)
+    widths_cm = [0.8, 1.8, 4.0, 0.7, 0.7, 0.7, 0.7, 0.7, 1.8, 2.1]
+    _hdr_row(tbl, headers, widths_cm)
+
+    for idx, r in enumerate(filtered, 1):
+        fill = "F8FAFC" if idx % 2 == 0 else None
+        row = tbl.rows[idx].cells
+        _set_cell_text(row[0], f"R{idx}", size=8, align="center", fill=fill)
+        _set_cell_text(row[1], r.get("cat") or "", size=8, align="center", fill=fill)
+        _set_cell_text(row[2], r.get("n") or "", size=8, fill=fill)
+
+        def _score_cell(cell, val):
+            if val:
+                lv = SCORE_LEVEL.get(int(round(val)))
+                _set_cell_text(cell, str(val), size=8, align="center", bold=True,
+                               color=LEVEL_FG.get(lv), fill=LEVEL_HEX.get(lv))
+            else:
+                _set_cell_text(cell, "", size=8, align="center", fill=fill)
+
+        _score_cell(row[3], r.get("sc"))
+        _score_cell(row[4], r.get("ta"))
+        _score_cell(row[5], r.get("vu"))
+        _score_cell(row[6], r.get("lik"))
+        _score_cell(row[7], r.get("imp"))
+        rat = r.get("rat") or ""
+        if rat:
+            _set_cell_text(row[8], rat, size=8, align="center", bold=True,
+                           color=LEVEL_FG[rat], fill=LEVEL_HEX[rat])
+        else:
+            _set_cell_text(row[8], "", size=8, align="center", fill=fill)
+        _set_cell_text(row[9], r.get("treat") or "", size=8, align="center", fill=fill)
 
     doc.add_paragraph()
-    _add_heading(doc, "Pre-Mitigation Risk Matrix", 2)
+    _add_heading(doc, "Pre-Mitigation Risk Matrix", 3)
     _try_picture(doc, lambda: chart_risk_matrix(risks, residual=False,
                                                 title="Likelihood × Impact (Pre-Mitigation)"),
                  Cm(15))
     _page_break(doc)
 
 
-def _build_treatments(doc, risks, state):
-    _add_heading(doc, "Risk Treatment", 1)
+def _build_security_treatments(doc, risks, state):
+    _add_heading(doc, "6.10  Security Treatments", 2)
     _add_para(doc,
-              "Treatment strategies follow the TAAR framework: Treat, Avoid, Accept, "
-              "Refer. Planned measures for headline risks (High or Very High) are listed "
-              "per affected asset.",
-              size=9, italic=True, color=GREY_MID, space_after=120)
+              "Treatment strategies follow the TAAR framework: Treat, Avoid, Accept, Refer. "
+              "Planned measures for headline risks (High or Very High) are listed per affected asset. "
+              "The residual risk position following treatment is also presented.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
 
     treatment_measures = state.get("treatmentMeasures", {}) or {}
     assets = state.get("assets", []) or []
@@ -585,110 +1074,111 @@ def _build_treatments(doc, risks, state):
     _add_para(doc,
               "Treatment strategy split: "
               + ", ".join(f"{v} {k}" for k, v in treat_counts.items() if v),
-              size=10, space_after=120)
+              size=10, space_after=100)
 
     headline = [r for r in risks if r.get("rat") in ("Very High", "High")]
-    if not headline:
-        _add_para(doc, "No headline (High / Very High) risks requiring a detailed treatment plan.",
-                  italic=True, color=GREY_MID)
-        _page_break(doc); return
+    if headline:
+        _add_heading(doc, "Treatment Measures by Risk", 3)
+        for r in headline:
+            tid = str(r.get("id"))
+            m = treatment_measures.get(tid, {}) or {}
+            any_measure = any(any(v for v in (arr or []) if v) for arr in m.values())
+            if not any_measure:
+                continue
 
-    for r in headline:
-        tid = str(r.get("id"))
-        m = treatment_measures.get(tid, {}) or {}
-        any_measure = any(any(v for v in (arr or []) if v) for arr in m.values())
-        if not any_measure:
-            continue
+            _add_heading(doc, f"{r.get('n')}  —  {r.get('rat')} ({r.get('treat') or 'Reduce'})", 3)
 
-        _add_heading(doc, f"{r.get('n')}  —  {r.get('rat')} ({r.get('treat') or 'Reduce'})", 2)
+            rows_data = []
+            for target_id in (r.get("targets") or []):
+                a = assets_by_id.get(str(target_id))
+                arr = [v for v in (m.get(str(target_id)) or []) if v]
+                if a and a.get("cat") and arr:
+                    rows_data.append((a, arr))
+            if not rows_data:
+                continue
 
-        rows_data = []
-        for target_id in (r.get("targets") or []):
-            a = assets_by_id.get(str(target_id))
-            arr = [v for v in (m.get(str(target_id)) or []) if v]
-            if a and a.get("cat") and arr:
-                rows_data.append((a, arr))
-        if not rows_data:
-            continue
+            tbl = doc.add_table(rows=1 + len(rows_data), cols=2)
+            _borders(tbl)
+            tbl.columns[0].width = Cm(5.5)
+            tbl.columns[1].width = Cm(11.0)
+            _set_cell_text(tbl.rows[0].cells[0], "Asset / Location", bold=True, size=9,
+                           color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
+            _set_cell_text(tbl.rows[0].cells[1], "Treatment Measures", bold=True, size=9,
+                           color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
+            for i, (a, arr) in enumerate(rows_data, 1):
+                c0 = tbl.rows[i].cells[0]
+                c1 = tbl.rows[i].cells[1]
+                c0.text = ""
+                p = c0.paragraphs[0]
+                rn = p.add_run(a.get("cat") or "")
+                rn.font.bold = True; rn.font.size = Pt(9); rn.font.color.rgb = NAVY
+                if a.get("desc"):
+                    p2 = c0.add_paragraph()
+                    r2 = p2.add_run(a.get("desc"))
+                    r2.font.size = Pt(8); r2.font.color.rgb = GREY_DARK
+                c1.text = ""
+                for j, measure in enumerate(arr, 1):
+                    p = c1.paragraphs[0] if j == 1 else c1.add_paragraph()
+                    run = p.add_run(f"{j}. {measure}")
+                    run.font.size = Pt(8); run.font.color.rgb = GREY_DARK
+                    _set_para_spacing(p, after=30)
+            doc.add_paragraph()
 
-        tbl = doc.add_table(rows=1 + len(rows_data), cols=2)
-        _borders(tbl)
-        tbl.columns[0].width = Cm(5.5); tbl.columns[1].width = Cm(11)
-        _set_cell_text(tbl.rows[0].cells[0], "Asset / Location", bold=True, size=9,
-                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
-        _set_cell_text(tbl.rows[0].cells[1], "Treatment Measures", bold=True, size=9,
-                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A")
-        for i, (a, arr) in enumerate(rows_data, 1):
-            c0 = tbl.rows[i].cells[0]; c1 = tbl.rows[i].cells[1]
-            c0.text = ""
-            p = c0.paragraphs[0]
-            rn = p.add_run(a.get("cat") or ""); rn.font.bold = True; rn.font.size = Pt(9); rn.font.color.rgb = NAVY
-            if a.get("desc"):
-                p2 = c0.add_paragraph(); r2 = p2.add_run(a.get("desc")); r2.font.size = Pt(8); r2.font.color.rgb = GREY_DARK
-            c1.text = ""
-            for j, measure in enumerate(arr, 1):
-                p = c1.paragraphs[0] if j == 1 else c1.add_paragraph()
-                run = p.add_run(f"{j}. {measure}")
-                run.font.size = Pt(8); run.font.color.rgb = GREY_DARK
-                _set_para_spacing(p, after=30)
-        doc.add_paragraph()
-
-    _page_break(doc)
-
-
-def _build_residual(doc, risks):
-    _add_heading(doc, "Residual Risk", 1)
+    # Residual risk table
+    _add_heading(doc, "Residual Risk", 3)
     _add_para(doc,
-              "Risk rating following application of proposed treatment measures. The "
-              "table compares pre-treatment and residual positions per threat.",
-              size=9, italic=True, color=GREY_MID, space_after=120)
+              "Risk rating following application of proposed treatment measures.",
+              size=9, italic=True, color=GREY_MID, space_after=80)
 
     filtered = [r for r in risks if r.get("n") and (r.get("rat") or r.get("resRat"))]
-    if not filtered:
-        _add_para(doc, "Residual risk scoring not yet captured.",
-                  italic=True, color=GREY_MID)
-        return
+    if filtered:
+        headers = ["#", "Threat", "Pre L", "Pre I", "Pre-Rating",
+                   "Treatment", "Post L", "Post I", "Residual", "Accept?"]
+        tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
+        _borders(tbl)
+        widths = [0.8, 4.0, 0.9, 0.9, 1.8, 1.8, 0.9, 0.9, 1.8, 1.2]
+        _hdr_row(tbl, headers, widths)
 
-    headers = ["#", "Threat", "Pre L", "Pre I", "Pre-Rating",
-               "Treatment", "Post L", "Post I", "Residual", "Accept?"]
-    tbl = doc.add_table(rows=1 + len(filtered), cols=len(headers))
-    _borders(tbl)
-    widths = [1.0, 4.4, 1.0, 1.0, 1.8, 1.8, 1.0, 1.0, 1.8, 1.2]
-    for col, w in zip(tbl.columns, widths):
-        col.width = Cm(w)
+        for idx, r in enumerate(filtered, 1):
+            fill = "F8FAFC" if idx % 2 == 0 else None
+            row = tbl.rows[idx].cells
+            _set_cell_text(row[0], f"R{idx}", size=8, align="center", fill=fill)
+            _set_cell_text(row[1], r.get("n") or "", size=8, fill=fill)
 
-    for i, h in enumerate(headers):
-        _set_cell_text(tbl.rows[0].cells[i], h, bold=True, size=8,
-                       color=RGBColor(0xFF, 0xFF, 0xFF), fill="1B2A4A", align="center")
+            def _score_cell(cell, val):
+                if val:
+                    lv = SCORE_LEVEL.get(int(round(val)))
+                    _set_cell_text(cell, str(val), size=8, align="center", bold=True,
+                                   color=LEVEL_FG.get(lv), fill=LEVEL_HEX.get(lv))
+                else:
+                    _set_cell_text(cell, "", size=8, align="center", fill=fill)
 
-    for idx, r in enumerate(filtered, 1):
-        row = tbl.rows[idx].cells
-        _set_cell_text(row[0], f"R{idx}", size=8, align="center")
-        _set_cell_text(row[1], r.get("n") or "", size=8, align="left")
-        _set_cell_text(row[2], r.get("lik") or "", size=8, align="center")
-        _set_cell_text(row[3], r.get("imp") or "", size=8, align="center")
-        rat = r.get("rat") or ""
-        if rat:
-            _set_cell_text(row[4], rat, size=8, align="center", bold=True,
-                           color=LEVEL_FG[rat], fill=LEVEL_HEX[rat])
-        else:
-            _set_cell_text(row[4], "", size=8, align="center")
-        _set_cell_text(row[5], r.get("treat") or "", size=8, align="center")
-        _set_cell_text(row[6], r.get("resL") or "", size=8, align="center")
-        _set_cell_text(row[7], r.get("resI") or "", size=8, align="center")
-        res = r.get("resRat") or ""
-        if res:
-            _set_cell_text(row[8], res, size=8, align="center", bold=True,
-                           color=LEVEL_FG[res], fill=LEVEL_HEX[res])
-        else:
-            _set_cell_text(row[8], "", size=8, align="center")
-        _set_cell_text(row[9], r.get("acc") or "", size=8, align="center")
+            _score_cell(row[2], r.get("lik"))
+            _score_cell(row[3], r.get("imp"))
+            rat = r.get("rat") or ""
+            if rat:
+                _set_cell_text(row[4], rat, size=8, align="center", bold=True,
+                               color=LEVEL_FG[rat], fill=LEVEL_HEX[rat])
+            else:
+                _set_cell_text(row[4], "", size=8, align="center", fill=fill)
+            _set_cell_text(row[5], r.get("treat") or "", size=8, align="center", fill=fill)
+            _score_cell(row[6], r.get("resL"))
+            _score_cell(row[7], r.get("resI"))
+            res = r.get("resRat") or ""
+            if res:
+                _set_cell_text(row[8], res, size=8, align="center", bold=True,
+                               color=LEVEL_FG[res], fill=LEVEL_HEX[res])
+            else:
+                _set_cell_text(row[8], "", size=8, align="center", fill=fill)
+            _set_cell_text(row[9], r.get("acc") or "", size=8, align="center", fill=fill)
 
-    doc.add_paragraph()
-    _add_heading(doc, "Post-Mitigation Risk Matrix", 2)
-    _try_picture(doc, lambda: chart_risk_matrix(risks, residual=True,
-                                                title="Likelihood × Impact (Residual)"),
-                 Cm(15))
+        doc.add_paragraph()
+        _add_heading(doc, "Post-Mitigation Risk Matrix", 3)
+        _try_picture(doc, lambda: chart_risk_matrix(risks, residual=True,
+                                                    title="Likelihood × Impact (Residual)"),
+                     Cm(15))
+    else:
+        _add_para(doc, "Residual risk scoring not yet captured.", italic=True, color=GREY_MID)
 
 
 # --- Top-level build ---
@@ -696,7 +1186,6 @@ def _build_residual(doc, risks):
 def build_docx(state):
     doc = Document()
 
-    # Base style
     styles = doc.styles
     normal = styles["Normal"]
     normal.font.name = "Calibri"
@@ -710,9 +1199,38 @@ def build_docx(state):
 
     _build_cover(doc, ctx, risks)
     _build_exec_summary(doc, ctx, risks, pois)
-    _build_threats_table(doc, risks)
-    _build_treatments(doc, risks, state)
-    _build_residual(doc, risks)
+
+    # Section 6
+    _build_s6_header(doc)
+    _build_methodology(doc)
+    _page_break(doc)
+
+    _build_asset_identification(doc, state)
+    _build_asset_criticality(doc, state)
+    _page_break(doc)
+
+    _add_heading(doc, "6.4  Threats", 2)
+    _build_common_threat_actors(doc)
+    _build_threat_register(doc, risks)
+    _page_break(doc)
+    _build_threat_asset_mapping(doc, risks, state)
+    _page_break(doc)
+
+    _build_attractiveness_vulnerability(doc, risks, state)
+    _page_break(doc)
+
+    _build_points_of_interest(doc, state)
+    _page_break(doc)
+
+    _build_impact_assessment(doc, risks, state)
+    _page_break(doc)
+
+    _build_existing_controls(doc, risks, state)
+    _page_break(doc)
+
+    _build_risk_register(doc, risks)
+
+    _build_security_treatments(doc, risks, state)
 
     buf = io.BytesIO()
     doc.save(buf)
@@ -740,7 +1258,6 @@ class handler(BaseHTTPRequestHandler):
     def _authorized(self):
         expected = os.environ.get("APP_PASSWORD") or ""
         if not expected:
-            # No password configured on the server — fail closed.
             return False
         provided = self.headers.get("x-api-key") or ""
         return provided == expected
