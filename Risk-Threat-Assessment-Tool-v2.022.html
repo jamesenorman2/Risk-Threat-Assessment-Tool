@@ -1124,7 +1124,7 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.024";
+const VERSION="2.022";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -4996,20 +4996,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           const insufficientCapWarning=ctrlGap==="Insufficient"&&rsc.l&&r.lik&&(r.lik-rsc.l)>1;
           const justification=residualJustifications[r.id]||"";
           return React.createElement("div",{key:r.id,className:"card",style:{marginBottom:isHigh&&targetedAssets.length>0?12:4}},
-            React.createElement("table",{style:{marginBottom:0,tableLayout:"fixed",width:"100%"}},
-              React.createElement("colgroup",null,
-                React.createElement("col",{style:{width:40}}),
-                React.createElement("col",null),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:80}})
-              ),
+            React.createElement("table",{style:{marginBottom:0}},
               i===0&&React.createElement("thead",null,React.createElement("tr",null,
                 React.createElement("th",{style:{width:40}},"R#"),React.createElement("th",{className:"left"},"Threat"),
                 React.createElement("th",{style:{width:50}},"Pre-L"),React.createElement("th",{style:{width:50}},"Pre-I"),React.createElement("th",{style:{width:80}},"Pre-Rating"),
