@@ -4442,8 +4442,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-vulnerability","Vulnerability section captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
-        React.createElement(HelpBox,{title:"Capability, Attractiveness & Vulnerability",
-          description:"Capability and Intent are scored on the Threats tab and shown here read-only \u2014 they represent whether the threat actor has the means and motivation to act, which is fundamental to likelihood. The 6 Target Attractiveness criteria assess how appealing and accessible the site is to each threat. Vulnerability measures the site\u2019s susceptibility. Likelihood is then calculated: L = ROUND((Threat Score + TA + Vulnerability) / 3)."}),
+        React.createElement("div",{"data-capture-hide":"1"},React.createElement(HelpBox,{title:"Capability, Attractiveness & Vulnerability",
+          description:"Capability and Intent are scored on the Threats tab and shown here read-only \u2014 they represent whether the threat actor has the means and motivation to act, which is fundamental to likelihood. The 6 Target Attractiveness criteria assess how appealing and accessible the site is to each threat. Vulnerability measures the site\u2019s susceptibility. Likelihood is then calculated: L = ROUND((Threat Score + TA + Vulnerability) / 3)."})),
         React.createElement("div",{"data-capture-hide":"1",className:"help-box",style:{marginBottom:16}},
           React.createElement("h4",{style:{marginBottom:8}},"Attractiveness & Vulnerability Scoring Key"),
           React.createElement("div",{style:{overflowX:"auto"}},
@@ -4603,40 +4603,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )
         ),
-        cThreats.filter(t=>t.n).map((t,i)=>{
-          const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
-          return React.createElement("div",{key:t.id,className:"card","data-capture-hide":"1"},
-            React.createElement("div",{className:"card-header"},
-              React.createElement("div",null,
-                React.createElement("span",{className:"text-xs font-mono text-muted mr-2"},"T"+(i+1)),
-                React.createElement("span",{className:"font-bold"},t.n)
-              ),
-              React.createElement("div",{className:"flex gap-2 items-center"},
-                r?.lifeSafetyOverride&&React.createElement("span",{title:"Life Safety Override active: Fatalities \u2265 4 raises overall impact to minimum 4",style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:4,padding:"2px 6px",cursor:"default"}},"\u26a0\ufe0f Life Safety Override"),
-                React.createElement("span",{className:"text-xs text-muted"},"Impact:"),React.createElement(SBadge,{value:r?.imp}),
-                r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
-              )
-            ),
-            React.createElement("div",{className:"card-body",style:{paddingTop:6,paddingBottom:6}},
-              React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}},
-                React.createElement("tbody",null,
-                  IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f8fafc"}},
-                    React.createElement("td",{style:{width:110,padding:"5px 8px",fontWeight:700,color:"#1e293b",fontSize:12,whiteSpace:"nowrap"}},ICL[c]),
-                    ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{textAlign:"center",padding:"4px 6px"}},
-                      React.createElement("button",{
-                        className:"score-btn sm"+(im[c]===s?" sel":""),
-                        style:{backgroundColor:SC[s].bg,color:SC[s].t},
-                        title:(scales[c]||{})[s]||"",
-                        onClick:()=>si(t.id,c,im[c]===s?null:s)
-                      },s)
-                    ))
-                  ))
-                )
-              )
-            )
-          );
-        }),
-        React.createElement("div",{style:{overflowX:"auto",marginTop:16}},
+        React.createElement("div",{style:{overflowX:"auto",marginBottom:16}},
           React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
             React.createElement("thead",null,
               React.createElement("tr",null,
@@ -4670,7 +4637,40 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               })
             )
           )
-        )
+        ),
+        cThreats.filter(t=>t.n).map((t,i)=>{
+          const im=is_[t.id]||{};const r=cRisks.find(r=>r.id===t.id)||{};
+          return React.createElement("div",{key:t.id,className:"card","data-capture-hide":"1"},
+            React.createElement("div",{className:"card-header"},
+              React.createElement("div",null,
+                React.createElement("span",{className:"text-xs font-mono text-muted mr-2"},"T"+(i+1)),
+                React.createElement("span",{className:"font-bold"},t.n)
+              ),
+              React.createElement("div",{className:"flex gap-2 items-center"},
+                r?.lifeSafetyOverride&&React.createElement("span",{title:"Life Safety Override active: Fatalities \u2265 4 raises overall impact to minimum 4",style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:4,padding:"2px 6px",cursor:"default"}},"\u26a0\ufe0f Life Safety Override"),
+                React.createElement("span",{className:"text-xs text-muted"},"Impact:"),React.createElement(SBadge,{value:r?.imp}),
+                r?.imp&&React.createElement(Badge,{rating:SC[r.imp]?.l||null})
+              )
+            ),
+            React.createElement("div",{className:"card-body",style:{paddingTop:6,paddingBottom:6}},
+              React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}},
+                React.createElement("tbody",null,
+                  IC.map(c=>React.createElement("tr",{key:c,style:{borderBottom:"1px solid #f8fafc"}},
+                    React.createElement("td",{style:{width:110,padding:"5px 8px",fontWeight:700,color:"#1e293b",fontSize:12,whiteSpace:"nowrap"}},ICL[c]),
+                    ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{textAlign:"center",padding:"4px 6px"}},
+                      React.createElement("button",{
+                        className:"score-btn sm"+(im[c]===s?" sel":""),
+                        style:{backgroundColor:SC[s].bg,color:SC[s].t},
+                        title:(scales[c]||{})[s]||"",
+                        onClick:()=>si(t.id,c,im[c]===s?null:s)
+                      },s)
+                    ))
+                  ))
+                )
+              )
+            )
+          );
+        })
       ),
 
       // CONTROLS
@@ -6314,7 +6314,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           var sbdStatusStyle=function(s){return{Compliant:{bg:"#f0fdf4",color:"#16a34a",border:"#bbf7d0"},Partial:{bg:"#fffbeb",color:"#d97706",border:"#fde68a"},Gap:{bg:"#fef2f2",color:"#dc2626",border:"#fecaca"},"N/A":{bg:"#f8fafc",color:"#94a3b8",border:"#e2e8f0"}}[s]||{bg:"#f8fafc",color:"#94a3b8",border:"#e2e8f0"}};
           return React.createElement("div",null,
             // Type selector
-            React.createElement("div",{style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
+            React.createElement("div",{"data-capture-hide":"1",style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
               React.createElement("span",{style:{fontSize:11,fontWeight:600,color:"#64748b"}},"Development Type:"),
               ["residential","commercial","schools"].map(function(t){
                 var labels={residential:"Residential",commercial:"Commercial (Non-Residential)",schools:"Schools"};
@@ -6377,7 +6377,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
                     secCounts.Gap>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}},secCounts.Gap+" Gap"),
                     secCounts.Partial>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#fffbeb",color:"#d97706",border:"1px solid #fde68a"}},secCounts.Partial+" Partial"),
-                    secCounts.Compliant>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#f0fdf4",color:"#16a34a",border:"1px solid #bbf7d0"}},secCounts.Compliant+" \u2713"),
+                    secCounts.Compliant>0&&React.createElement("span",{style:{fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#f0fdf4",color:"#16a34a",border:"1px solid #bbf7d0"}},secCounts.Compliant+" Compliant"),
                     React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:600}},secTotal+" requirements")
                   )
                 ),
