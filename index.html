@@ -1143,7 +1143,7 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.029";
+const VERSION="2.030";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -4699,41 +4699,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   ...[1,2,3,4,5].map(s=>React.createElement("td",{key:s,style:{padding:"5px 6px",color:"#64748b",fontSize:13,lineHeight:1.4,textAlign:"center"}},(scales[c]||{})[s]||""))
                 ))
               )
-            )
-          )
-        ),
-        React.createElement("div",{style:{overflowX:"auto",marginBottom:16}},
-          React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-            React.createElement("thead",null,
-              React.createElement("tr",null,
-                React.createElement("th",{style:{width:34,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"T#"),
-                React.createElement("th",{className:"left",style:{padding:"5px 6px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Threat"),
-                React.createElement("th",{style:{width:70,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Disruption"),
-                React.createElement("th",{style:{width:66,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Fatalities"),
-                React.createElement("th",{style:{width:66,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Reputation"),
-                React.createElement("th",{style:{width:66,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Financial"),
-                React.createElement("th",{style:{width:60,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Property"),
-                React.createElement("th",{style:{width:44,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Impact"),
-                React.createElement("th",{style:{width:64,padding:"5px 4px",fontSize:9,textTransform:"uppercase",letterSpacing:"0.5px"}},"Level")
-              )
-            ),
-            React.createElement("tbody",null,
-              cThreats.filter(t=>t.n).map((t,i)=>{
-                var im2=is_[t.id]||{};var rr=cRisks.find(function(rx){return rx.id===t.id})||{};
-                var impLvl=rr.imp&&SC[rr.imp]?SC[rr.imp].l:"—";
-                var scSt=function(val){return val?{background:SC[val].bg,color:SC[val].t,fontWeight:700,textAlign:"center",padding:"4px 2px"}:{color:"#d1d5db",textAlign:"center",padding:"4px 2px"}};
-                return React.createElement("tr",{key:t.id,style:{borderBottom:"1px solid #f1f5f9"}},
-                  React.createElement("td",{style:{textAlign:"center",padding:"4px 6px",fontSize:11,color:"#94a3b8",fontWeight:600}},"T"+(i+1)),
-                  React.createElement("td",{style:{padding:"4px 8px",fontSize:12,fontWeight:600}},t.n),
-                  React.createElement("td",{style:scSt(im2.disruption)},im2.disruption||"—"),
-                  React.createElement("td",{style:scSt(im2.fatalities)},im2.fatalities||"—"),
-                  React.createElement("td",{style:scSt(im2.reputation)},im2.reputation||"—"),
-                  React.createElement("td",{style:scSt(im2.financial)},im2.financial||"—"),
-                  React.createElement("td",{style:scSt(im2.property)},im2.property||"—"),
-                  React.createElement("td",{style:scSt(rr.imp)},rr.imp||"—"),
-                  React.createElement("td",{style:{textAlign:"center",padding:"4px 6px",fontWeight:700,fontSize:11,...(rr.imp?{color:SC[rr.imp].bg}:{color:"#d1d5db"})}},impLvl)
-                );
-              })
             )
           )
         ),
