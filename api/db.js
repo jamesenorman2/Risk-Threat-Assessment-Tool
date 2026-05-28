@@ -204,15 +204,51 @@ const DEF_THREATS=[
 ].map(t=>({...t,cap:null,int:null}));
 
 const THREAT_PRESETS={
-  Residential:["VBIED","PBIED","IED","MTA","VAAW","Violence & Sexual","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","ASB","Criminal Damage","Trespass"],
-  Commercial:["VBIED","PBIED","IED","MTFA","MTA","VAAW","Cybercrime","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Theft","Public Order","ASB","Criminal Damage","Trespass"],
-  Transport:["VBIED","PBIED","IED","IED-Drone","CBR","MTFA","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Arson","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  Hotel:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","ASB","Criminal Damage","Trespass"],
-  Hospital:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","Info Theft","Arson","Insider Threat","Burglary","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  "Schools/University":["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","Info Theft","Arson","Insider Threat","Burglary","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
-  Datacentre:["VBIED","PBIED","IED","IED-Drone","VAAW","Cybercrime","SOC","Info Theft","Arson","Insider Threat","Burglary","Criminal Damage","Trespass"],
-  Government:["VBIED","PBIED","IED","IED-Drone","Mail/Parcel Threat","CBR","MTFA","MTA","VAAW","Cybercrime","KRE","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Public Order","ASB","Trespass"],
-  Masterplan:["VBIED","PBIED","IED","MTA","VAAW","Cybercrime","Violence & Sexual","SOC","Info Theft","Arson","Insider Threat","Burglary","Vehicle Crime","Theft","Theft from Person","Public Order","ASB","Criminal Damage","Trespass"],
+  Residential:{
+    Recommended:["Burglary","Theft","Theft from Person","ASB","Criminal Damage","Trespass","Vehicle Crime","Arson","Violence & Sexual","Insider Threat"],
+    Optional:["VAAW","MTA","IED","PBIED","VBIED","Cybercrime"],
+    Rare:["CBR","MTFA","IED-Drone","KRE","SOC","Mail/Parcel Threat","Info Theft","Public Order"],
+  },
+  Commercial:{
+    Recommended:["Cybercrime","Insider Threat","Theft","Info Theft","Burglary","ASB","Criminal Damage","Trespass","Violence & Sexual","VAAW","PBIED"],
+    Optional:["VBIED","IED","MTA","MTFA","Arson","Public Order","SOC"],
+    Rare:["CBR","IED-Drone","Mail/Parcel Threat","KRE","Theft from Person","Vehicle Crime"],
+  },
+  Transport:{
+    Recommended:["VBIED","PBIED","IED","MTA","VAAW","MTFA","Cybercrime","Theft from Person","ASB","Criminal Damage","Public Order","Trespass","Insider Threat"],
+    Optional:["CBR","IED-Drone","KRE","Violence & Sexual","SOC","Arson","Mail/Parcel Threat"],
+    Rare:["Burglary","Vehicle Crime","Theft","Info Theft"],
+  },
+  Hotel:{
+    Recommended:["PBIED","MTA","VAAW","Theft","Theft from Person","Burglary","Violence & Sexual","Cybercrime","Insider Threat","ASB","Criminal Damage","Trespass","Arson","Vehicle Crime"],
+    Optional:["VBIED","IED","KRE","SOC","Info Theft","Public Order"],
+    Rare:["CBR","MTFA","IED-Drone","Mail/Parcel Threat"],
+  },
+  Hospital:{
+    Recommended:["Violence & Sexual","Theft","Theft from Person","ASB","Criminal Damage","Trespass","Insider Threat","Cybercrime","Info Theft","Arson","Burglary"],
+    Optional:["VAAW","PBIED","IED","MTA","Public Order","Mail/Parcel Threat"],
+    Rare:["VBIED","CBR","MTFA","IED-Drone","KRE","SOC","Vehicle Crime"],
+  },
+  "Schools/University":{
+    Recommended:["Theft","Theft from Person","ASB","Criminal Damage","Trespass","Violence & Sexual","Arson","Burglary","Cybercrime","Info Theft","Insider Threat"],
+    Optional:["Public Order","MTA","PBIED","IED","VAAW"],
+    Rare:["VBIED","CBR","MTFA","IED-Drone","KRE","SOC","Mail/Parcel Threat","Vehicle Crime"],
+  },
+  Datacentre:{
+    Recommended:["Cybercrime","Info Theft","Insider Threat","Trespass","Burglary","Theft","Arson","Criminal Damage","ASB"],
+    Optional:["VBIED","PBIED","IED","IED-Drone","SOC","VAAW"],
+    Rare:["CBR","MTA","MTFA","KRE","Violence & Sexual","Public Order","Vehicle Crime","Theft from Person","Mail/Parcel Threat"],
+  },
+  Government:{
+    Recommended:["VBIED","PBIED","IED","Mail/Parcel Threat","MTA","VAAW","Cybercrime","Info Theft","Insider Threat","Public Order","Violence & Sexual","Arson","Trespass","ASB"],
+    Optional:["CBR","IED-Drone","MTFA","KRE","SOC","Burglary"],
+    Rare:["Vehicle Crime","Theft from Person","Theft","Criminal Damage"],
+  },
+  Masterplan:{
+    Recommended:["VAAW","PBIED","MTA","Theft","Theft from Person","Burglary","ASB","Criminal Damage","Trespass","Vehicle Crime","Violence & Sexual","Arson","Cybercrime","Insider Threat","Public Order"],
+    Optional:["VBIED","IED","MTFA","SOC","Info Theft"],
+    Rare:["CBR","IED-Drone","KRE","Mail/Parcel Threat"],
+  },
 };
 
 const DEFAULT_THREAT_DB=[

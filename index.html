@@ -1130,7 +1130,7 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.027";
+const VERSION="2.028";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1249,6 +1249,8 @@ function App(){
   const[threatDB,setThreatDB]=useState([]);
   const[treatmentDB,setTreatmentDB]=useState([]);
   const[assetPresetsDB,setAssetPresetsDB]=useState({});
+  const[threatPresetsDB,setThreatPresetsDB]=useState({});
+  const[dbTierDevType,setDbTierDevType]=useState(null);
   const[dbThreatSearch,setDbThreatSearch]=useState("");
   const[dbEditThreatId,setDbEditThreatId]=useState(null);
   const[dbExpandedCats,setDbExpandedCats]=useState({});
@@ -1276,6 +1278,7 @@ function App(){
   const[mobileNavOpen,setMobileNavOpen]=useState(false);
   const[wizardAnswers,setWizardAnswers]=useState({});
   const[wizardThreatsBase,setWizardThreatsBase]=useState([]);
+  const[wizardRareOpen,setWizardRareOpen]=useState({});
 
   // Fetch live UK threat level
   const levelColors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
@@ -1375,17 +1378,18 @@ function App(){
       if(p.threatDB&&Array.isArray(p.threatDB)&&p.threatDB.length>0)setThreatDB(migrateLinkedAssets(p.threatDB,defs.ASSET_PRESETS));else setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));
       if(p.treatmentDB&&Array.isArray(p.treatmentDB)&&p.treatmentDB.length>0)setTreatmentDB(p.treatmentDB);else setTreatmentDB(defs.DEFAULT_TREATMENT_DB);
       if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB)&&Object.keys(p.assetPresetsDB).length>0)setAssetPresetsDB(p.assetPresetsDB);else setAssetPresetsDB(defs.ASSET_PRESETS);
+      if(p.threatPresetsDB&&typeof p.threatPresetsDB==="object"&&!Array.isArray(p.threatPresetsDB)&&Object.keys(p.threatPresetsDB).length>0)setThreatPresetsDB(p.threatPresetsDB);else setThreatPresetsDB(defs.THREAT_PRESETS);
       if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
-      if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}}
-      else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);}
+      if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}}
+      else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
   useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,treatCategoryScope}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope}))},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,treatCategoryScope]);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
 
   // Auto-load shared treatment DB from GitHub once on startup when config is ready
   useEffect(()=>{
@@ -1442,7 +1446,7 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance]);
 
   const buildFilename=useCallback(()=>{
@@ -3077,11 +3081,25 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const pa=(assetPresetsDB[type]||[]).map((a,i)=>({...a,id:i+1,sc:{},included:true}));
     setWizardAssets(pa);
     const defs=defaultsRef.current||{};
-    const pn=((defs.THREAT_PRESETS||{})[type])||[];
+    const preset=(threatPresetsDB&&threatPresetsDB[type])||((defs.THREAT_PRESETS||{})[type]);
     const ad=defs.DEF_THREATS||[];
-    if(pn.length>0){setWizardThreats(pn.map((nm,i)=>{const d=ad.find(x=>x.n===nm);return d?{n:d.n,d:d.d,cat:d.cat,id:i+1,included:true}:null}).filter(Boolean));}
+    const lookup=(nm)=>ad.find(x=>x.n===nm);
+    // Tiered preset: {Recommended:[], Optional:[], Rare:[]}
+    if(preset&&!Array.isArray(preset)&&typeof preset==="object"){
+      const tiers=["Recommended","Optional","Rare"];
+      let id=1;const list=[];
+      tiers.forEach(tier=>{(preset[tier]||[]).forEach(nm=>{
+        const d=lookup(nm);
+        if(d)list.push({n:d.n,d:d.d,cat:d.cat,id:id++,included:tier==="Recommended",tier});
+      });});
+      setWizardThreats(list);
+    }
+    // Legacy flat array — treat all as Recommended
+    else if(Array.isArray(preset)&&preset.length>0){
+      setWizardThreats(preset.map((nm,i)=>{const d=lookup(nm);return d?{n:d.n,d:d.d,cat:d.cat,id:i+1,included:true,tier:"Recommended"}:null}).filter(Boolean));
+    }
     else if(!type){setWizardThreats([]);}
-    else{setWizardThreats(ad.map((t,i)=>({...t,id:i+1,included:true})));}
+    else{setWizardThreats(ad.map((t,i)=>({...t,id:i+1,included:true,tier:"Recommended"})));}
   };
   const applyWizard=()=>{
     const sa=wizardAssets.filter(a=>a.included).map((a,i)=>({id:i+1,cat:a.cat,desc:a.desc,sc:{}}));
@@ -3323,18 +3341,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       const crimeSel=crime.filter(t=>t.included).length;
       const toggleWT=(id)=>setWizardThreats(p=>p.map(t=>t.id===id?{...t,included:!t.included}:t));
       const toggleWTCat=(cat,v)=>setWizardThreats(p=>p.map(t=>t.cat===cat?{...t,included:v}:t));
-      const addWT=(cat)=>setWizardThreats(p=>[...p,{id:Date.now(),n:"",d:"",cat,included:true}]);
+      const addWT=(cat)=>setWizardThreats(p=>[...p,{id:Date.now(),n:"",d:"",cat,included:true,tier:"Recommended"}]);
       const removeWT=(id)=>setWizardThreats(p=>p.filter(t=>t.id!==id));
       const updateWT=(id,f,v)=>setWizardThreats(p=>p.map(t=>t.id===id?{...t,[f]:v}:t));
-      const threatGroup=(label,list,selN,catColor)=>React.createElement("div",{style:{flex:1}},
-        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:"2px solid "+catColor}},
-          React.createElement("div",{style:{fontWeight:700,fontSize:12,color:catColor}},label+" · "+selN+"/"+list.length),
-          React.createElement("div",{style:{display:"flex",gap:4}},
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,true)},"All"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,false)},"None")
-          )
-        ),
-        ...list.map(t=>React.createElement("div",{key:t.id,style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 2px",borderRadius:5,marginBottom:2,opacity:t.included?1:0.45}},
+      const tierStyle={Recommended:{bg:"#ecfdf5",border:"#34d399",label:"#047857"},Optional:{bg:"#fffbeb",border:"#fbbf24",label:"#b45309"},Rare:{bg:"#f3f4f6",border:"#d1d5db",label:"#6b7280"}};
+      const tierTip={Recommended:"Almost always relevant for this development type.",Optional:"Site-specific — tick if it applies.",Rare:"Low base-rate for this development type. Include only if site factors suggest."};
+      const threatRow=(t,tierKey)=>{
+        const ts=tierStyle[tierKey]||tierStyle.Recommended;
+        return React.createElement("div",{key:t.id,style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 6px",borderRadius:5,marginBottom:2,opacity:t.included?1:0.55,background:t.included?ts.bg:"transparent",border:"1px solid "+(t.included?ts.border:"transparent")}},
           React.createElement("input",{type:"checkbox",checked:t.included,onChange:()=>toggleWT(t.id),style:{marginTop:3,flexShrink:0,cursor:"pointer"}}),
           React.createElement("div",{style:{flex:1,minWidth:0}},
             t.n?React.createElement(React.Fragment,null,
@@ -3342,15 +3356,50 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:10,color:"#64748b",marginTop:1}},t.d)
             ):React.createElement("input",{className:"input",value:t.n,onChange:e=>updateWT(t.id,"n",e.target.value),placeholder:"Threat name...",style:{fontSize:11,padding:"2px 6px"}})
           ),
-          React.createElement("button",{onClick:()=>removeWT(t.id),style:{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:13,padding:"0 2px",lineHeight:1,flexShrink:0}},"×")
-        )),
-        React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginTop:8,width:"100%",fontSize:11},onClick:()=>addWT(label)},"+ Add "+label+" Threat")
-      );
+          React.createElement("button",{onClick:()=>removeWT(t.id),style:{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:13,padding:"0 2px",lineHeight:1,flexShrink:0},title:"Remove"},"×")
+        );
+      };
+      const tierBlock=(list,tierKey,catLabel)=>{
+        if(list.length===0)return null;
+        const ts=tierStyle[tierKey];
+        const isRare=tierKey==="Rare";
+        const rareKey=catLabel+":"+tierKey;
+        const open=!isRare||(wizardRareOpen&&wizardRareOpen[rareKey]);
+        const selN=list.filter(t=>t.included).length;
+        return React.createElement("div",{key:tierKey,style:{marginTop:8}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6,marginBottom:4,cursor:isRare?"pointer":"default",userSelect:"none"},
+            onClick:isRare?(()=>setWizardRareOpen(p=>({...(p||{}),[rareKey]:!open}))):undefined,
+            title:tierTip[tierKey]},
+            React.createElement("span",{style:{fontSize:10,fontWeight:700,color:ts.label,background:ts.bg,border:"1px solid "+ts.border,padding:"2px 8px",borderRadius:10,letterSpacing:0.3,textTransform:"uppercase"}},tierKey),
+            React.createElement("span",{style:{fontSize:11,color:"#94a3b8"}},selN+"/"+list.length),
+            isRare&&React.createElement("span",{style:{fontSize:11,color:"#64748b",marginLeft:"auto"}},open?"− hide":"+ show "+list.length)
+          ),
+          open&&React.createElement("div",null,...list.map(t=>threatRow(t,tierKey)))
+        );
+      };
+      const threatGroup=(label,list,selN,catColor)=>{
+        const rec=list.filter(t=>(t.tier||"Recommended")==="Recommended");
+        const opt=list.filter(t=>t.tier==="Optional");
+        const rare=list.filter(t=>t.tier==="Rare");
+        return React.createElement("div",{style:{flex:1}},
+          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:"2px solid "+catColor}},
+            React.createElement("div",{style:{fontWeight:700,fontSize:12,color:catColor}},label+" · "+selN+"/"+list.length),
+            React.createElement("div",{style:{display:"flex",gap:4}},
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,true)},"All"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:()=>toggleWTCat(label,false)},"None")
+            )
+          ),
+          tierBlock(rec,"Recommended",label),
+          tierBlock(opt,"Optional",label),
+          tierBlock(rare,"Rare",label),
+          React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginTop:10,width:"100%",fontSize:11},onClick:()=>addWT(label)},"+ Add "+label+" Threat")
+        );
+      };
       return React.createElement("div",{style:ol},React.createElement("div",{style:card},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Select threats to assess"),
-          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Capability & intent are scored later in the assessment. Deselect threats not relevant to this site, or add custom ones."),
+          React.createElement("p",{style:{color:"#64748b",fontSize:13,margin:0}},"Recommended threats are pre-selected. Optional threats are visible but unticked. Rare threats are collapsed under a toggle. Tier mapping per development type is editable in the Database tab."),
           progress
         ),
         React.createElement("div",{style:{...body,display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}},
@@ -4035,6 +4084,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       // ASSETS
       tab==="assets"&&React.createElement("div",{id:"section-assets"},
         React.createElement("h2",{"data-capture-hide":"1",className:"section-title"},"Asset Criticality"),
+        React.createElement("div",{"data-capture-hide":"1",style:{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"10px 14px",marginBottom:12,fontSize:12,color:"#1e3a8a",lineHeight:1.55}},
+          React.createElement("strong",null,"Asset"),": ",React.createElement("em",null,"what")," you're protecting — has value, criticality, and consequences if compromised (residents, IT, business data, brand). Used for criticality scoring.",
+          React.createElement("br",null),
+          React.createElement("strong",null,"Point of Interest (POI)"),": ",React.createElement("em",null,"where")," threats are likely to meet assets — a specific location, entry, or feature (main entrance, loading bay, atrium). Managed on the ",React.createElement("strong",null,"POI tab"),", used to target treatments to physical locations."
+        ),
         React.createElement("p",{"data-capture-hide":"1",className:"section-sub"},"Click a score to select. Click again to deselect.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear")),
         React.createElement("div",{"data-capture-hide":"1",className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
@@ -4370,7 +4424,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Points of Interest (POI)"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Identify vulnerable points on the site and map applicable threats to each location.")
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Identify vulnerable points on the site and map applicable threats to each location."),
+            React.createElement("div",{"data-capture-hide":"1",style:{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"10px 14px",marginTop:8,fontSize:12,color:"#1e3a8a",lineHeight:1.55}},
+              React.createElement("strong",null,"POI vs Asset"),": A ",React.createElement("strong",null,"POI"),' is a ',React.createElement("em",null,"specific location")," where threats meet the site (main entrance, vehicle drop-off, loading bay, atrium, plant room). Assets — ",React.createElement("em",null,"what")," you protect — are managed on the ",React.createElement("strong",null,"Assets tab"),". A single POI can be the locus for multiple threats and may protect many assets."
+            )
           ),
           pois.length>0&&React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var chunks=[];
@@ -6524,6 +6581,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{style:{display:"flex",gap:0,marginBottom:16,borderBottom:"2px solid #e2e8f0",position:"sticky",top:42,zIndex:50,background:"#fff"}},
           [{id:"assets",label:"Assets",icon:"\ud83c\udfe2",count:Object.keys(assetPresetsDB).reduce(function(t,k){return t+assetPresetsDB[k].length},0)+" presets"},
            {id:"threats",label:"Threats",icon:"\u26a0\ufe0f",count:threatDB.length+" types"},
+           {id:"tiers",label:"Threat Tiers",icon:"\ud83c\udfaf",count:Object.keys(threatPresetsDB||{}).length+" types"},
            {id:"treatments",label:"Treatments",icon:"\ud83d\udee1\ufe0f",count:treatmentDB.length+" sets"}
           ].map(function(sec){
             var active=dbSection===sec.id;
@@ -6965,6 +7023,108 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             );
           })
         )
+        ),
+
+        // ═══════ THREAT TIERS SECTION ═══════
+        dbSection==="tiers"&&React.createElement("div",null,
+          React.createElement("div",{style:{background:"#f0f4f8",border:"1px solid #e2e8f0",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:"#475569",lineHeight:1.6}},
+            React.createElement("strong",{style:{color:"#1B2A4A"}},"Threat Tier Editor — "),
+            "Per development type, each threat sits in one of three tiers. ",
+            React.createElement("span",{style:{color:"#047857",fontWeight:600}},"Recommended"),
+            " = checked by default in the wizard. ",
+            React.createElement("span",{style:{color:"#b45309",fontWeight:600}},"Optional"),
+            " = visible but unchecked. ",
+            React.createElement("span",{style:{color:"#6b7280",fontWeight:600}},"Rare"),
+            " = collapsed under a toggle. ",
+            React.createElement("strong",null,"Click any threat chip to cycle it to the next tier."),
+            " Changes are saved to your local data and persist across sessions."
+          ),
+          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16,alignItems:"center"}},
+            Object.keys(threatPresetsDB||{}).map(function(devType){
+              const isActive=dbTierDevType===devType;
+              const tp=threatPresetsDB[devType]||{};
+              const total=(tp.Recommended||[]).length+(tp.Optional||[]).length+(tp.Rare||[]).length;
+              return React.createElement("button",{key:devType,
+                style:{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:isActive?700:500,
+                  border:"1px solid "+(isActive?"#1B2A4A":"#e2e8f0"),
+                  background:isActive?"#1B2A4A":"#fff",color:isActive?"#fff":"#475569",
+                  cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",gap:5},
+                onClick:function(){setDbTierDevType(isActive?null:devType)}
+              },
+                devType,
+                React.createElement("span",{style:{fontSize:10,background:isActive?"rgba(255,255,255,0.18)":"#f1f5f9",padding:"1px 6px",borderRadius:4,fontWeight:600}},total)
+              );
+            })
+          ),
+          dbTierDevType&&threatPresetsDB[dbTierDevType]?(function(){
+            const dt=dbTierDevType;
+            const tp=threatPresetsDB[dt]||{Recommended:[],Optional:[],Rare:[]};
+            const defs=defaultsRef.current||{};
+            const ad=defs.DEF_THREATS||[];
+            const lookup=(nm)=>ad.find(x=>x.n===nm);
+            const tierOrder=["Recommended","Optional","Rare"];
+            const cycleTier=(t)=>tierOrder[(tierOrder.indexOf(t)+1)%3];
+            const moveThreat=(threatName,fromTier)=>{
+              const toTier=cycleTier(fromTier);
+              setThreatPresetsDB(p=>{
+                const cur=p[dt]||{Recommended:[],Optional:[],Rare:[]};
+                const next={Recommended:[...(cur.Recommended||[])],Optional:[...(cur.Optional||[])],Rare:[...(cur.Rare||[])]};
+                next[fromTier]=next[fromTier].filter(n=>n!==threatName);
+                next[toTier]=[...next[toTier],threatName];
+                return {...p,[dt]:next};
+              });
+            };
+            const resetDefaults=()=>{
+              if(!confirm("Reset '"+dt+"' threat tiers to factory defaults?"))return;
+              const factory=(defs.THREAT_PRESETS||{})[dt];
+              if(factory)setThreatPresetsDB(p=>({...p,[dt]:JSON.parse(JSON.stringify(factory))}));
+              showToast("Reset to defaults");
+            };
+            const tierMeta={
+              Recommended:{bg:"#ecfdf5",border:"#34d399",label:"#047857",desc:"Pre-checked in wizard. Almost always relevant."},
+              Optional:{bg:"#fffbeb",border:"#fbbf24",label:"#b45309",desc:"Visible, unchecked. Site-specific."},
+              Rare:{bg:"#f3f4f6",border:"#d1d5db",label:"#6b7280",desc:"Collapsed under toggle. Low base-rate."}
+            };
+            const renderColumn=(tier)=>{
+              const list=tp[tier]||[];
+              const meta=tierMeta[tier];
+              return React.createElement("div",{key:tier,style:{flex:1,minWidth:0,background:"#fff",border:"1px solid "+meta.border,borderRadius:10,padding:"12px 12px 14px"}},
+                React.createElement("div",{style:{marginBottom:10,paddingBottom:8,borderBottom:"1px solid "+meta.border}},
+                  React.createElement("div",{style:{fontSize:11,fontWeight:700,color:meta.label,letterSpacing:0.4,textTransform:"uppercase"}},tier+" · "+list.length),
+                  React.createElement("div",{style:{fontSize:10,color:"#94a3b8",marginTop:2}},meta.desc)
+                ),
+                list.length===0?React.createElement("div",{style:{fontSize:11,color:"#cbd5e1",textAlign:"center",padding:"16px 0",fontStyle:"italic"}},"No threats in this tier"):
+                React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:4}},
+                  ...list.map(nm=>{
+                    const d=lookup(nm);
+                    const next=cycleTier(tier);
+                    return React.createElement("button",{key:nm,
+                      title:"Click to move to "+next+(d?" — "+d.d:""),
+                      onClick:()=>moveThreat(nm,tier),
+                      style:{textAlign:"left",cursor:"pointer",background:meta.bg,border:"1px solid "+meta.border,borderRadius:6,padding:"6px 10px",fontFamily:"inherit",fontSize:12,fontWeight:600,color:"#1e293b",transition:"all 0.12s",display:"flex",justifyContent:"space-between",alignItems:"center",gap:6},
+                      onMouseEnter:e=>{e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="0 2px 6px rgba(0,0,0,0.08)"},
+                      onMouseLeave:e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}
+                    },
+                      React.createElement("span",null,nm),
+                      React.createElement("span",{style:{fontSize:10,color:meta.label,opacity:0.7}},"→ "+next)
+                    );
+                  })
+                )
+              );
+            };
+            return React.createElement("div",{className:"card",style:{padding:14}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:14,flexWrap:"wrap"}},
+                React.createElement("div",{style:{fontWeight:700,fontSize:14,color:"#1B2A4A",flex:1}},
+                  dt,
+                  React.createElement("span",{style:{fontWeight:400,fontSize:11,color:"#94a3b8",marginLeft:8}},(tp.Recommended||[]).length+" recommended · "+(tp.Optional||[]).length+" optional · "+(tp.Rare||[]).length+" rare")
+                ),
+                ((defs.THREAT_PRESETS||{})[dt])&&React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},onClick:resetDefaults},"Reset to factory")
+              ),
+              React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}},
+                ...tierOrder.map(renderColumn)
+              )
+            );
+          })():React.createElement("div",{style:{textAlign:"center",padding:"40px 20px",color:"#94a3b8",fontSize:13}},"Select a development type above to view and edit its threat tiers.")
         ),
 
         // ═══════ TREATMENTS SECTION ═══════
