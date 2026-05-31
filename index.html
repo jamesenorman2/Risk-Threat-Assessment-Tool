@@ -664,8 +664,70 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 // MAIN APP
 // ============================================================
+
+// ── SentinelToolbar ──────────────────────────────────────────────────
+function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,initials}){
+  const[exportOpen,setExportOpen]=React.useState(false);
+  const[moreOpen,setMoreOpen]=React.useState(false);
+  const exportRef=React.useRef(null);
+  const moreRef=React.useRef(null);
+  React.useEffect(function(){
+    function handler(e){
+      if(exportRef.current&&!exportRef.current.contains(e.target))setExportOpen(false);
+      if(moreRef.current&&!moreRef.current.contains(e.target))setMoreOpen(false);
+    }
+    document.addEventListener("mousedown",handler);
+    return function(){document.removeEventListener("mousedown",handler)};
+  },[]);
+  const dropStyle={position:"absolute",top:"calc(100% + 4px)",right:0,background:"#fff",border:"1px solid #e2e8f0",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",minWidth:160,zIndex:500,overflow:"hidden"};
+  const dropItem={display:"flex",alignItems:"center",gap:8,padding:"9px 14px",fontSize:13,color:"#1e293b",cursor:"pointer",background:"none",border:"none",width:"100%",textAlign:"left",fontFamily:"inherit",fontWeight:500};
+  const dropItemDanger={...dropItem,color:"#dc2626"};
+  return React.createElement("div",{className:"stb-wrap"},
+    React.createElement("div",{className:"stb-group"},
+      React.createElement("button",{className:"stb-btn stb-btn-primary",onClick:onSave,title:"Save assessment"},
+        sIcon("save"),React.createElement("span",{className:"stb-lbl"}," Save")),
+      React.createElement("div",{className:"stb-div"}),
+      React.createElement("button",{className:"stb-btn",onClick:onLoad,title:"Load assessment from file"},
+        sIcon("upload"),React.createElement("span",{className:"stb-lbl"}," Load")),
+      React.createElement("div",{className:"stb-div"}),
+      React.createElement("button",{className:"stb-btn",onClick:onDuplicate,title:"Duplicate this assessment"},
+        sIcon("copy"),React.createElement("span",{className:"stb-lbl"}," Duplicate"))
+    ),
+    ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group stb-hide-md"},
+      React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
+        sIcon("db")," Back-ups")
+    ),
+    React.createElement("div",{className:"stb-group stb-hide-md",style:{position:"relative"},ref:exportRef},
+      React.createElement("button",{className:"stb-btn",onClick:function(){setExportOpen(function(v){return !v});setMoreOpen(false);},title:"Export report"},
+        sIcon("docs"),React.createElement("span",{className:"stb-lbl"}," Export "),sIcon("chevD")),
+      exportOpen&&React.createElement("div",{style:dropStyle},
+        React.createElement("button",{style:dropItem,onClick:function(){onExportWord();setExportOpen(false);}},sIcon("docs")," Word (.docx)"),
+        React.createElement("button",{style:dropItem,onClick:function(){onExportExcel();setExportOpen(false);}},sIcon("grid")," Excel (.xlsx)"),
+        React.createElement("button",{style:dropItem,onClick:function(){onPrint();setExportOpen(false);}},sIcon("print")," Print / HTML")
+      )
+    ),
+    React.createElement("div",{className:"stb-group stb-hide-md",style:{position:"relative"},ref:moreRef},
+      React.createElement("button",{className:"stb-btn",onClick:function(){setMoreOpen(function(v){return !v});setExportOpen(false);},title:"More options"},
+        sIcon("more")),
+      moreOpen&&React.createElement("div",{style:dropStyle},
+        React.createElement("button",{style:dropItem,onClick:function(){onSetup();setMoreOpen(false);}},sIcon("sparkle")," Setup wizard"),
+        React.createElement("div",{style:{height:1,background:"#f1f5f9",margin:"4px 0"}}),
+        React.createElement("button",{style:dropItemDanger,onClick:function(){onClear();setMoreOpen(false);}},sIcon("trash")," New assessment")
+      )
+    ),
+    React.createElement("div",{className:"stb-sep"}),
+    React.createElement("button",{className:"sentinel-next-btn",onClick:onNext},
+      "Next: ",nextLabel," ",sIcon("arrowR")
+    ),
+    React.createElement("button",{className:"sentinel-next-btn mob-next-compact",onClick:onNext,title:"Next: "+nextLabel},
+      sIcon("arrowR")
+    ),
+    React.createElement("div",{className:"sentinel-avatar"},initials)
+  );
+}
+
 // ── AppHeader ────────────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle}){
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
@@ -688,52 +750,17 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onExportWord,onExportExcel,on
       ctx.stage&&React.createElement("span",{className:"bc-badge"},stageShort)
     ),
     // Toolbar
-    React.createElement("div",{className:"stb-wrap"},
-      React.createElement("div",{className:"stb-group"},
-        React.createElement("button",{className:"stb-btn stb-btn-primary",onClick:onSave,title:"Save"},
-          sIcon("save"),React.createElement("span",{className:"stb-lbl"}," Save")),
-        React.createElement("div",{className:"stb-div"}),
-        React.createElement("button",{className:"stb-btn",onClick:onLoad,title:"Load"},
-          sIcon("upload"),React.createElement("span",{className:"stb-lbl"}," Load"))
-      ),
-      ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group stb-hide-md"},
-        React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
-          sIcon("db")," Back-ups")
-      ),
-      React.createElement("div",{className:"stb-group stb-hide-md"},
-        React.createElement("button",{className:"stb-btn",onClick:onExportWord,title:"Export Word"},
-          sIcon("docs")," Word"),
-        React.createElement("div",{className:"stb-div"}),
-        React.createElement("button",{className:"stb-btn",onClick:onExportExcel,title:"Export Excel"},
-          sIcon("grid")," Excel")
-      ),
-      React.createElement("div",{className:"stb-group stb-hide-md"},
-        React.createElement("button",{className:"stb-btn",onClick:onPrint,title:"Print"},
-          sIcon("print")," Print"),
-        React.createElement("div",{className:"stb-div"}),
-        React.createElement("button",{className:"stb-btn",onClick:onSetup,title:"Setup wizard"},
-          sIcon("sparkle")," Setup")
-      ),
-      React.createElement("div",{className:"stb-group stb-hide-md"},
-        React.createElement("button",{className:"stb-btn",onClick:onClear,title:"New assessment",style:{color:"#f08080"}},
-          "New")
-      ),
-      React.createElement("div",{className:"stb-sep"}),
-      React.createElement("button",{className:"sentinel-next-btn",onClick:onNext},
-        "Next: ",nextLabel," ",sIcon("arrowR")
-      ),
-      React.createElement("button",{className:"sentinel-next-btn mob-next-compact",onClick:onNext,title:"Next: "+nextLabel},
-        sIcon("arrowR")
-      ),
-      React.createElement("div",{className:"sentinel-avatar"},initials)
-    )
+    React.createElement(SentinelToolbar,{
+      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,initials
+    })
   );
 }
 
 // ── SentinelSidebar ─────────────────────────────────────────────────
-function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose}){
+function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,lastLocalSave,progress}){
   const num=ctx.projectNum||"SRA-XXXX-XXXX";
   const stage=(ctx.stage||"Stage 1").replace(/^Stage\s+(\d)/i,"Stage $1");
+  const pct=Math.round(progress||0);
   return React.createElement(React.Fragment,null,
     // Mobile backdrop
     mobileOpen&&React.createElement("div",{className:"mob-backdrop",onClick:onMobileClose}),
@@ -747,11 +774,11 @@ function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose}){
         stage
       ),
       React.createElement("div",{className:"spc-bar"},
-        React.createElement("div",{className:"spc-bar-fill",style:{width:"42%"}})
+        React.createElement("div",{className:"spc-bar-fill",style:{width:pct+"%"}})
       ),
       React.createElement("div",{className:"spc-foot"},
         React.createElement("span",null,"Progress"),
-        React.createElement("span",null,"42%")
+        React.createElement("span",null,pct+"%")
       )
     ),
     // Nav groups
@@ -774,7 +801,7 @@ function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose}){
     }),
     // Autosave
     React.createElement("div",{className:"sidebar-autosave"},
-      "Auto-saved ",React.createElement("span",{style:{color:"#fff"}},"2 min ago"),
+      "Auto-saved ",React.createElement("span",{style:{color:"#fff"}},lastLocalSave?lastLocalSave.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}):"not yet"),
       React.createElement("br"),
       React.createElement("span",{style:{color:"#6b7688"}},"by "+(ctx.assessor||"analyst")+" (local)")
     )
@@ -1143,7 +1170,22 @@ function SentinelContextScreen({
   );
 }
 
-const VERSION="2.030";
+// ── ConfirmModal ─────────────────────────────────────────────────────
+function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
+  if(!open)return null;
+  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(15,23,42,0.6)",zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",padding:16},onClick:onCancel},
+    React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:"100%",maxWidth:420,padding:"24px 24px 20px"},onClick:function(e){e.stopPropagation()}},
+      React.createElement("div",{style:{fontWeight:700,fontSize:16,color:"#1e293b",marginBottom:8}},title||"Confirm"),
+      body&&React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.6,marginBottom:20}},body),
+      React.createElement("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
+        React.createElement("button",{className:"btn btn-outline",onClick:onCancel},"Cancel"),
+        React.createElement("button",{className:"btn "+(danger?"btn-danger":"btn-dark"),style:danger?{background:"#dc2626",color:"#fff",border:"none"}:{},onClick:onConfirm},confirmLabel||"Confirm")
+      )
+    )
+  );
+}
+
+const VERSION="2.032";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1226,6 +1268,9 @@ function App(){
   const[treatmentMeasures,setTreatmentMeasures]=useState({});
   const[sbdType,setSbdType]=useState("residential");
   const[toast,setToast]=useState(null);
+  const[lastLocalSave,setLastLocalSave]=useState(null);
+  const[confirmState,setConfirmState]=useState({open:false,title:"",body:"",confirmLabel:"Confirm",danger:false,onConfirm:null});
+  const askConfirm=function(opts){return new Promise(function(resolve){setConfirmState({open:true,title:opts.title||"",body:opts.body||"",confirmLabel:opts.confirmLabel||"Confirm",danger:!!opts.danger,onConfirm:function(){setConfirmState(function(s){return{...s,open:false}});resolve(true);},onCancel:function(){setConfirmState(function(s){return{...s,open:false}});resolve(false);}});});}
   const[crimeData,setCrimeData]=useState(null);
   const[crimeRaw,setCrimeRaw]=useState(null);
   const[crimeLoading,setCrimeLoading]=useState(false);
@@ -1401,7 +1446,7 @@ function App(){
   },[]);
   useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope}))},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope}));setLastLocalSave(new Date());},500);
     return()=>clearTimeout(timer);
   },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
 
@@ -1500,25 +1545,32 @@ function App(){
   useEffect(()=>{
     var timer=setTimeout(function(){
       if(isMobile){
-        if(confirm("You\u2019ve been working for 10 minutes.\n\nTap OK to save now. Your phone\u2019s share sheet will open so you can choose where to save.\n\nAfter this, auto-save will run every 10 minutes.")){
-          doSaveFile(false);
-          autoSaveRef.current=setInterval(function(){doSaveFile(true);showToast("Auto-saved "+new Date().toLocaleTimeString())},600000);
-        }
+        askConfirm({title:"Save your work?",body:"You've been working for 10 minutes. Tap Save to open the share sheet and choose where to store your assessment. After this, auto-save will run every 10 minutes.",confirmLabel:"Save now"}).then(function(ok){
+          if(ok){doSaveFile(false);autoSaveRef.current=setInterval(function(){doSaveFile(true);showToast("Auto-saved "+new Date().toLocaleTimeString())},600000);}
+        });
       }else{
-        if(confirm("You\u2019ve been working for 10 minutes.\n\nWould you like to save your assessment?\n\nYou\u2019ll be reminded again in 10 minutes.")){
-          doSaveFile(false);
-        }
+        askConfirm({title:"Save your work?",body:"You've been working for 10 minutes. Would you like to save a backup copy of your assessment?",confirmLabel:"Save now"}).then(function(ok){if(ok)doSaveFile(false);});
         autoSaveRef.current=setInterval(function(){
-          if(confirm("Save reminder \u2014 would you like to save?\n\nClick OK to save, Cancel to skip.\nNext reminder in 10 minutes.")){doSaveFile(false)}
+          askConfirm({title:"Save reminder",body:"Would you like to save your assessment? Next reminder in 10 minutes.",confirmLabel:"Save now"}).then(function(ok){if(ok)doSaveFile(false);});
         },600000);
       }
     },600000);
     return function(){clearTimeout(timer);if(autoSaveRef.current)clearInterval(autoSaveRef.current)};
   },[doSaveFile]);
 
-  const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(null),2500)};
+  const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(null),4000)};
 
   const saveFile=()=>{doSaveFile(false)};
+
+  const duplicateAssessment=()=>{
+    const now=new Date();
+    const suffix=" (Copy "+now.getDate()+"/"+(now.getMonth()+1)+")";
+    setCtx(function(c){return{...c,project:(c.project||"Untitled")+suffix,projectNum:(c.projectNum||"")+" COPY",date:now.toISOString().slice(0,10)};});
+    localStorage.removeItem("sra-rta-data");
+    setTab("context");
+    showToast("Assessment duplicated — update project name and number");
+  };
+
     const loadFile=()=>{
     const input=document.createElement("input");input.type="file";input.accept=".json";
     input.onchange=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
@@ -1662,11 +1714,11 @@ function App(){
     }catch(e){if(!silent){setThreatLibSync(p=>({...p,status:"error"}));showToast("Error loading threat library from GitHub");}}
   };
 
-  const clearAll=()=>{if(confirm("Clear all data and start a new assessment?")){
+  const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
     var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
     localStorage.removeItem("sra-rta-data");
-    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);}};
+    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);})};
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -3059,7 +3111,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const preset=((defaultsRef.current||{}).THREAT_PRESETS||{})[type];
     if(!preset)return;
     if(!skipConfirm&&threats.length>0){
-      if(!confirm("\u26a0 Warning: Changing to '"+type+"' will replace the current threat list.\n\nAll existing scores will be preserved for any threats that also appear in the new preset.\n\nThreats unique to the current list will be lost.\n\nDo you want to continue?"))return;
+      askConfirm({title:"Change threat preset to '"+type+"'?",body:"This will replace the current threat list. Scores for threats that appear in both lists will be preserved. Threats unique to the current list will be removed.",confirmLabel:"Change preset"}).then(function(ok){if(ok)fillThreatPreset(type,true);});return;
     }
     var oldByName={};
     threats.forEach(function(t){oldByName[t.n]={id:t.id,cap:t.cap,int:t.int,targets:t.targets,vs:vs[t.id],is_:is_[t.id],cd:cd[t.id],tx:tx[t.id],rs:rs[t.id],acc:acc[t.id]}});
@@ -3136,7 +3188,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const preset=assetPresetsDB[type];
     if(!preset)return;
     if(!skipConfirm&&assets.length>0){
-      if(!confirm("\u26a0 Warning: Changing to '"+type+"' will replace the current asset list.\n\nCriticality scores will be preserved for any assets that also appear in the new preset (matched by description).\n\nAssets unique to the current list will be lost.\n\nDo you want to continue?"))return;
+      askConfirm({title:"Change asset preset to '"+type+"'?",body:"This will replace the current asset list. Criticality scores for assets that match by description will be preserved. Assets unique to the current list will be removed.",confirmLabel:"Change preset"}).then(function(ok){if(ok)fillPreset(type,true);});return;
     }
     var oldByDesc={};
     assets.forEach(function(a){if(a.desc)oldByDesc[a.desc]={...a}});
@@ -3164,7 +3216,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(risk){
       const preScore=f==="l"?risk.lik:risk.imp;
       if(preScore&&v&&v>preScore){
-        if(!confirm("⚠ Warning: You are setting the post-mitigation "+(f==="l"?"Likelihood":"Impact")+" ("+v+") HIGHER than the pre-mitigation score ("+preScore+").\n\nThis would mean the risk has increased after treatment, which is unusual.\n\nAre you sure you want to set this?")){return}
+        askConfirm({title:"Score higher than pre-mitigation?",body:"You are setting the post-mitigation "+(f==="l"?"Likelihood":"Impact")+" ("+v+") higher than the pre-mitigation score ("+preScore+"). This would mean the risk has increased after treatment, which is unusual.",confirmLabel:"Set anyway"}).then(function(ok){if(ok)setRs(p=>({...p,[tid]:{...p[tid],[f]:v}}));});return;
       }
     }
     setRs(p=>({...p,[tid]:{...p[tid],[f]:v}}));
@@ -3528,12 +3580,31 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const _sentinelAllItems=SENTINEL_NAV.flatMap(function(s){return s.items});
   const _curIdx=_sentinelAllItems.findIndex(function(it){return it.id===tab});
   const _nextItem=_sentinelAllItems[_curIdx+1]||_sentinelAllItems[0];
+  // Compute real assessment progress (0-100) based on data present in each phase
+  const _progress=(function(){
+    var pts=0,total=10;
+    if(ctx.project||ctx.client)pts+=1;
+    if(meetings.length>=1)pts+=1;
+    if(assets.length>=1)pts+=1;
+    if(threats.length>=1)pts+=1;
+    var dbts=threats.filter(function(t){var s=t.cap&&t.int?Math.round((t.cap+t.int)/2):0;return s>=3;});
+    if(dbts.length>=1)pts+=1;
+    var vsKeys=Object.keys(vs||{});if(vsKeys.length>0)pts+=1;
+    var isKeys=Object.keys(is_||{});if(isKeys.length>0)pts+=1;
+    var txKeys=Object.keys(tx||{});if(txKeys.length>0)pts+=1;
+    var rsKeys=Object.keys(rs||{});if(rsKeys.length>0)pts+=1;
+    var accKeys=Object.keys(acc||{});if(accKeys.length>0)pts+=1;
+    return Math.round((pts/total)*100);
+  })();
   const COUNTRIES_LIST=["United Kingdom","United States","United Arab Emirates","Saudi Arabia","Qatar","Bahrain","Kuwait","Oman","Australia","Canada","Ireland","France","Germany","Netherlands","Belgium","Singapore","Hong Kong","India","Other"];
   const DEV_TYPES_LIST=["","Residential","Commercial","Industrial","Mixed-use","Maritime / Port","Critical infrastructure","Other"];
 
   return React.createElement("div",{className:"sentinel-app"},
     // Toast
     toast&&React.createElement("div",{className:"toast"},toast),
+
+    // Confirm modal
+    React.createElement(ConfirmModal,{...confirmState,onConfirm:confirmState.onConfirm,onCancel:confirmState.onCancel||function(){setConfirmState(function(s){return{...s,open:false}})}}),
 
     // Setup Wizard
     showSetupWizard&&renderSetupWizard(),
@@ -3587,7 +3658,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     // ── Sentinel Header ──
     React.createElement(SentinelHeader,{
       ctx:ctx, VERSION:VERSION,
-      onSave:saveFile, onLoad:loadFile,
+      onSave:saveFile, onLoad:loadFile, onDuplicate:duplicateAssessment,
       onExportWord:exportWord, onExportExcel:exportExcel,
       onPrint:printReport,
       onSetup:function(){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);},
@@ -3602,6 +3673,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onTabChange:function(id){setTab(id);setMobileNavOpen(false);},
       mobileOpen:mobileNavOpen,
       onMobileClose:function(){setMobileNavOpen(false);},
+      lastLocalSave:lastLocalSave,
+      progress:_progress,
     }),
 
     // ── Main area ──
@@ -4233,6 +4306,19 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             }
           },"+ Add Suggested")
         ),
+        (function(){
+          var scored=cThreats.filter(function(t){return t.cap&&t.int;});
+          var dbts=scored.filter(function(t){return t.sc>=3;});
+          var below=scored.filter(function(t){return t.sc<3;});
+          var unscored=cThreats.filter(function(t){return !t.cap||!t.int;});
+          if(cThreats.length===0)return null;
+          return React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center",padding:"8px 14px",borderRadius:8,marginBottom:12,background:"#f8fafc",border:"1px solid #e2e8f0",flexWrap:"wrap"}},
+            React.createElement("span",{style:{fontSize:12,color:"#475569",fontWeight:600}},cThreats.length+" threats:"),
+            dbts.length>0&&React.createElement("span",{style:{fontSize:11,padding:"3px 10px",borderRadius:20,background:"#fef2f2",color:"#b91c1c",fontWeight:600,border:"1px solid #fecaca"}},dbts.length+" DBT (score ≥3) → carried forward"),
+            below.length>0&&React.createElement("span",{style:{fontSize:11,padding:"3px 10px",borderRadius:20,background:"#f8fafc",color:"#94a3b8",fontWeight:500,border:"1px solid #e2e8f0"}},below.length+" below threshold — not assessed"),
+            unscored.length>0&&React.createElement("span",{style:{fontSize:11,padding:"3px 10px",borderRadius:20,background:"#fffbeb",color:"#b45309",fontWeight:500,border:"1px solid #fde68a"}},unscored.length+" not yet scored")
+          );
+        })(),
         React.createElement("div",{className:"help-box"},
           React.createElement("h4",null,"Threat Capability & Intent Scoring"),
           React.createElement("p",null,"Each threat is assessed on two independent axes. The Threat Score is the average of Capability and Intent (rounded). Threats scoring 3 or above are classified as Design Basis Threats (DBTs) and carried forward through the full risk assessment. Threats below 3 are noted but not assessed further. Click the Terrorism/Crime badge to toggle category."),
@@ -4764,7 +4850,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
           React.createElement("button",{className:"btn btn-dark btn-sm",onClick:function(){
-            if(!confirm("🏗️ New Build Project\n\nThis will set controls for all physical/security threats to 1 (no controls) since the building does not yet exist.\n\nProcess and operational threats (Cybercrime, Info Theft, Insider Threat, SOC) will be set to 3 (partial) as these may have organisational controls in place.\n\nExisting descriptions will be preserved.\n\nContinue?"))return;
+            askConfirm({title:"Set new-build default controls?",body:"This will set controls for all physical/security threats to 1 (no existing controls). Process and operational threats (Cybercrime, Info Theft, Insider Threat, SOC) will be set to 3 (partial). Existing descriptions will be preserved.",confirmLabel:"Apply defaults"}).then(function(ok){if(!ok)return;
             var processThreats=["Cybercrime","Info Theft","Insider Threat","SOC","KRE"];
             var newCd={...cd};
             cThreats.filter(function(t){return t.n}).forEach(function(t){
@@ -4774,13 +4860,15 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             });
             setCd(newCd);
             showToast("New-build controls applied — physical: 1, process/operational: 3");
+            });
           }},"🏗️ New Build — Set Default Controls"),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-            if(!confirm("Clear all control scores? Descriptions will be preserved."))return;
+            askConfirm({title:"Clear all control scores?",body:"This will remove all effectiveness and confidence scores. Descriptions will be preserved.",confirmLabel:"Clear scores",danger:true}).then(function(ok){if(!ok)return;
             var newCd={...cd};
             Object.keys(newCd).forEach(function(k){newCd[k]={desc:(newCd[k]||{}).desc||"",eff:null,conf:null}});
             setCd(newCd);
             showToast("Control scores cleared");
+            });
           }},"Clear All Scores")
         ),
         React.createElement(HelpBox,{title:"Control Effectiveness & Confidence",
@@ -6618,18 +6706,20 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               },"Rename"),
               ((defaultsRef.current||{}).ASSET_PRESETS||{})[dbEditThreatId]&&React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                 onClick:function(){
-                  if(!confirm("Reset '"+dbEditThreatId+"' to factory defaults? Custom edits to this type's asset list will be lost."))return;
+                  askConfirm({title:"Reset '"+dbEditThreatId+"' to factory defaults?",body:"Custom edits to this development type's asset list will be lost.",confirmLabel:"Reset",danger:true}).then(function(ok){if(!ok)return;
                   var factoryPreset=((defaultsRef.current||{}).ASSET_PRESETS||{})[dbEditThreatId];
                   if(factoryPreset)setAssetPresetsDB(function(p){return Object.assign({},p,{[dbEditThreatId]:factoryPreset})});
                   showToast("Reset to defaults");
+                  });
                 }
               },"Reset Defaults"),
               React.createElement("button",{
                 style:{fontSize:11,padding:"4px 10px",borderRadius:6,border:"1px solid #fecaca",background:"#fff",color:"#dc2626",cursor:"pointer",fontFamily:"inherit"},
                 onClick:function(){
-                  if(!confirm("Delete '"+dbEditThreatId+"' development type? This cannot be undone."))return;
+                  askConfirm({title:"Delete '"+dbEditThreatId+"'?",body:"This development type will be permanently deleted. This cannot be undone.",confirmLabel:"Delete",danger:true}).then(function(ok){if(!ok)return;
                   setAssetPresetsDB(function(p){var n=Object.assign({},p);delete n[dbEditThreatId];return n;});
                   setDbEditThreatId(null);
+                  });
                 }
               },"Delete Type"),
               React.createElement("button",{className:"btn btn-dark btn-sm",style:{fontSize:11},
@@ -6780,7 +6870,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           },Object.values(tlExpanded).some(Boolean)?"Collapse All":"Expand All"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
             onClick:function(){
-              if(confirm("Reset Threat Library to defaults?")){var defs=defaultsRef.current||{};setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTlEditing(null);setTlExpanded({});showToast("Reset to defaults")}
+              askConfirm({title:"Reset Threat Library to defaults?",body:"All custom edits to the threat library will be lost.",confirmLabel:"Reset",danger:true}).then(function(ok){if(!ok)return;var defs=defaultsRef.current||{};setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTlEditing(null);setTlExpanded({});showToast("Reset to defaults");});
             }
           },"Reset")
         ),
@@ -6874,10 +6964,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                         React.createElement("button",{
                           style:{fontSize:11,padding:"3px 8px",borderRadius:4,border:"1px solid #fecaca",background:"#fff",color:"#dc2626",cursor:"pointer",fontFamily:"inherit"},
                           onClick:function(){
-                            if(confirm("Delete \""+threat.label+"\"?")){
+                            askConfirm({title:"Delete \""+threat.label+"\"?",body:"This threat will be permanently removed from the library.",confirmLabel:"Delete",danger:true}).then(function(ok){if(!ok)return;
                               setThreatDB(function(p){return p.filter(function(t){return t.id!==threat.id})});
                               if(tlEditing===threat.id)setTlEditing(null);
-                            }
+                            });
                           }
                         },"\u00d7")
                       )
@@ -7032,10 +7122,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
             };
             const resetDefaults=()=>{
-              if(!confirm("Reset '"+dt+"' threat tiers to factory defaults?"))return;
+              askConfirm({title:"Reset '"+dt+"' threat tiers to factory defaults?",body:"Custom tier assignments will be lost.",confirmLabel:"Reset",danger:true}).then(function(ok){if(!ok)return;
               const factory=(defs.THREAT_PRESETS||{})[dt];
               if(factory)setThreatPresetsDB(p=>({...p,[dt]:JSON.parse(JSON.stringify(factory))}));
               showToast("Reset to defaults");
+              });
             };
             const tierMeta={
               Recommended:{bg:"#ecfdf5",border:"#34d399",label:"#047857",desc:"Pre-checked in wizard. Almost always relevant."},
@@ -7122,10 +7213,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           },Object.keys(dbExpandedCats).some(function(k){return dbExpandedCats[k]})?"Collapse All":"Expand All"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
             onClick:function(){
-              if(confirm("Reset the entire database to defaults? All custom edits will be lost.")){
+              askConfirm({title:"Reset entire database to defaults?",body:"All custom edits to the treatment database will be permanently lost.",confirmLabel:"Reset all",danger:true}).then(function(ok){if(!ok)return;
                 setTreatmentDB((defaultsRef.current||{}).DEFAULT_TREATMENT_DB||[]);setDbEditThreatId(null);setDbExpandedCats({});
                 showToast("Database reset to defaults");
-              }
+              });
             }
           },"Reset")
         ),
@@ -7200,11 +7291,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("button",{title:"Delete this treatment set",
                     style:{fontSize:11,padding:"4px 8px",borderRadius:4,border:"1px solid #fecaca",background:"#fff",color:"#dc2626",cursor:"pointer",fontFamily:"inherit"},
                     onClick:function(){
-                      if(confirm("Delete \""+entry.label+"\" from the database?")){
+                      askConfirm({title:"Delete \""+entry.label+"\"?",body:"This treatment set will be permanently removed from the database.",confirmLabel:"Delete",danger:true}).then(function(ok){if(!ok)return;
                         setTreatmentDB(function(p){return p.filter(function(e){return e.id!==entry.id})});
                         if(dbEditThreatId===entry.id)setDbEditThreatId(null);
                         showToast("Deleted: "+entry.label);
-                      }
+                      });
                     }
                   },"Delete")
                 )
@@ -7237,10 +7328,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   (function(){var def=((defaultsRef.current||{}).DEFAULT_TREATMENT_DB||[]).find(function(d){return d.id===entry.id});
                     return def?React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                       onClick:function(){
-                        if(confirm("Reset \""+entry.label+"\" to factory defaults?")){
+                        askConfirm({title:"Reset \""+entry.label+"\" to factory defaults?",body:"Custom edits to this treatment set will be lost.",confirmLabel:"Reset",danger:true}).then(function(ok){if(!ok)return;
                           setTreatmentDB(function(p){var n=[...p];var i=n.findIndex(function(x){return x.id===entry.id});if(i!==-1)n[i]={...def};return n});
                           showToast("Reset to defaults");
-                        }
+                        });
                       }
                     },"Reset to Default"):null;
                   })()
@@ -7587,7 +7678,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{style:{marginTop:8,display:"flex",gap:8}},
           React.createElement("button",{className:"btn btn-outline",onClick:()=>{setCritDescs({...defaultDescs});setScales({...defaultScales});showToast("All settings reset to defaults")}},"Reset Criteria to Defaults"),
           React.createElement("button",{className:"btn btn-outline",onClick:()=>{
-            if(confirm("This will populate all empty criteria descriptions and scale definitions with defaults. Existing values will not be overwritten. Continue?")){
+            askConfirm({title:"Populate empty fields with defaults?",body:"This will fill any empty criteria descriptions and scale definitions with defaults. Existing values will not be overwritten.",confirmLabel:"Populate"}).then(function(ok){if(!ok)return;
               const newDescs={...critDescs};
               Object.keys(defaultDescs).forEach(k=>{if(!newDescs[k])newDescs[k]=defaultDescs[k]});
               setCritDescs(newDescs);
@@ -7598,7 +7689,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
               setScales(newScales);
               showToast("Empty fields populated with defaults");
-            }
+            });
           }},"Populate Empty Fields with Defaults")
         )
       ),
