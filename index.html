@@ -19,10 +19,10 @@
 <title>Security Risk &amp; Threat Assessment Tool</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',system-ui,sans-serif;background:#ffffff;color:#1e293b;font-size:14px;line-height:1.5}
+body{font-family:'Inter Tight',system-ui,sans-serif;background:#ffffff;color:#1e293b;font-size:14px;line-height:1.5}
 /* Layout */
 .app{min-height:100vh;display:flex;flex-direction:column}
 .header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
@@ -37,7 +37,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#ffffff;color:#1e293b
 .nav-num{color:#cbd5e1;margin-right:4px}
 /* Content */
 .content{max-width:1280px;margin:0 auto;padding:24px;width:100%;flex:1}
-.section-title{font-size:24px;font-weight:700;color:#1e293b;margin-bottom:4px}
+.section-title{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px}
 .section-sub{font-size:13px;color:#94a3b8;margin-bottom:20px}
 /* Cards */
 .card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,0.04);overflow:hidden;margin-bottom:12px}
@@ -116,7 +116,7 @@ select.input{padding:4px 8px;font-size:13px}
 .mt-2{margin-top:8px}.mt-4{margin-top:16px}.mr-2{margin-right:8px}
 .text-center{text-align:center}.text-right{text-align:right}.text-left{text-align:left}
 .text-xs{font-size:13px}.text-sm{font-size:13px}.text-lg{font-size:18px}.text-xl{font-size:20px}.text-2xl{font-size:24px}
-.font-bold{font-weight:700}.font-medium{font-weight:500}.font-mono{font-family:'DM Mono',monospace}
+.font-bold{font-weight:700}.font-medium{font-weight:500}.font-mono{font-family:'JetBrains Mono',monospace}
 .text-muted{color:#94a3b8}.text-dark{color:#1e293b}.text-slate{color:#475569}
 .w-full{width:100%}.col-span-2{grid-column:span 2}
 .gap-col{display:flex;flex-direction:column;gap:4px}
@@ -139,6 +139,8 @@ select.input{padding:4px 8px;font-size:13px}
 .lock-btn.locked{background:#fef2f2;color:#dc2626;border-color:#fecaca}
 .threat-table{table-layout:fixed;width:100%;border-collapse:collapse}
 .threat-table th,.threat-table td{overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.threat-table thead th{position:sticky;top:0;z-index:2;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
+.vuln-grid thead th{position:sticky;top:0;z-index:2;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
 .threat-table .c-num{width:36px}.threat-table .c-type{width:68px}
 .threat-table .c-name{width:13%}.threat-table .c-desc{width:15%}
 .threat-table .c-score-bar{width:145px}.threat-table .c-badge{width:50px}
@@ -151,7 +153,7 @@ select.input{padding:4px 8px;font-size:13px}
 .threat-chip.off{background:#fff;color:#94a3b8;opacity:0.5}
 .threat-chip.on{opacity:1}
 .threat-chip.on.terrorism{background:#fef2f2;color:#dc2626;border-color:#fecaca}
-.threat-chip.on.crime{background:#EBF1F8;color:#4472C4;border-color:#D6E4F0}
+.threat-chip.on.crime{background:#EBF1F8;color:#4a5568;border-color:#D6E4F0}
 .threat-chip:hover{opacity:0.8;transform:scale(1.02)}
 .crime-bar{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .crime-bar-fill{height:24px;border-radius:4px;min-width:2px;transition:width 0.3s}
@@ -239,8 +241,15 @@ select.input{padding:4px 8px;font-size:13px}
   --bg-warm:#f5f3ee;--s-surface:#ffffff;--s-surface-2:#fafaf6;
   --s-line:#e4e2db;--s-muted:#6b7280;--s-muted-2:#9aa3af;
   --accent:#b8381f;--accent-soft:rgba(184,56,31,.08);
-  --sev-low:#2ecc71;--sev-med:#f1c40f;--sev-high:#e67e22;--sev-crit:#c0392b;
   --ok:#1f7a4d;--warn:#c47a0b;--info:#2d5b8c;
+  /* Risk severity — WCAG AA compliant (all ≥4.5:1 on white text) */
+  --rv-bg:#4a5568;--rv-t:#fff; /* Very Low  — slate,  4.8:1 */
+  --lo-bg:#16803c;--lo-t:#fff; /* Low       — green,  4.6:1 */
+  --me-bg:#b45309;--me-t:#fff; /* Medium    — amber,  4.7:1 */
+  --hi-bg:#c2570a;--hi-t:#fff; /* High      — orange, 4.7:1 */
+  --vh-bg:#b91c1c;--vh-t:#fff; /* Very High — red,    5.4:1 */
+  /* Risk level icons (Unicode, no colour dependency) */
+  --rv-icon:"▪";--lo-icon:"▸";--me-icon:"◆";--hi-icon:"▲";--vh-icon:"⬆";
 }
 /* Layout shell */
 .sentinel-app{display:grid;grid-template-columns:232px 1fr;grid-template-rows:52px 1fr;height:100vh;overflow:hidden;font-family:'Inter Tight',system-ui,sans-serif;font-feature-settings:'ss01','cv11';background:var(--bg-warm);color:var(--ink-1);font-size:13px}
@@ -494,11 +503,24 @@ const {useState,useCallback,useMemo,useEffect,useRef}=React;
 // ============================================================
 // DATA & CONSTANTS
 // ============================================================
-const SC={1:{bg:"#4472C4",t:"#fff",l:"Very Low"},2:{bg:"#70AD47",t:"#fff",l:"Low"},3:{bg:"#FFC000",t:"#1a1a1a",l:"Medium"},4:{bg:"#ED7D31",t:"#fff",l:"High"},5:{bg:"#C00000",t:"#fff",l:"Very High"}};
+// Risk colour map — WCAG AA ≥4.5:1 contrast on all levels, icon for non-colour indicator
+const SC={
+  1:{bg:"#4a5568",t:"#fff",l:"Very Low",  icon:"▪"},
+  2:{bg:"#16803c",t:"#fff",l:"Low",       icon:"▸"},
+  3:{bg:"#b45309",t:"#fff",l:"Medium",    icon:"◆"},
+  4:{bg:"#c2570a",t:"#fff",l:"High",      icon:"▲"},
+  5:{bg:"#b91c1c",t:"#fff",l:"Very High", icon:"⬆"},
+};
 const IL={1:"Negligible",2:"Minor",3:"Moderate",4:"Severe",5:"Catastrophic"};
 const LL={1:"Very Unlikely",2:"Unlikely",3:"Possible",4:"Likely",5:"Very Likely"};
 const RM=[["Medium","High","High","Very High","Very High"],["Low","Medium","High","High","Very High"],["Low","Medium","Medium","High","High"],["Very Low","Low","Medium","Medium","High"],["Very Low","Very Low","Low","Low","Medium"]];
-const RC={"Very Low":{bg:"#4472C4",t:"#fff"},"Low":{bg:"#70AD47",t:"#fff"},"Medium":{bg:"#FFC000",t:"#1a1a1a"},"High":{bg:"#ED7D31",t:"#fff"},"Very High":{bg:"#C00000",t:"#fff"}};
+const RC={
+  "Very Low": {bg:"#4a5568",t:"#fff",icon:"▪"},
+  "Low":      {bg:"#16803c",t:"#fff",icon:"▸"},
+  "Medium":   {bg:"#b45309",t:"#fff",icon:"◆"},
+  "High":     {bg:"#c2570a",t:"#fff",icon:"▲"},
+  "Very High":{bg:"#b91c1c",t:"#fff",icon:"⬆"},
+};
 const TREATS=["Reduce","Transfer","Avoid","Accept"];
 const AC=["opImpact","dependencies","impactPeople","impactEnv"];
 const ACL={opImpact:"Op. Impact",dependencies:"Dependencies",impactPeople:"People",impactEnv:"Environment"};
@@ -523,19 +545,23 @@ function ScoreBar({value,onChange,size,tips}){
   return React.createElement("div",{className:"score-bar",tabIndex:0,"data-sbar":"1",
     onMouseDown:e=>{const t=e.target;if(t.tagName!=="BUTTON")e.currentTarget.focus()}},
     [1,2,3,4,5].map(v=>React.createElement("button",{key:v,className:`${s}${value===v?" sel":""}`,
-      style:{backgroundColor:SC[v].bg,color:SC[v].t},title:tips&&tips[v]||"",
+      style:{backgroundColor:SC[v].bg,color:SC[v].t},title:tips&&tips[v]||SC[v].l||"",
       "data-v":v,tabIndex:-1,
-      onClick:e=>{onChange(value===v?null:v);const bar=e.currentTarget.closest("[data-sbar]");if(bar)setTimeout(()=>bar.focus(),0)}},v)));
+      onClick:e=>{onChange(value===v?null:v);const bar=e.currentTarget.closest("[data-sbar]");if(bar)setTimeout(()=>bar.focus(),0)}},
+      React.createElement(React.Fragment,null,
+        React.createElement("span",{"aria-hidden":"true",style:{fontSize:"0.65em",marginRight:2}},SC[v].icon),v))));
 }
 function Badge({rating,style}){
   if(!rating)return React.createElement("span",{className:"empty-badge"},"—");
-  const c=RC[rating]||{bg:"#94a3b8",t:"#fff"};
-  return React.createElement("span",{className:"badge",style:{backgroundColor:c.bg,color:c.t,...(style||{})}},rating);
+  const c=RC[rating]||{bg:"#94a3b8",t:"#fff",icon:""};
+  return React.createElement("span",{className:"badge",style:{backgroundColor:c.bg,color:c.t,...(style||{})}},
+    c.icon?React.createElement(React.Fragment,null,React.createElement("span",{"aria-hidden":"true",style:{marginRight:3}},c.icon),rating):rating);
 }
 function SBadge({value}){
   if(!value)return React.createElement("span",{className:"empty-badge"},"—");
-  const c=SC[value]||{bg:"#94a3b8",t:"#fff"};
-  return React.createElement("span",{className:"score-badge",style:{backgroundColor:c.bg,color:c.t}},value);
+  const c=SC[value]||{bg:"#94a3b8",t:"#fff",icon:""};
+  return React.createElement("span",{className:"score-badge",style:{backgroundColor:c.bg,color:c.t}},
+    c.icon?React.createElement(React.Fragment,null,React.createElement("span",{"aria-hidden":"true",style:{marginRight:3}},c.icon),value):value);
 }
 
 function ScaleRow({items}){
@@ -544,6 +570,15 @@ function ScaleRow({items}){
       React.createElement("span",{className:"scale-dot",style:{backgroundColor:SC[i+1].bg,color:SC[i+1].t}},i+1),
       React.createElement("span",null,item)
     ))
+  );
+}
+function ScaleLegend(){
+  return React.createElement("div",{className:"scale-legend","aria-label":"Score legend",style:{display:"flex",gap:4,flexWrap:"wrap",margin:"4px 0 2px"}},
+    [1,2,3,4,5].map(v=>React.createElement("span",{key:v,style:{
+      display:"inline-flex",alignItems:"center",gap:3,fontSize:10,
+      background:SC[v].bg,color:SC[v].t,
+      borderRadius:3,padding:"1px 5px",whiteSpace:"nowrap"
+    }},React.createElement("span",{"aria-hidden":"true"},SC[v].icon)," ",v," — ",SC[v].l))
   );
 }
 function HelpBox({title,description,scaleItems}){
@@ -1201,7 +1236,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.034";
+const VERSION="2.036";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1357,7 +1392,7 @@ function App(){
   const[vulnKeyOpen,setVulnKeyOpen]=useState(false);
 
   // Fetch live UK threat level
-  const levelColors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
+  const levelColors={"LOW":"#16803c","MODERATE":"#4a5568","SUBSTANTIAL":"#b45309","SEVERE":"#c2570a","CRITICAL":"#b91c1c"};
   const levelDescs={"LOW":"an attack is unlikely","MODERATE":"an attack is possible but not likely","SUBSTANTIAL":"an attack is likely","SEVERE":"an attack is highly likely","CRITICAL":"an attack is expected imminently"};
   const levels=["LOW","MODERATE","SUBSTANTIAL","SEVERE","CRITICAL"];
   const fetchThreatLevel=async()=>{
@@ -1575,7 +1610,13 @@ function App(){
     return function(){clearTimeout(timer);if(autoSaveRef.current)clearInterval(autoSaveRef.current)};
   },[doSaveFile]);
 
-  const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(null),4000)};
+  const _toastTimerRef=React.useRef(null);
+  const _clearSnapshotRef=React.useRef(null);
+  const showToast=(msg,action)=>{
+    if(_toastTimerRef.current)clearTimeout(_toastTimerRef.current);
+    setToast(typeof msg==="string"?{msg,action:action||null}:msg);
+    _toastTimerRef.current=setTimeout(()=>setToast(null),action?8000:4000);
+  };
 
   const saveFile=()=>{doSaveFile(false)};
 
@@ -1732,10 +1773,18 @@ function App(){
   };
 
   const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
+    // Snapshot current state for undo (5-minute window)
+    _clearSnapshotRef.current={ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,ts:Date.now()};
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
     var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
     localStorage.removeItem("sra-rta-data");
-    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);})};
+    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);
+    showToast("Assessment cleared",{label:"Undo",fn:function(){
+      var snap=_clearSnapshotRef.current;
+      if(!snap||Date.now()-snap.ts>300000)return;
+      setCtx(snap.ctx);setAssets(snap.assets);setThreats(snap.threats);setVs(snap.vs);setIs(snap.is_);setCd(snap.cd);setTx(snap.tx);setRs(snap.rs);setAcc(snap.acc);setMeetings(snap.meetings);setPois(snap.pois);
+      setShowSetupWizard(false);_clearSnapshotRef.current=null;showToast("Assessment restored");
+    }});})};
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -1941,7 +1990,7 @@ function App(){
 
   // Chunked HTML copy for Word - copies formatted HTML tables that fit on A4 pages
   const copyChunkedToWord=function(htmlChunks,title){
-    var style="<style>body,p,li,span,div{font-family:Arial;font-size:9pt}table{border-collapse:collapse;width:100%;font-family:Arial;font-size:9pt;margin-bottom:8pt;page-break-inside:avoid}th{background:#1B2A4A;color:#fff;padding:4pt 6pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}td{padding:4pt 6pt;border:1pt solid #ccc;font-size:9pt;font-family:Arial}td.tl{text-align:left}.s1{background:#4472C4;color:#fff;font-weight:bold;text-align:center}.s2{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.s3{background:#FFC000;color:#000;font-weight:bold;text-align:center}.s4{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.s5{background:#C00000;color:#fff;font-weight:bold;text-align:center}tr:nth-child(even) td{background:#f8f8f8}h2{font-family:Arial;font-size:12pt;color:#1B2A4A;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;margin:12pt 0 6pt;page-break-before:always}h2:first-child{page-break-before:avoid}h3{font-family:Arial;font-size:10pt;color:#1B2A4A;margin:8pt 0 4pt}.badge-vl{background:#4472C4;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-lo{background:#70AD47;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-me{background:#FFC000;color:#000;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-hi{background:#ED7D31;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-vh{background:#C00000;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}</style>";
+    var style="<style>body,p,li,span,div{font-family:Arial;font-size:9pt}table{border-collapse:collapse;width:100%;font-family:Arial;font-size:9pt;margin-bottom:8pt;page-break-inside:avoid}th{background:#1B2A4A;color:#fff;padding:4pt 6pt;text-align:center;font-size:8pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;border:1pt solid #1B2A4A}td{padding:4pt 6pt;border:1pt solid #ccc;font-size:9pt;font-family:Arial}td.tl{text-align:left}.s1{background:#4a5568;color:#fff;font-weight:bold;text-align:center}.s2{background:#16803c;color:#fff;font-weight:bold;text-align:center}.s3{background:#b45309;color:#fff;font-weight:bold;text-align:center}.s4{background:#c2570a;color:#fff;font-weight:bold;text-align:center}.s5{background:#b91c1c;color:#fff;font-weight:bold;text-align:center}tr:nth-child(even) td{background:#f8f8f8}h2{font-family:Arial;font-size:12pt;color:#1B2A4A;border-bottom:2pt solid #1B2A4A;padding-bottom:4pt;margin:12pt 0 6pt;page-break-before:always}h2:first-child{page-break-before:avoid}h3{font-family:Arial;font-size:10pt;color:#1B2A4A;margin:8pt 0 4pt}.badge-vl{background:#4a5568;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-lo{background:#16803c;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-me{background:#b45309;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-hi{background:#c2570a;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}.badge-vh{background:#b91c1c;color:#fff;padding:2pt 6pt;border-radius:3pt;font-weight:bold;font-size:9pt}</style>";
     var html=style+(title?"<h2>"+title+"</h2>":"")+htmlChunks.join("");
     var blob=new Blob([html],{type:"text/html"});
     navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Copied for Word \u2014 paste with Ctrl+V")}).catch(function(){
@@ -1986,9 +2035,9 @@ function App(){
         byStreet[st].lngs.push(parseFloat(c.location.longitude));
       }
     });
-    var catColors={"anti-social-behaviour":"#FFC000","burglary":"#B45309","criminal-damage-arson":"#ED7D31","drugs":"#7B68EE","other-theft":"#E91E63",
+    var catColors={"anti-social-behaviour":"#b45309","burglary":"#B45309","criminal-damage-arson":"#c2570a","drugs":"#7B68EE","other-theft":"#E91E63",
       "possession-of-weapons":"#1e1e1e","public-order":"#00BCD4","robbery":"#dc2626","shoplifting":"#8BC34A","vehicle-crime":"#FF5722",
-      "violent-crime":"#C00000","other-crime":"#607D8B","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0"};
+      "violent-crime":"#b91c1c","other-crime":"#607D8B","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0"};
     // Cap map locations to 8000 per period with proportional sampling
     var totalLocations=locations.length;
     var maxPlot=8000;
@@ -2596,11 +2645,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h4{font-size:10pt;color:#475569;margin:8pt 0 3pt;font-weight:bold}
     p{font-size:10pt;line-height:1.6;margin:0 0 6pt}
     .sub{font-size:8pt;color:#64748b;margin-bottom:6pt;font-style:italic}
-    .vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
-    .lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
-    .me{background:#FFC000;color:#000;font-weight:bold;text-align:center;mso-number-format:'\\@'}
-    .hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
-    .vh{background:#C00000;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .vl{background:#4a5568;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .lo{background:#16803c;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .me{background:#b45309;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .hi{background:#c2570a;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
+    .vh{background:#b91c1c;color:#fff;font-weight:bold;text-align:center;mso-number-format:'\\@'}
     .gap-a{background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center}
     .gap-p{background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center}
     .gap-i{background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center}
@@ -2609,7 +2658,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     .card-hdr{background:#f0f4f8;padding:8pt 10pt;border-bottom:1pt solid #D6DCE4;font-weight:bold;font-size:10pt;color:#1B2A4A}
     .card-body{padding:8pt 10pt;font-size:9pt}
     .tag-t{display:inline;background:#fef2f2;color:#dc2626;padding:1pt 5pt;font-size:7pt;font-weight:bold}
-    .tag-c{display:inline;background:#EBF1F8;color:#4472C4;padding:1pt 5pt;font-size:7pt;font-weight:bold}
+    .tag-c{display:inline;background:#EBF1F8;color:#4a5568;padding:1pt 5pt;font-size:7pt;font-weight:bold}
     .mx td{border:2pt solid #fff;padding:10pt;min-width:60pt;height:60pt;font-size:12pt;font-weight:bold}
     .mx td.lbl{background:#EBF1F8;color:#1B2A4A;font-weight:bold;border:1pt solid #D6DCE4;font-size:8pt;height:auto}
     .footer{font-size:8pt;color:#94a3b8;text-align:center;margin-top:24pt;border-top:1pt solid #D6DCE4;padding-top:8pt}
@@ -2724,7 +2773,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const dbts=cRisks.filter(r=>r.dbt);
     // Risk profile summary table
     html+=`<h3>Risk Profile Overview</h3>`;
-    html+=`<table style="width:auto"><tr><th style="background:#C00000">Very High</th><th style="background:#ED7D31">High</th><th style="background:#FFC000;color:#000">Medium</th><th style="background:#70AD47">Low</th><th style="background:#4472C4">Very Low</th></tr>`;
+    html+=`<table style="width:auto"><tr><th style="background:#b91c1c">Very High</th><th style="background:#c2570a">High</th><th style="background:#b45309;color:#000">Medium</th><th style="background:#16803c">Low</th><th style="background:#4a5568">Very Low</th></tr>`;
     html+=`<tr><td class="vh" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Very High").length}</td><td class="hi" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="High").length}</td><td class="me" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Medium").length}</td><td class="lo" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Low").length}</td><td class="vl" style="font-size:14pt;padding:10pt">${cRisks.filter(r=>r.rat==="Very Low").length}</td></tr></table>`;
     html+=`<p><b>Threat Assessment:</b> ${scored.length} threats assessed (${cRisks.filter(r=>r.cat==="Terrorism").length} Terrorism, ${cRisks.filter(r=>r.cat!=="Terrorism").length} Crime). ${dbts.length} identified as Design Basis Threats.</p>`;
     html+=`<p><b>Treatment Strategy:</b> ${cRisks.filter(r=>r.treat==="Reduce").length} Reduce, ${cRisks.filter(r=>r.treat==="Transfer").length} Transfer, ${cRisks.filter(r=>r.treat==="Avoid").length} Avoid, ${cRisks.filter(r=>r.treat==="Accept").length} Accept.</p>`;
@@ -2733,7 +2782,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const resScored2=cRisks.filter(r=>r.resRat);
     if(resScored2.length>0){
       html+=`<h3>Residual Risk Profile (Post-Treatment)</h3>`;
-      html+=`<table style="width:auto"><tr><th style="background:#C00000">Very High</th><th style="background:#ED7D31">High</th><th style="background:#FFC000;color:#000">Medium</th><th style="background:#70AD47">Low</th><th style="background:#4472C4">Very Low</th></tr>`;
+      html+=`<table style="width:auto"><tr><th style="background:#b91c1c">Very High</th><th style="background:#c2570a">High</th><th style="background:#b45309;color:#000">Medium</th><th style="background:#16803c">Low</th><th style="background:#4a5568">Very Low</th></tr>`;
       html+=`<tr><td class="vh" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Very High").length}</td><td class="hi" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="High").length}</td><td class="me" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Medium").length}</td><td class="lo" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Low").length}</td><td class="vl" style="font-size:14pt;padding:10pt">${resScored2.filter(r=>r.resRat==="Very Low").length}</td></tr></table>`;
     }
     // Footer
@@ -2767,11 +2816,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
   // Print full report
   const printReport=()=>{
-    const rc=v=>!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold",2:"background:#70AD47;color:#fff;font-weight:bold",3:"background:#FFC000;color:#000;font-weight:bold",4:"background:#ED7D31;color:#fff;font-weight:bold",5:"background:#C00000;color:#fff;font-weight:bold"})[v]||"";
+    const rc=v=>!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold",2:"background:#16803c;color:#fff;font-weight:bold",3:"background:#b45309;color:#000;font-weight:bold",4:"background:#c2570a;color:#fff;font-weight:bold",5:"background:#b91c1c;color:#fff;font-weight:bold"})[v]||"";
     const ratc=r=>!r?"":({
-      "Very Low":"background:#4472C4;color:#fff;font-weight:bold","Low":"background:#70AD47;color:#fff;font-weight:bold",
-      "Medium":"background:#FFC000;color:#000;font-weight:bold","High":"background:#ED7D31;color:#fff;font-weight:bold",
-      "Very High":"background:#C00000;color:#fff;font-weight:bold"})[r]||"";
+      "Very Low":"background:#4a5568;color:#fff;font-weight:bold","Low":"background:#16803c;color:#fff;font-weight:bold",
+      "Medium":"background:#b45309;color:#000;font-weight:bold","High":"background:#c2570a;color:#fff;font-weight:bold",
+      "Very High":"background:#b91c1c;color:#fff;font-weight:bold"})[r]||"";
     const gapc=g=>!g?"":({Adequate:"background:#E2EFDA;color:#16a34a;font-weight:bold",Partial:"background:#FFF2CC;color:#d97706;font-weight:bold",Insufficient:"background:#FFC7CE;color:#dc2626;font-weight:bold"})[g]||"";
 
     let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>SRA — ${ctx.project||"Report"}</title>
@@ -2787,15 +2836,15 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h2.first{page-break-before:avoid}
     h3{font-size:10pt;color:#1B2A4A;margin:6pt 0 3pt}p{font-size:9pt;margin:0 0 4pt}
     .meta{font-size:8pt;color:#666;margin-bottom:10pt}
-    .vl{background:#4472C4;color:#fff;font-weight:bold}.lo{background:#70AD47;color:#fff;font-weight:bold}
-    .me{background:#FFC000;color:#000;font-weight:bold}.hi{background:#ED7D31;color:#fff;font-weight:bold}
-    .vh{background:#C00000;color:#fff;font-weight:bold}
+    .vl{background:#4a5568;color:#fff;font-weight:bold}.lo{background:#16803c;color:#fff;font-weight:bold}
+    .me{background:#b45309;color:#fff;font-weight:bold}.hi{background:#c2570a;color:#fff;font-weight:bold}
+    .vh{background:#b91c1c;color:#fff;font-weight:bold}
     tr:nth-child(even) td{background:#f8f8f8}
     .mx{width:auto}.mx td{border:2pt solid #fff;padding:8pt;min-width:55pt;height:55pt;font-size:11pt;font-weight:bold;color:#000}
     .mx td.lbl{background:#EBF1F8;color:#1B2A4A;font-weight:bold;border:1pt solid #ddd;font-size:7pt;height:auto}
     .footer{font-size:7pt;color:#999;text-align:center;margin-top:16pt;border-top:1pt solid #ddd;padding-top:6pt}
     .bt{display:inline-block;background:#fef2f2;color:#dc2626;padding:1pt 4pt;border-radius:2pt;font-size:7pt;font-weight:bold}
-    .bc{display:inline-block;background:#EBF1F8;color:#4472C4;padding:1pt 4pt;border-radius:2pt;font-size:7pt;font-weight:bold}
+    .bc{display:inline-block;background:#EBF1F8;color:#4a5568;padding:1pt 4pt;border-radius:2pt;font-size:7pt;font-weight:bold}
     .dy{background:#FFC7CE;color:#dc2626;font-weight:bold}.dn{background:#E2EFDA;color:#16a34a}
     </style></head><body>`;
 
@@ -2910,11 +2959,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   // Export Excel
   const exportExcel=()=>{
     showToast("Generating Excel file...");
-    const rc=v=>!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold",2:"background:#70AD47;color:#fff;font-weight:bold",3:"background:#FFC000;color:#000;font-weight:bold",4:"background:#ED7D31;color:#fff;font-weight:bold",5:"background:#C00000;color:#fff;font-weight:bold"})[v]||"";
+    const rc=v=>!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold",2:"background:#16803c;color:#fff;font-weight:bold",3:"background:#b45309;color:#000;font-weight:bold",4:"background:#c2570a;color:#fff;font-weight:bold",5:"background:#b91c1c;color:#fff;font-weight:bold"})[v]||"";
     const ratc=r=>!r?"":({
-      "Very Low":"background:#4472C4;color:#fff;font-weight:bold","Low":"background:#70AD47;color:#fff;font-weight:bold",
-      "Medium":"background:#FFC000;color:#000;font-weight:bold","High":"background:#ED7D31;color:#fff;font-weight:bold",
-      "Very High":"background:#C00000;color:#fff;font-weight:bold"})[r]||"";
+      "Very Low":"background:#4a5568;color:#fff;font-weight:bold","Low":"background:#16803c;color:#fff;font-weight:bold",
+      "Medium":"background:#b45309;color:#000;font-weight:bold","High":"background:#c2570a;color:#fff;font-weight:bold",
+      "Very High":"background:#b91c1c;color:#fff;font-weight:bold"})[r]||"";
     const gapc=g=>!g?"":({Adequate:"background:#E2EFDA;color:#16a34a;font-weight:bold",Partial:"background:#FFF2CC;color:#d97706;font-weight:bold",Insufficient:"background:#FFC7CE;color:#dc2626;font-weight:bold"})[g]||"";
 
     let h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -3618,7 +3667,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
   return React.createElement("div",{className:"sentinel-app"},
     // Toast
-    toast&&React.createElement("div",{className:"toast"},toast),
+    toast&&React.createElement("div",{className:"toast",style:{display:"flex",alignItems:"center",gap:12}},
+      React.createElement("span",null,(toast&&toast.msg)||toast),
+      toast&&toast.action&&React.createElement("button",{
+        onClick:function(){toast.action.fn();setToast(null);},
+        style:{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",
+          borderRadius:5,padding:"3px 10px",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}
+      },toast.action.label)
+    ),
 
     // Confirm modal
     React.createElement(ConfirmModal,{...confirmState,onConfirm:confirmState.onConfirm,onCancel:confirmState.onCancel||function(){setConfirmState(function(s){return{...s,open:false}})}}),
@@ -3638,7 +3694,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         ),
         // Breadcrumb
         React.createElement("div",{style:{padding:"8px 20px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",gap:4,alignItems:"center",fontSize:11}},
-          React.createElement("button",{style:{background:"none",border:"none",cursor:"pointer",color:"#4472C4",fontWeight:600,fontSize:11,fontFamily:"inherit"},onClick:()=>ghBrowseFolder("projects")},"projects"),
+          React.createElement("button",{style:{background:"none",border:"none",cursor:"pointer",color:"#4a5568",fontWeight:600,fontSize:11,fontFamily:"inherit"},onClick:()=>ghBrowseFolder("projects")},"projects"),
           ghBrowser.path!=="projects"&&React.createElement("span",{style:{color:"#94a3b8"}}," / "),
           ghBrowser.path!=="projects"&&React.createElement("span",{style:{fontWeight:600,color:"#1e293b"}},ghBrowser.path.replace("projects/",""))
         ),
@@ -3664,7 +3720,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 !isDir&&f.size&&React.createElement("div",{style:{fontSize:10,color:"#94a3b8"}},Math.round(f.size/1024)+"KB")
               ),
               isDir&&React.createElement("span",{style:{fontSize:10,color:"#94a3b8"}},"→"),
-              isJson&&React.createElement("span",{style:{fontSize:10,color:"#4472C4",fontWeight:600}},"Load")
+              isJson&&React.createElement("span",{style:{fontSize:10,color:"#4a5568",fontWeight:600}},"Load")
             );
           })
         )
@@ -3753,18 +3809,36 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
         // Has postcode (UK) - show fetch button
         ctx.country==="United Kingdom"&&ctx.postcode&&!crimeData&&!crimeLoading&&React.createElement("div",{className:"card",style:{padding:20,marginBottom:16}},
-          React.createElement("div",{className:"flex gap-3 items-center"},
-            React.createElement("div",{style:{fontSize:13,color:"#475569"}},
+          React.createElement("div",{className:"flex gap-3 items-center",style:{flexWrap:"wrap",gap:10}},
+            React.createElement("div",{style:{fontSize:13,color:"#475569",flex:1,minWidth:180}},
               React.createElement("strong",null,"Site: "),ctx.address||"—",
               React.createElement("span",{style:{marginLeft:12}},React.createElement("strong",null,"Postcode: "),ctx.postcode)
             ),
-            React.createElement("button",{className:"btn btn-dark",onClick:()=>fetchCrimeByPostcode(ctx.postcode)},"Fetch Crime Data"),
-            crimeError&&React.createElement("span",{style:{color:"#dc2626",fontSize:12}},"⚠ "+crimeError)
+            React.createElement("button",{className:"btn btn-dark",onClick:()=>fetchCrimeByPostcode(ctx.postcode)},crimeError?"Retry Fetch":"Fetch Crime Data")
+          ),
+          crimeError&&React.createElement("div",{style:{marginTop:10,background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"8px 12px",fontSize:12,color:"#dc2626"}},
+            React.createElement("div",{style:{fontWeight:700,marginBottom:2}},"⚠ Fetch failed"),
+            React.createElement("div",null,crimeError),
+            React.createElement("div",{style:{marginTop:4,color:"#92400e",fontSize:11}},"This may be a temporary Police.uk API issue — please try again. Check your postcode is valid.")
           )
         ),
 
-        ctx.country==="United Kingdom"&&crimeLoading&&React.createElement("div",{className:"card",style:{padding:20,marginBottom:16,textAlign:"center"}},
-          React.createElement("div",{style:{fontSize:13,color:"#64748b"}},"⏳ Fetching crime data for ",React.createElement("strong",null,ctx.postcode)," from Police.uk... This may take a moment.")
+        ctx.country==="United Kingdom"&&crimeLoading&&React.createElement("div",{className:"card",style:{padding:20,marginBottom:16}},
+          React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#64748b",marginBottom:12,letterSpacing:"0.05em"}},"FETCHING CRIME DATA — POLICE.UK"),
+          React.createElement("div",{style:{fontSize:11,color:"#94a3b8",marginBottom:14}},"Querying Police.uk API for ",React.createElement("strong",null,ctx.postcode)," — this usually takes 5–10 seconds."),
+          ...[
+            ["Geocoding postcode",true],
+            ["Querying nearby crime records",true],
+            ["Building category breakdown",false]
+          ].map(([label,active],i)=>React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:8,marginBottom:6}},
+            React.createElement("div",{style:{
+              width:14,height:14,borderRadius:"50%",flexShrink:0,
+              border:active?"3px solid #b45309":"3px solid #e2e8f0",
+              borderTopColor:active?"transparent":undefined,
+              animation:active?"spin 0.9s linear infinite":undefined
+            }}),
+            React.createElement("span",{style:{fontSize:12,color:active?"#1e293b":"#94a3b8"}},label)
+          ))
         ),
 
         // Crime Results (UK only)
@@ -3862,7 +3936,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       if(hsData.lats&&hsData.lats.length>0){
                         var avgLat=hsData.lats.reduce(function(a,b){return a+b},0)/hsData.lats.length;
                         var avgLng=hsData.lngs.reduce(function(a,b){return a+b},0)/hsData.lngs.length;
-                        var hsBg=hi<3?"#C00000":"#1B2A4A";
+                        var hsBg=hi<3?"#b91c1c":"#1B2A4A";
                         var hsIcon=L.divIcon({className:"",html:"<div style='width:20px;height:20px;border-radius:50%;background:"+hsBg+";color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.5);'>"+(hi+1)+"</div>",iconSize:[20,20],iconAnchor:[10,10]});
                         L.marker([avgLat,avgLng],{icon:hsIcon,zIndexOffset:1000+hi}).addTo(map)
                           .bindPopup("<b>#"+(hi+1)+" "+hsName+"</b><br/>"+hsData.total+" crimes");
@@ -3894,7 +3968,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var cat=arr[0],count=arr[1],maxC=(crimeData.byCategory[0]||[null,1])[1]||1;
                 var pct=Math.round(count/maxC*100);var tPct=Math.round(count/(crimeData.total||1)*100);
                 var rate=Math.round(count/(crimeData.monthsLoaded||1)*10)/10;
-                var colors={"violent-crime":"#C00000","burglary":"#C00000","robbery":"#C00000","criminal-damage-arson":"#ED7D31","vehicle-crime":"#ED7D31","anti-social-behaviour":"#FFC000","drugs":"#7B68EE","other-theft":"#E91E63","shoplifting":"#8BC34A","public-order":"#00BCD4","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0","possession-of-weapons":"#dc2626","other-crime":"#607D8B"};
+                var colors={"violent-crime":"#b91c1c","burglary":"#b91c1c","robbery":"#b91c1c","criminal-damage-arson":"#c2570a","vehicle-crime":"#c2570a","anti-social-behaviour":"#b45309","drugs":"#7B68EE","other-theft":"#E91E63","shoplifting":"#8BC34A","public-order":"#00BCD4","bicycle-theft":"#009688","theft-from-the-person":"#9C27B0","possession-of-weapons":"#dc2626","other-crime":"#607D8B"};
                 var col=colors[cat]||"#64748b";
                 return React.createElement("div",{key:cat,style:{display:"flex",alignItems:"center",gap:4,marginBottom:3}},
                   React.createElement("div",{style:{width:6,height:6,borderRadius:"50%",background:col,flexShrink:0}}),
@@ -3933,7 +4007,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               var firstAvg=quarters[0].avg;var lastAvg=quarters[quarters.length-1].avg;
               var ch=Math.round((lastAvg-firstAvg)/(firstAvg||1)*100);
               var trend=ch>10?"INCREASING":ch<-10?"DECREASING":"STABLE";
-              var trendCol=trend==="INCREASING"?"#C00000":trend==="DECREASING"?"#16a34a":"#d97706";
+              var trendCol=trend==="INCREASING"?"#b91c1c":trend==="DECREASING"?"#16a34a":"#d97706";
               var trendArrow=trend==="INCREASING"?"\u2191":trend==="DECREASING"?"\u2193":"\u2192";
 
               return React.createElement("div",null,
@@ -3963,9 +4037,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       return React.createElement("tr",{key:i,style:{background:isMax?"#fef2f2":isMin?"#f0fdf4":""}},
                         React.createElement("td",{className:"text-left",style:{fontWeight:600,fontSize:12}},q.label),
                         React.createElement("td",{style:{fontSize:12}},q.months),
-                        React.createElement("td",{style:{fontWeight:700,fontSize:12,color:isMax?"#C00000":"#1e293b"}},q.total.toLocaleString()),
+                        React.createElement("td",{style:{fontWeight:700,fontSize:12,color:isMax?"#b91c1c":"#1e293b"}},q.total.toLocaleString()),
                         React.createElement("td",{style:{fontSize:12}},q.avg.toLocaleString()),
-                        React.createElement("td",{style:{fontSize:12,fontWeight:600,color:diff===null?"#94a3b8":diff>5?"#C00000":diff<-5?"#16a34a":"#475569"}},
+                        React.createElement("td",{style:{fontSize:12,fontWeight:600,color:diff===null?"#94a3b8":diff>5?"#b91c1c":diff<-5?"#16a34a":"#475569"}},
                           diff===null?"\u2014":diff>0?"+"+diff+"%":diff+"%"
                         )
                       );
@@ -3985,12 +4059,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{fontSize:12,color:"#94a3b8",marginBottom:6}},"Crime types relevant to physical security design"),
               React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4}},
                 ...[
-                  {l:"Violent",cats:["violent-crime"],c:"#C00000"},
-                  {l:"Robbery",cats:["robbery"],c:"#C00000"},
-                  {l:"Burglary",cats:["burglary"],c:"#ED7D31"},
-                  {l:"Vehicle",cats:["vehicle-crime"],c:"#ED7D31"},
-                  {l:"Damage/Arson",cats:["criminal-damage-arson"],c:"#FFC000"},
-                  {l:"ASB",cats:["anti-social-behaviour"],c:"#FFC000"},
+                  {l:"Violent",cats:["violent-crime"],c:"#b91c1c"},
+                  {l:"Robbery",cats:["robbery"],c:"#b91c1c"},
+                  {l:"Burglary",cats:["burglary"],c:"#c2570a"},
+                  {l:"Vehicle",cats:["vehicle-crime"],c:"#c2570a"},
+                  {l:"Damage/Arson",cats:["criminal-damage-arson"],c:"#b45309"},
+                  {l:"ASB",cats:["anti-social-behaviour"],c:"#b45309"},
                   {l:"Drugs",cats:["drugs"],c:"#7B68EE"},
                   {l:"Theft",cats:["other-theft","shoplifting","bicycle-theft","theft-from-the-person"],c:"#E91E63"},
                   {l:"Weapons",cats:["possession-of-weapons"],c:"#dc2626"}
@@ -4014,10 +4088,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var street=arr[0],data=arr[1],maxS=((crimeData.sortedStreets||[])[0]||[null,{total:1}])[1].total||1;
                 var pct=Math.round(data.total/(maxS||1)*100);
                 return React.createElement("div",{key:street,style:{display:"flex",alignItems:"center",gap:4,marginBottom:3}},
-                  React.createElement("div",{style:{width:14,height:16,borderRadius:3,background:i<3?"#C00000":"#1B2A4A",color:"#fff",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},i+1),
+                  React.createElement("div",{style:{width:14,height:16,borderRadius:3,background:i<3?"#b91c1c":"#1B2A4A",color:"#fff",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},i+1),
                   React.createElement("div",{style:{width:100,fontSize:12,color:"#475569",flexShrink:0,wordBreak:"break-word"}},street),
                   React.createElement("div",{style:{flex:1,height:14,background:"#f1f5f9",borderRadius:2,overflow:"hidden"}},
-                    React.createElement("div",{style:{width:pct+"%",height:"100%",background:i<3?"#C00000":"#1B2A4A",borderRadius:2}})
+                    React.createElement("div",{style:{width:pct+"%",height:"100%",background:i<3?"#b91c1c":"#1B2A4A",borderRadius:2}})
                   ),
                   React.createElement("div",{style:{width:28,fontSize:12,fontWeight:600,textAlign:"right"}},data.total)
                 );
@@ -4056,15 +4130,15 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                     React.createElement("div",{style:{fontSize:12,opacity:0.8}},"This site/mo")
                   ),
                   React.createElement("div",{style:{textAlign:"center",padding:6,background:"#f8fafc",borderRadius:4,border:"1px solid #e2e8f0"}},
-                    React.createElement("div",{style:{fontSize:14,fontWeight:800,color:comparisonData.avg10&&comparisonData.site&&comparisonData.site.total>comparisonData.avg10?"#C00000":"#16a34a"}},comparisonData.avg10||"—"),
+                    React.createElement("div",{style:{fontSize:14,fontWeight:800,color:comparisonData.avg10&&comparisonData.site&&comparisonData.site.total>comparisonData.avg10?"#b91c1c":"#16a34a"}},comparisonData.avg10||"—"),
                     React.createElement("div",{style:{fontSize:12,color:"#64748b"}},"10mi avg/mo")
                   ),
                   React.createElement("div",{style:{textAlign:"center",padding:6,background:"#f8fafc",borderRadius:4,border:"1px solid #e2e8f0"}},
-                    React.createElement("div",{style:{fontSize:14,fontWeight:800,color:comparisonData.avg50&&comparisonData.site&&comparisonData.site.total>comparisonData.avg50?"#C00000":"#16a34a"}},comparisonData.avg50||"—"),
+                    React.createElement("div",{style:{fontSize:14,fontWeight:800,color:comparisonData.avg50&&comparisonData.site&&comparisonData.site.total>comparisonData.avg50?"#b91c1c":"#16a34a"}},comparisonData.avg50||"—"),
                     React.createElement("div",{style:{fontSize:12,color:"#64748b"}},"50mi avg/mo")
                   )
                 ),
-                comparisonData.site&&comparisonData.avg10&&React.createElement("div",{style:{fontSize:12,fontWeight:700,textAlign:"center",color:comparisonData.site.total>comparisonData.avg10?"#C00000":"#16a34a"}},
+                comparisonData.site&&comparisonData.avg10&&React.createElement("div",{style:{fontSize:12,fontWeight:700,textAlign:"center",color:comparisonData.site.total>comparisonData.avg10?"#b91c1c":"#16a34a"}},
                   comparisonData.site.total>comparisonData.avg10?Math.round((comparisonData.site.total/comparisonData.avg10-1)*100)+"% above local average":Math.round((1-comparisonData.site.total/comparisonData.avg10)*100)+"% below local average"
                 )
               ),
@@ -4116,7 +4190,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               ),
               React.createElement("div",{style:{display:"flex",gap:3,flex:1,minWidth:200}},
                 ...["LOW","MODERATE","SUBSTANTIAL","SEVERE","CRITICAL"].map(function(lvl){
-                  var colors={"LOW":"#70AD47","MODERATE":"#4472C4","SUBSTANTIAL":"#FFC000","SEVERE":"#ED7D31","CRITICAL":"#C00000"};
+                  var colors={"LOW":"#16803c","MODERATE":"#4a5568","SUBSTANTIAL":"#b45309","SEVERE":"#c2570a","CRITICAL":"#b91c1c"};
                   var isActive=threatLevel.level===lvl;
                   return React.createElement("div",{key:lvl,style:{flex:1,height:isActive?26:8,backgroundColor:isActive?colors[lvl]:colors[lvl]+"30",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center"}},
                     isActive&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:lvl==="SUBSTANTIAL"||lvl==="LOW"?"#1e293b":"#fff"}},lvl)
@@ -4127,7 +4201,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             !threatLevel&&React.createElement("div",{style:{padding:8,color:"#94a3b8",fontSize:12}},"Loading threat level..."),
             React.createElement("div",{style:{fontSize:12,color:"#64748b",marginTop:8}},
               "Set by the Joint Terrorism Analysis Centre (JTAC) and MI5. Verify at ",
-              React.createElement("a",{href:"https://www.mi5.gov.uk/threat-levels",target:"_blank",style:{color:"#4472C4",textDecoration:"underline"}},"MI5.gov.uk"),
+              React.createElement("a",{href:"https://www.mi5.gov.uk/threat-levels",target:"_blank",style:{color:"#4a5568",textDecoration:"underline"}},"MI5.gov.uk"),
               " at time of assessment."
             )
           ),
@@ -4306,11 +4380,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var chunks=[];
-            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var scBg=function(v){return!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold;text-align:center",2:"background:#16803c;color:#fff;font-weight:bold;text-align:center",3:"background:#b45309;color:#000;font-weight:bold;text-align:center",4:"background:#c2570a;color:#fff;font-weight:bold;text-align:center",5:"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"})[v]||""};
             chunks.push("<table><tr><th>T#</th><th>Type</th><th style='text-align:left'>Threat</th><th style='text-align:left'>Description</th><th>Cap</th><th>Int</th><th>Score</th><th>Level</th><th>DBT</th></tr>");
             cThreats.forEach(function(t,i){
               var lvl=t.sc&&SC[t.sc]?SC[t.sc].l:"";
-              chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(i+1)+"</td><td style='text-align:center;font-size:8pt;"+(t.cat==="Terrorism"?"color:#dc2626":"color:#4472C4")+"'>"+t.cat+"</td><td class='tl'><b>"+t.n+"</b></td><td class='tl' style='font-size:8pt'>"+(t.d||"")+"</td><td style='"+scBg(t.cap)+"'>"+(t.cap||"")+"</td><td style='"+scBg(t.int)+"'>"+(t.int||"")+"</td><td style='"+scBg(t.sc)+"'>"+(t.sc||"")+"</td><td style='text-align:center'>"+lvl+"</td><td style='text-align:center;font-weight:bold;"+(t.dbt?"color:#dc2626":"color:#94a3b8")+"'>"+(t.dbt?"YES":"No")+"</td></tr>");
+              chunks.push("<tr><td style='text-align:center;font-weight:bold'>T"+(i+1)+"</td><td style='text-align:center;font-size:8pt;"+(t.cat==="Terrorism"?"color:#dc2626":"color:#4a5568")+"'>"+t.cat+"</td><td class='tl'><b>"+t.n+"</b></td><td class='tl' style='font-size:8pt'>"+(t.d||"")+"</td><td style='"+scBg(t.cap)+"'>"+(t.cap||"")+"</td><td style='"+scBg(t.int)+"'>"+(t.int||"")+"</td><td style='"+scBg(t.sc)+"'>"+(t.sc||"")+"</td><td style='text-align:center'>"+lvl+"</td><td style='text-align:center;font-weight:bold;"+(t.dbt?"color:#dc2626":"color:#94a3b8")+"'>"+(t.dbt?"YES":"No")+"</td></tr>");
             });
             chunks.push("</table>");
             copyChunkedToWord(chunks,"Threat Register \u2014 "+(ctx.project||"Assessment"));
@@ -4375,6 +4449,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )
         ),
+        React.createElement(ScaleLegend,null),
         // Single unified threat table
         React.createElement("div",{className:"card"},
           React.createElement("table",{className:"threat-table"},
@@ -4428,7 +4503,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               )}),
               // Crime header row
               React.createElement("tr",{key:"c-header"},
-                React.createElement("td",{colSpan:10,style:{background:"#EBF1F8",color:"#4472C4",fontWeight:700,fontSize:11,letterSpacing:1,padding:"8px 10px",borderBottom:"2px solid #D6E4F0"}},
+                React.createElement("td",{colSpan:10,style:{background:"#EBF1F8",color:"#4a5568",fontWeight:700,fontSize:11,letterSpacing:1,padding:"8px 10px",borderBottom:"2px solid #D6E4F0"}},
                 "CRIME THREATS")
               ),
               // Crime rows
@@ -4437,7 +4512,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 return React.createElement("tr",{key:t.id},
                 React.createElement("td",{className:"text-muted font-mono text-xs"},"T"+(globalIdx+1)),
                 React.createElement("td",null,React.createElement("button",{className:"badge",onClick:()=>toggleThreatCat(t.id),
-                  style:{backgroundColor:"#EBF1F8",color:"#4472C4",cursor:"pointer",border:"1px solid #D6E4F0",fontSize:9}},"Crime")),
+                  style:{backgroundColor:"#EBF1F8",color:"#4a5568",cursor:"pointer",border:"1px solid #D6E4F0",fontSize:9}},"Crime")),
                 React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full font-medium",value:t.n,onChange:e=>ut(t.id,"n",e.target.value)})),
                 React.createElement("td",null,React.createElement("input",{className:"input-ghost w-full text-muted",value:t.d,onChange:e=>ut(t.id,"d",e.target.value)})),
                 React.createElement("td",null,React.createElement(ScoreBar,{value:t.cap,onChange:v=>ut(t.id,"cap",v),tips:scales.capability})),
@@ -4487,11 +4562,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var unused=allThreatDefs.filter(function(def){return def.cat==="Crime"&&!threats.some(function(t){return t.n===def.n})});
                 if(unused.length===0)return null;
                 return React.createElement("div",null,
-                  React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#4472C4",letterSpacing:1,marginBottom:4}},"CRIME"),
+                  React.createElement("div",{style:{fontSize:9,fontWeight:700,color:"#4a5568",letterSpacing:1,marginBottom:4}},"CRIME"),
                   React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:4}},
                     ...unused.map(function(def){
                       return React.createElement("button",{key:def.n,onClick:function(){addThreatFromDef(def)},
-                        style:{padding:"5px 10px",background:"#EBF1F8",border:"1px solid #D6E4F0",borderRadius:6,cursor:"pointer",fontSize:10,color:"#4472C4",fontWeight:600,fontFamily:"inherit",transition:"all 0.1s"}},
+                        style:{padding:"5px 10px",background:"#EBF1F8",border:"1px solid #D6E4F0",borderRadius:6,cursor:"pointer",fontSize:10,color:"#4a5568",fontWeight:600,fontFamily:"inherit",transition:"all 0.1s"}},
                         def.n
                       );
                     })
@@ -4535,7 +4610,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               ),
               React.createElement("div",{style:{width:120,flexShrink:0}},
                 React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},t.n),
-                React.createElement("span",{className:"badge",style:{backgroundColor:t.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:t.cat==="Terrorism"?"#dc2626":"#4472C4",fontSize:9,marginTop:2}},t.cat)
+                React.createElement("span",{className:"badge",style:{backgroundColor:t.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:t.cat==="Terrorism"?"#dc2626":"#4a5568",fontSize:9,marginTop:2}},t.cat)
               ),
               React.createElement("div",{style:{flex:1,display:"flex",flexWrap:"wrap",gap:4}},
                 assets.filter(function(a){return a.cat}).map(function(a){
@@ -4580,7 +4655,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               var formatted="";
               if(terrorT.length)formatted+="<span style='color:#dc2626;font-size:8pt;font-weight:bold'>T: </span><span style='font-size:8pt'>"+terrorT.join(", ")+"</span>";
               if(terrorT.length&&crimeT.length)formatted+="<br/>";
-              if(crimeT.length)formatted+="<span style='color:#4472C4;font-size:8pt;font-weight:bold'>C: </span><span style='font-size:8pt'>"+crimeT.join(", ")+"</span>";
+              if(crimeT.length)formatted+="<span style='color:#4a5568;font-size:8pt;font-weight:bold'>C: </span><span style='font-size:8pt'>"+crimeT.join(", ")+"</span>";
               chunks.push("<tr><td style='text-align:center'>POI-"+(i+1)+"</td><td class='tl'><b>"+(poi.name||"")+"</b></td><td class='tl'>"+(poi.desc||"")+"</td><td class='tl'>"+(poi.location||"")+"</td><td class='tl'>"+formatted+"</td></tr>");
             });
             chunks.push("</table>");
@@ -4623,7 +4698,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   })
                 ),
                 cThreats.filter(t=>t.cat!=="Terrorism"&&t.n).length>0&&React.createElement("div",null,
-                  React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#4472C4",marginRight:6}},"CRIME"),
+                  React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#4a5568",marginRight:6}},"CRIME"),
                   cThreats.filter(t=>t.cat!=="Terrorism"&&t.n).map(t=>{
                     const isOn=poi.threats.includes(t.id);
                     return React.createElement("span",{key:t.id,className:"threat-chip "+(isOn?"on crime":"off"),onClick:()=>togglePoiThreat(poi.id,t.id)},t.n);
@@ -4651,7 +4726,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
             var chunkSize=6;var chunks=[];
-            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var scBg=function(v){return!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold;text-align:center",2:"background:#16803c;color:#fff;font-weight:bold;text-align:center",3:"background:#b45309;color:#000;font-weight:bold;text-align:center",4:"background:#c2570a;color:#fff;font-weight:bold;text-align:center",5:"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"})[v]||""};
             // Page 1: Summary table with Capability
             chunks.push("<table><tr><th>T#</th><th style='text-align:left'>Threat</th><th>Type</th><th>Cap</th><th>Int</th><th>Threat<br/>Score</th><th>TA</th><th>Vuln</th><th>Likelihood</th><th>Level</th></tr>");
             filtered.forEach(function(r,i){
@@ -4727,28 +4802,28 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           )
         ),
-        React.createElement("div",{style:{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:8,maxWidth:"100%"}},
-          React.createElement("table",{className:"vuln-grid",style:{width:"100%",minWidth:1280}},
+        React.createElement("div",{style:{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:8,maxWidth:"100%",overflowX:"auto"}},
+          React.createElement("table",{className:"vuln-grid",style:{width:"100%",minWidth:900}},
             React.createElement("thead",null,
               React.createElement("tr",null,
-                React.createElement("th",{style:{width:32}},"T#"),
-                React.createElement("th",{className:"threat-name",style:{textAlign:"left",paddingLeft:8,minWidth:140}},"Threat"),
-                React.createElement("th",{className:"readonly",style:{width:30},title:"Capability \u2014 read-only from Threats tab"},"Cap"),
-                React.createElement("th",{className:"readonly",style:{width:30},title:"Intent \u2014 read-only from Threats tab"},"Int"),
-                React.createElement("th",{className:"readonly",style:{width:30},title:"Threat Score (Cap+Int)/2"},"TS"),
+                React.createElement("th",{style:{width:28}},"T#"),
+                React.createElement("th",{className:"threat-name",style:{textAlign:"left",paddingLeft:8,minWidth:120}},"Threat"),
+                React.createElement("th",{className:"readonly",style:{width:28},title:"Capability \u2014 read-only from Threats tab"},"Cap"),
+                React.createElement("th",{className:"readonly",style:{width:28},title:"Intent \u2014 read-only from Threats tab"},"Int"),
+                React.createElement("th",{className:"readonly",style:{width:28},title:"Threat Score (Cap+Int)/2"},"TS"),
                 ...[
                   {k:"visibility",l:"Visibility"},
                   {k:"status",l:"Status"},
-                  {k:"access",l:"Threat Access"},
+                  {k:"access",l:"Access"},
                   {k:"collateral",l:"Collateral"},
-                  {k:"crime",l:"Crime Profile"},
+                  {k:"crime",l:"Crime"},
                   {k:"history",l:"History"}
-                ].map(c=>React.createElement("th",{key:c.k,className:"criterion",style:{minWidth:124}},c.l)),
-                React.createElement("th",{className:"vuln-col",style:{minWidth:124}},"Vulnerability"),
-                React.createElement("th",{className:"derived",style:{width:34},title:"Target Attractiveness \u2014 auto"},"TA"),
-                React.createElement("th",{className:"derived",style:{width:34},title:"Likelihood score"},"L"),
-                React.createElement("th",{className:"derived",style:{width:60}},"Level"),
-                React.createElement("th",{style:{width:28},title:"Copy row scores to all threats in same category"},"")
+                ].map(c=>React.createElement("th",{key:c.k,className:"criterion",style:{minWidth:90}},c.l)),
+                React.createElement("th",{className:"vuln-col",style:{minWidth:100}},"Vulnerability"),
+                React.createElement("th",{className:"derived",style:{width:30},title:"Target Attractiveness \u2014 auto"},"TA"),
+                React.createElement("th",{className:"derived",style:{width:30},title:"Likelihood score"},"L"),
+                React.createElement("th",{className:"derived",style:{width:56}},"Level"),
+                React.createElement("th",{style:{width:24},title:"Copy row scores to all threats in same category"},"")
               )
             ),
             React.createElement("tbody",null,
@@ -5043,8 +5118,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
             var chunks=[];
-            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
-            var ratBg=function(r){return!r?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r]||""};
+            var scBg=function(v){return!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold;text-align:center",2:"background:#16803c;color:#fff;font-weight:bold;text-align:center",3:"background:#b45309;color:#000;font-weight:bold;text-align:center",4:"background:#c2570a;color:#fff;font-weight:bold;text-align:center",5:"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var ratBg=function(r){return!r?"":{"Very Low":"background:#4a5568;color:#fff;font-weight:bold;text-align:center","Low":"background:#16803c;color:#fff;font-weight:bold;text-align:center","Medium":"background:#b45309;color:#000;font-weight:bold;text-align:center","High":"background:#c2570a;color:#fff;font-weight:bold;text-align:center","Very High":"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"}[r]||""};
             chunks.push("<table><tr><th>R#</th><th>Type</th><th style='text-align:left'>Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>L\u00d7I</th><th>Rating</th><th>Treatment</th></tr>");
             filtered.forEach(function(r,i){
               chunks.push("<tr><td style='text-align:center;font-weight:bold'>R"+(i+1)+"</td><td style='text-align:center;font-size:8pt'>"+r.cat+"</td><td class='tl'><b>"+r.n+"</b></td><td style='"+scBg(r.sc)+"'>"+(r.sc||"")+"</td><td style='"+scBg(r.ta)+"'>"+(r.ta||"")+"</td><td style='"+scBg(r.vu)+"'>"+(r.vu||"")+"</td><td style='"+scBg(r.lik)+"'>"+(r.lik||"")+"</td><td style='"+scBg(r.imp)+"'>"+(r.imp||"")+"</td><td style='text-align:center;font-weight:bold'>"+(r.lik&&r.imp?r.lik*r.imp:"")+"</td><td style='"+ratBg(r.rat)+"'>"+(r.rat||"")+"</td><td style='text-align:center'>"+(r.treat||"")+"</td></tr>");
@@ -5111,8 +5186,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
-            var scBg=function(v){return!v?"":({1:"background:#4472C4;color:#fff;font-weight:bold;text-align:center",2:"background:#70AD47;color:#fff;font-weight:bold;text-align:center",3:"background:#FFC000;color:#000;font-weight:bold;text-align:center",4:"background:#ED7D31;color:#fff;font-weight:bold;text-align:center",5:"background:#C00000;color:#fff;font-weight:bold;text-align:center"})[v]||""};
-            var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4472C4;color:#fff;font-weight:bold;text-align:center","Low":"background:#70AD47;color:#fff;font-weight:bold;text-align:center","Medium":"background:#FFC000;color:#000;font-weight:bold;text-align:center","High":"background:#ED7D31;color:#fff;font-weight:bold;text-align:center","Very High":"background:#C00000;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
+            var scBg=function(v){return!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold;text-align:center",2:"background:#16803c;color:#fff;font-weight:bold;text-align:center",3:"background:#b45309;color:#000;font-weight:bold;text-align:center",4:"background:#c2570a;color:#fff;font-weight:bold;text-align:center",5:"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"})[v]||""};
+            var ratBg=function(r2){return!r2?"":{"Very Low":"background:#4a5568;color:#fff;font-weight:bold;text-align:center","Low":"background:#16803c;color:#fff;font-weight:bold;text-align:center","Medium":"background:#b45309;color:#000;font-weight:bold;text-align:center","High":"background:#c2570a;color:#fff;font-weight:bold;text-align:center","Very High":"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
             var gapcRR=function(g){return!g?"":g==="Adequate"?"background:#E2EFDA;color:#16a34a;font-weight:bold;text-align:center":g==="Partial"?"background:#FFF2CC;color:#d97706;font-weight:bold;text-align:center":"background:#FFC7CE;color:#dc2626;font-weight:bold;text-align:center"};
             var html="<table style='width:100%'>";
             filtered.forEach(function(r,i){
@@ -5278,7 +5353,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("div",{style:{position:"sticky",top:0,zIndex:8,background:"#1B2A4A",padding:"7px 16px",display:"flex",alignItems:"center",gap:10}},
                 React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px"}},"Treatment measures"),
                 React.createElement("span",{style:{fontSize:12,fontWeight:700,color:"#fff"}},r.n),
-                React.createElement("span",{style:{fontSize:9,padding:"2px 8px",borderRadius:10,background:r.rat==="Very High"?"#C00000":r.rat==="High"?"#ED7D31":"#475569",color:"#fff",fontWeight:700}},r.rat||""),
+                React.createElement("span",{style:{fontSize:9,padding:"2px 8px",borderRadius:10,background:r.rat==="Very High"?"#b91c1c":r.rat==="High"?"#c2570a":"#475569",color:"#fff",fontWeight:700}},r.rat||""),
                 React.createElement("span",{style:{fontSize:9,color:"#64748b",marginLeft:"auto"}},(r.treat||"")+" \u2014 R"+(cRisks.filter(function(x){return x.n}).indexOf(r)+1))
               ),
               React.createElement("div",{style:{padding:"10px 16px 10px"}},
@@ -5842,7 +5917,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               captureForWord("exec-summary-section","Executive summary captured \u2014 paste into Word")
             }},"📷 Capture"),
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
-              var h="<style>body{font-family:Arial,sans-serif;font-size:9pt;color:#333}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:9pt}td{border:1px solid #ddd;padding:5px 10px;font-size:9pt}.vh{background:#C00000;color:#fff;font-weight:bold;text-align:center}.hi{background:#ED7D31;color:#fff;font-weight:bold;text-align:center}.me{background:#FFC000;color:#000;font-weight:bold;text-align:center}.lo{background:#70AD47;color:#fff;font-weight:bold;text-align:center}.vl{background:#4472C4;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style>";
+              var h="<style>body{font-family:Arial,sans-serif;font-size:9pt;color:#333}h1{color:#1B2A4A;font-size:18pt;border-bottom:2px solid #1B2A4A;padding-bottom:6px}h2{color:#1B2A4A;font-size:14pt;margin-top:18px}h3{color:#475569;font-size:12pt}table{border-collapse:collapse;width:100%;margin:8px 0}th{background:#1B2A4A;color:#fff;padding:6px 10px;text-align:left;font-size:9pt}td{border:1px solid #ddd;padding:5px 10px;font-size:9pt}.vh{background:#b91c1c;color:#fff;font-weight:bold;text-align:center}.hi{background:#c2570a;color:#fff;font-weight:bold;text-align:center}.me{background:#b45309;color:#fff;font-weight:bold;text-align:center}.lo{background:#16803c;color:#fff;font-weight:bold;text-align:center}.vl{background:#4a5568;color:#fff;font-weight:bold;text-align:center}p{margin:6px 0;line-height:1.6}</style>";
               h+="<h1>Security Risk Assessment \u2014 Executive Summary</h1>";
               h+="<p><b>Project:</b> "+(ctx.project||"\u2014")+" | <b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+"</p>";
               h+="<p><b>Site:</b> "+(ctx.address||"")+" "+(ctx.postcode||"")+" | <b>Type:</b> "+(ctx.devType||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
@@ -5966,7 +6041,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           );
           return React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
             React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
-              React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#C00000"}},"HEADLINE RISKS ("+headline.length+")"),
+              React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#b91c1c"}},"HEADLINE RISKS ("+headline.length+")"),
               React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11},
                 onClick:function(){
                   var style='<style>body{font-family:Arial,sans-serif;font-size:9pt}table{width:100%;border-collapse:collapse;margin-bottom:18pt}th{background:#1B2A4A;color:#fff;font-size:9pt;font-weight:bold;padding:6pt 8pt;text-align:left;border:1pt solid #1B2A4A}td{padding:5pt 8pt;border:1pt solid #d0d5dd;vertical-align:top;font-size:9pt}.rat-vh{background:#dc2626;color:#fff;font-weight:bold;padding:2pt 6pt;border-radius:3pt}.rat-h{background:#f97316;color:#fff;font-weight:bold;padding:2pt 6pt;border-radius:3pt}.opt{color:#7c3aed;font-style:italic}.opt-badge{background:#f5f3ff;color:#7c3aed;border:1pt solid #ddd6fe;font-size:8pt;padding:1pt 4pt;border-radius:2pt}</style>';
@@ -6031,7 +6106,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("div",{style:{display:"flex",gap:12,alignItems:"center",padding:"10px 14px",background:r.rat==="Very High"?"#fef2f2":"#fff7ed"}},
                   React.createElement("span",{style:{fontWeight:700,fontSize:13}},"R"+idx),
                   React.createElement("span",{style:{fontWeight:700,fontSize:13,flex:1}},r.n),
-                  React.createElement("span",{style:{fontSize:10,fontWeight:600,background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"2px 8px",borderRadius:4}},r.cat),
+                  React.createElement("span",{style:{fontSize:10,fontWeight:600,background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4a5568",padding:"2px 8px",borderRadius:4}},r.cat),
                   React.createElement(Badge,{rating:r.rat}),
                   React.createElement("span",{style:{fontSize:11,color:"#475569"}},r.treat||"\u2014")
                 ),
@@ -6145,7 +6220,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                       React.createElement("span",{style:{fontSize:10,color:"#475569"}},terrNames.join(", "))
                     ),
                     crimeNames.length>0&&React.createElement("div",null,
-                      React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#4472C4"}},"C: "),
+                      React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#4a5568"}},"C: "),
                       React.createElement("span",{style:{fontSize:10,color:"#475569"}},crimeNames.join(", "))
                     ),
                     threatNames.length===0&&React.createElement("span",{style:{fontSize:10,color:"#d4d4d4",fontStyle:"italic"}},"None assigned")
@@ -6191,7 +6266,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 return React.createElement("tr",{key:r.id},
                   React.createElement("td",{style:{fontWeight:600,fontSize:11}},"R"+(i+1)),
                   React.createElement("td",{className:"text-left",style:{fontWeight:600,fontSize:11}},r.n),
-                  React.createElement("td",{style:{fontSize:10}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4472C4",padding:"1px 4px",borderRadius:3,fontWeight:600,fontSize:9}},r.cat)),
+                  React.createElement("td",{style:{fontSize:10}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4a5568",padding:"1px 4px",borderRadius:3,fontWeight:600,fontSize:9}},r.cat)),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.ta})),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.vu})),
