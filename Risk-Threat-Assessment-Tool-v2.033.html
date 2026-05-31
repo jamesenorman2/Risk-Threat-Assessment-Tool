@@ -568,13 +568,13 @@ const SENTINEL_NAV=[
     {id:"assets",     label:"Assets",                    icon:"cube",  badge:null},
     {id:"threats",    label:"Threats",                   icon:"shield",badge:null},
     {id:"poi",        label:"Points of Interest",        icon:"flag",  badge:null},
-    {id:"vulnerability",label:"Vulnerability",          icon:"eye",   badge:null},
+    {id:"vulnerability",label:"Attractiveness / Vuln.", icon:"eye",   badge:null},
   ]},
   {group:"Analysis",items:[
     {id:"impact",     label:"Impact",                    icon:"chart", badge:null},
     {id:"controls",   label:"Existing Controls",         icon:"check", badge:null},
     {id:"register",   label:"Risk Register",             icon:"list",  badge:null,pulse:true},
-    {id:"residual",   label:"Treatments & Residual Risk", icon:"beaker",badge:null},
+    {id:"residual",   label:"Residual Risk & Treatments",icon:"beaker",badge:null},
   ]},
   {group:"Outputs",items:[
     {id:"summary",    label:"Summary",                   icon:"docs",  badge:null},
@@ -793,15 +793,9 @@ function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,las
     ),
     // Nav groups
     SENTINEL_NAV.map(function(section){
-      const isUK=!ctx.country||ctx.country==="United Kingdom";
-      const visibleItems=section.items.filter(function(item){
-        if(item.id==="sbd")return isUK;
-        return true;
-      });
-      if(visibleItems.length===0)return null;
       return React.createElement("div",{key:section.group,className:"sidebar-group"},
         React.createElement("div",{className:"sidebar-group-lbl"},section.group),
-        visibleItems.map(function(item){
+        section.items.map(function(item){
           const active=activeTab===item.id;
           return React.createElement("button",{
             key:item.id,
@@ -1201,7 +1195,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.034";
+const VERSION="2.033";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -4747,8 +4741,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 React.createElement("th",{className:"vuln-col",style:{minWidth:124}},"Vulnerability"),
                 React.createElement("th",{className:"derived",style:{width:34},title:"Target Attractiveness \u2014 auto"},"TA"),
                 React.createElement("th",{className:"derived",style:{width:34},title:"Likelihood score"},"L"),
-                React.createElement("th",{className:"derived",style:{width:60}},"Level"),
-                React.createElement("th",{style:{width:28},title:"Copy row scores to all threats in same category"},"")
+                React.createElement("th",{className:"derived",style:{width:60}},"Level")
               )
             ),
             React.createElement("tbody",null,
@@ -4756,16 +4749,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 const v=vs[t.id]||{};const r=cRisks.find(x=>x.id===t.id)||{};
                 const likLvl=r.lik&&SC[r.lik]?SC[r.lik].l:"\u2014";
                 const badge=(val)=>val?React.createElement("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:4,background:SC[val].bg,color:SC[val].t,fontWeight:700,fontSize:11}},val):React.createElement("span",{style:{color:"#d1d5db",fontSize:13}},"\u2014");
-                const copyRowToCategory=function(){
-                  var rowScores={...v};
-                  var sameCat=cThreats.filter(function(ot){return ot.cat===t.cat&&ot.id!==t.id;});
-                  setVs(function(prev){
-                    var next={...prev};
-                    sameCat.forEach(function(ot){next[ot.id]={...rowScores};});
-                    return next;
-                  });
-                  showToast("Scores copied to "+sameCat.length+" "+t.cat+" threat"+(sameCat.length!==1?"s":""));
-                };
                 return React.createElement("tr",{key:t.id},
                   React.createElement("td",{style:{color:"#94a3b8",fontWeight:600}},"T"+(i+1)),
                   React.createElement("td",{className:"threat-name"},
@@ -4783,14 +4766,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   ),
                   React.createElement("td",{style:{background:"#f0fdf4"}},badge(r.ta)),
                   React.createElement("td",{style:{background:"#f0fdf4"}},badge(r.lik)),
-                  React.createElement("td",{style:{background:"#f0fdf4",fontWeight:700,fontSize:11,...(r.lik?{color:SC[r.lik].bg}:{color:"#d1d5db"})}},likLvl),
-                  React.createElement("td",{style:{textAlign:"center"}},
-                    React.createElement("button",{
-                      title:"Copy these scores to all "+t.cat+" threats",
-                      style:{background:"none",border:"1px solid #e2e8f0",borderRadius:4,cursor:"pointer",padding:"2px 4px",color:"#94a3b8",lineHeight:1,display:"inline-flex",alignItems:"center"},
-                      onClick:copyRowToCategory
-                    },sIcon("copy",12))
-                  )
+                  React.createElement("td",{style:{background:"#f0fdf4",fontWeight:700,fontSize:11,...(r.lik?{color:SC[r.lik].bg}:{color:"#d1d5db"})}},likLvl)
                 );
               })
             )
