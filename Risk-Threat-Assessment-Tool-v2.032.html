@@ -547,16 +547,10 @@ function ScaleRow({items}){
   );
 }
 function HelpBox({title,description,scaleItems}){
-  const[open,setOpen]=React.useState(false);
-  return React.createElement("div",{className:"help-box",style:{paddingBottom:open?undefined:12}},
-    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",userSelect:"none"},onClick:function(){setOpen(function(v){return !v});}},
-      React.createElement("h4",{style:{margin:0}},title),
-      React.createElement("span",{style:{fontSize:11,color:"#94a3b8",marginLeft:8,flexShrink:0}},open?"▲ hide":"▼ show")
-    ),
-    open&&React.createElement(React.Fragment,null,
-      React.createElement("p",{style:{marginTop:8}},description),
-      scaleItems&&React.createElement(ScaleRow,{items:scaleItems})
-    )
+  return React.createElement("div",{className:"help-box"},
+    React.createElement("h4",null,title),
+    React.createElement("p",null,description),
+    scaleItems&&React.createElement(ScaleRow,{items:scaleItems})
   );
 }
 
@@ -733,7 +727,7 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
 }
 
 // ── AppHeader ────────────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle,lastFileSave}){
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
@@ -746,18 +740,14 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
       React.createElement("div",{className:"sentinel-logo"},"RTA"),
       React.createElement("div",{className:"sentinel-brand-name-only"},"Risk & Threat Assessment")
     ),
-    // Breadcrumb + save status
+    // Breadcrumb
     React.createElement("div",{className:"sentinel-bc"},
       React.createElement("span",{className:"bc-ws"},"Workspace"),
       React.createElement("span",{className:"bc-sep"},"/"),
       React.createElement("span",{className:"bc-client"},ctx.client||"No client"),
       React.createElement("span",{className:"bc-sep"},"/"),
       React.createElement("span",{className:"bc-proj"},ctx.project||"Untitled Assessment"),
-      ctx.stage&&React.createElement("span",{className:"bc-badge"},stageShort),
-      React.createElement("span",{
-        title:lastFileSave?"Last file saved: "+lastFileSave.toLocaleString():"File not yet saved — data is in browser storage only",
-        style:{marginLeft:8,fontSize:10,padding:"2px 7px",borderRadius:10,background:lastFileSave?"rgba(74,222,128,0.15)":"rgba(251,191,36,0.15)",color:lastFileSave?"#4ade80":"#fbbf24",border:"1px solid "+(lastFileSave?"rgba(74,222,128,0.3)":"rgba(251,191,36,0.3)"),cursor:"default",flexShrink:0,whiteSpace:"nowrap"}
-      },lastFileSave?"● Saved "+lastFileSave.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}):"● Browser only")
+      ctx.stage&&React.createElement("span",{className:"bc-badge"},stageShort)
     ),
     // Toolbar
     React.createElement(SentinelToolbar,{
@@ -1195,7 +1185,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.033";
+const VERSION="2.032";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1279,7 +1269,6 @@ function App(){
   const[sbdType,setSbdType]=useState("residential");
   const[toast,setToast]=useState(null);
   const[lastLocalSave,setLastLocalSave]=useState(null);
-  const[lastFileSave,setLastFileSave]=useState(null);
   const[confirmState,setConfirmState]=useState({open:false,title:"",body:"",confirmLabel:"Confirm",danger:false,onConfirm:null});
   const askConfirm=function(opts){return new Promise(function(resolve){setConfirmState({open:true,title:opts.title||"",body:opts.body||"",confirmLabel:opts.confirmLabel||"Confirm",danger:!!opts.danger,onConfirm:function(){setConfirmState(function(s){return{...s,open:false}});resolve(true);},onCancel:function(){setConfirmState(function(s){return{...s,open:false}});resolve(false);}});});}
   const[crimeData,setCrimeData]=useState(null);
@@ -1546,7 +1535,7 @@ function App(){
     // Fallback: clipboard
     if(!saved){try{navigator.clipboard.writeText(data).then(function(){showToast("Data copied to clipboard \u2014 paste into "+filename)});saved=true}catch(e){}}
     if(!saved&&!silent)showToast("Could not save \u2014 data safe in browser storage");
-    if(saved){setLastFileSave(new Date());if(!silent)showToast("Saved: "+filename);}
+    if(saved&&!silent)showToast("Saved: "+filename);
     saveToGitHub(data,filename);
   },[buildSaveData,buildFilename,ghConfig]);
 
@@ -3676,7 +3665,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
       ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
       onMenuToggle:function(){setMobileNavOpen(function(v){return !v;})},
-      lastFileSave:lastFileSave,
     }),
 
     // ── Sentinel Sidebar ──
@@ -3701,17 +3689,6 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             COUNTRIES:COUNTRIES_LIST, DEV_TYPES:DEV_TYPES_LIST,
           })
         : React.createElement("div",{className:"legacy-tab-wrap"},
-            // Back navigation breadcrumb
-            _curIdx>0&&React.createElement("div",{style:{marginBottom:12,display:"flex",alignItems:"center",gap:6}},
-              React.createElement("button",{
-                style:{background:"none",border:"none",cursor:"pointer",fontSize:12,color:"#64748b",padding:"2px 6px",borderRadius:4,fontFamily:"inherit",display:"flex",alignItems:"center",gap:4},
-                onMouseEnter:function(e){e.currentTarget.style.background="#f1f5f9";},
-                onMouseLeave:function(e){e.currentTarget.style.background="none";},
-                onClick:function(){var prev=_sentinelAllItems[_curIdx-1];if(prev)setTab(prev.id);}
-              },"← "+(_sentinelAllItems[_curIdx-1]&&_sentinelAllItems[_curIdx-1].label)),
-              React.createElement("span",{style:{color:"#cbd5e1",fontSize:10}},"/"),
-              React.createElement("span",{style:{fontSize:12,color:"#1e293b",fontWeight:600}},_sentinelAllItems[_curIdx]&&_sentinelAllItems[_curIdx].label)
-            ),
 
             // CRIME ANALYSIS
       tab==="crime"&&React.createElement("div",null,
@@ -3720,21 +3697,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ctx.country==="United Kingdom"?"UK crime data from Police.uk and terrorism context":"Crime and terrorism context for "+ctx.country
         ),
 
-        // Non-UK: manual crime context entry
-        ctx.country&&ctx.country!=="United Kingdom"&&React.createElement("div",{style:{marginBottom:16}},
-          React.createElement("div",{style:{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px 10px 0 0",padding:"10px 14px",fontSize:13,color:"#92400e",display:"flex",alignItems:"center",gap:8}},
-            React.createElement("span",{style:{fontWeight:600}},"ℹ International site:"),
-            "Police.uk data is only available for England, Wales & Northern Ireland. Enter crime context manually below for use in the assessment narrative."
-          ),
-          React.createElement("div",{style:{background:"#fff",border:"1px solid #fde68a",borderTop:"none",borderRadius:"0 0 10px 10px",padding:14}},
-            React.createElement("label",{style:{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:6}},"Crime & security context for "+ctx.country),
-            React.createElement("textarea",{
-              className:"input",style:{minHeight:120,resize:"vertical",fontFamily:"inherit",fontSize:13,lineHeight:1.6},
-              placeholder:"Summarise local crime patterns, prevalent crime types, recent incidents, security environment, and any terrorism or threat context relevant to this site and country...",
-              value:ctx.crimeContext||"",
-              onChange:function(e){setCtx(function(c){return{...c,crimeContext:e.target.value}})}
-            })
-          )
+        // Non-UK warning
+        ctx.country&&ctx.country!=="United Kingdom"&&React.createElement("div",{style:{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:10,padding:14,marginBottom:16,fontSize:13,color:"#92400e"}},
+          React.createElement("strong",null,"ℹ Non-UK location: "),
+          "The Police.uk crime data lookup and UK Terrorism Context section are only available for sites in England, Wales & Northern Ireland. For "+ctx.country+" projects, crime data should be sourced from local law enforcement and national statistics. The terrorism incident table below shows UK-specific events and may not be directly applicable."
         ),
 
         // No postcode (UK only)
@@ -5488,10 +5454,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h2",{className:"section-title"},"Treatment Summary"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"All recommended treatment measures consolidated per asset and per point of interest. Duplicates removed.")
           ),
-          React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
-            React.createElement("button",{className:"btn btn-dark btn-sm",onClick:exportWord,title:"Export full Word report",style:{display:"flex",alignItems:"center",gap:5}},sIcon("docs")," Word"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel,title:"Export Excel spreadsheet",style:{display:"flex",alignItems:"center",gap:5}},sIcon("grid")," Excel"),
-            React.createElement("div",{style:{width:1,background:"#e2e8f0",margin:"0 2px"}}),
+          React.createElement("div",{className:"flex gap-2"},
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
               // Build rich HTML for clipboard
               var style="<style>body{font-family:Arial,sans-serif;font-size:10pt;color:#333}h1{color:#1B2A4A;font-size:16pt;border-bottom:2pt solid #1B2A4A;padding-bottom:6pt;margin-bottom:8pt}h2{color:#1B2A4A;font-size:13pt;margin-top:16pt;margin-bottom:6pt;border-bottom:1pt solid #D6DCE4;padding-bottom:4pt}h3{color:#475569;font-size:11pt;margin:10pt 0 4pt}table{border-collapse:collapse;width:100%;margin:6pt 0}th{background:#1B2A4A;color:#fff;padding:6pt 10pt;text-align:left;font-size:9pt;font-weight:bold}td{border:1pt solid #D6DCE4;padding:5pt 10pt;font-size:9pt;vertical-align:top}tr:nth-child(even) td{background:#f8fafc}ol{margin:0;padding-left:18pt}li{margin-bottom:2pt}.opt{color:#7c3aed;font-style:italic}p{margin:4pt 0;line-height:1.5}</style>";
@@ -5810,10 +5773,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h2",{className:"section-title"},"Dashboard"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Executive risk summary with full register, matrices, and treatment overview")
           ),
-          React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
-            React.createElement("button",{className:"btn btn-dark btn-sm",onClick:exportWord,title:"Export full Word report",style:{display:"flex",alignItems:"center",gap:5}},sIcon("docs")," Word"),
-            React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel,title:"Export Excel spreadsheet",style:{display:"flex",alignItems:"center",gap:5}},sIcon("grid")," Excel"),
-            React.createElement("div",{style:{width:1,background:"#e2e8f0",margin:"0 2px"}}),
+          React.createElement("div",{className:"flex gap-2"},
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
               captureForWord("exec-summary-section","Executive summary captured \u2014 paste into Word")
             }},"📷 Capture"),
