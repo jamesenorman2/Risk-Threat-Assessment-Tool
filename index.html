@@ -55,7 +55,7 @@ tr:nth-child(even) td{background:#f8fafc}
 tr[data-sbar]:focus,tr[data-sbar].kb-focus{outline:2px solid #1B2A4A;outline-offset:-2px;background:#f8fafc}
 .kb-hint{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:2px 6px;margin-left:8px;font-family:ui-monospace,Menlo,monospace}
 .vuln-grid{border-collapse:separate;border-spacing:0;font-size:11px}
-.vuln-grid thead th{position:sticky;top:42px;background:#1B2A4A;color:#fff;padding:8px 4px;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;text-align:center;white-space:nowrap;z-index:20}
+.vuln-grid thead th{position:sticky;top:0;background:#1B2A4A;color:#fff;padding:8px 4px;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;text-align:center;white-space:nowrap;z-index:20}
 .vuln-grid thead th.criterion{background:#243a63;border-left:1px solid #1B2A4A}
 .vuln-grid thead th.readonly{background:#475569}
 .vuln-grid thead th.derived{background:#047857}
@@ -140,7 +140,6 @@ select.input{padding:4px 8px;font-size:13px}
 .threat-table{table-layout:fixed;width:100%;border-collapse:collapse}
 .threat-table th,.threat-table td{overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .threat-table thead th{position:sticky;top:0;z-index:2;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
-.vuln-grid thead th{position:sticky;top:0;z-index:2;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
 .threat-table .c-num{width:36px}.threat-table .c-type{width:68px}
 .threat-table .c-name{width:13%}.threat-table .c-desc{width:15%}
 .threat-table .c-score-bar{width:145px}.threat-table .c-badge{width:50px}
@@ -190,7 +189,7 @@ select.input{padding:4px 8px;font-size:13px}
   .crime-bar-label{width:100px}
   .help-box{font-size:11px}
   .help-box .scale{gap:4px}
-  .section-title{font-size:18px}
+  .section-title{font-size:15px}
 }
 @media(max-width:600px){
   .content{padding:4px}
@@ -1236,7 +1235,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.036";
+const VERSION="2.037";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1548,8 +1547,8 @@ function App(){
         body:JSON.stringify(body)
       });
       if(res.ok)showToast("Backed up: "+path);
-      else{console.log("Back-up error:",await res.json())}
-    }catch(e){console.log("Back-up save failed:",e)}
+      else{const err=await res.json().catch(()=>({}));showToast("Back-up failed — "+((err&&err.message)||"check GitHub token/repo settings"));}
+    }catch(e){showToast("Back-up error — check network and GitHub settings");}
   };
   const autoSaveRef=useRef(null);
   const crimeMapRef=useRef(null); // Stores Leaflet map instance for capture
