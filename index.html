@@ -1235,7 +1235,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.037";
+const VERSION="2.038";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -6343,7 +6343,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               title:"Residential Development",
               guide:"SBD Homes Guide 2024/25",
               sections:[
-                {cat:"Doorsets \u2014 External",icon:"\ud83d\udeaa",items:[
+                {cat:"Doorsets \u2014 External",items:[
                   "All external doorsets (including communal entrance doors) certified to PAS 24:2022 +A1:2024, or equivalent: LPS 1175 Issue 8.2 (min. Security Rating A1), STS 201 Issue 5, STS 202 (min. BR2), or LPS 2081 (min. SRB)",
                   "Doorsets must also meet fitness-for-purpose requirements of BS 6375-1 (weathertightness), BS 6375-2 (operation and strength) and BS 6375-3 (additional performance)",
                   "Door locking mechanism conforming to BS 3621 or tested as integral part of PAS 24 doorset assembly",
@@ -6355,7 +6355,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Letterbox restrictor fitted to prevent fishing and arson through the letter opening",
                   "Dual Certified doorsets (fire and security on a single certificate to BS EN 1634-1 for fire + PAS 24 for security) required where both fire rating and security are needed"
                 ]},
-                {cat:"Doorsets \u2014 Communal & Internal",icon:"\ud83d\udeaa",items:[
+                {cat:"Doorsets \u2014 Communal & Internal",items:[
                   "Communal entrance doors to apartment buildings certified to PAS 24:2022 +A1:2024 with electronic access control",
                   "Communal entrance doors fitted with self-closing device compliant with BS EN 1154 (controlled door closing) and BS 8442 (specifying door closers for communal entrance doors)",
                   "Audio/visual door entry system at communal entrance providing communication between visitor and each dwelling",
@@ -6367,7 +6367,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Emergency exit doors compliant with BS EN 179 (emergency exit devices) or BS EN 1125 (panic exit devices) as appropriate",
                   "Lift security to residential floors compliant with BS EN 81-70 (accessibility) and BS EN 81-73 (firefighters operation)"
                 ]},
-                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                {cat:"Windows & Glazing",items:[
                   "All easily accessible windows certified to PAS 24:2022 +A1:2024 or equivalent (LPS 1175 Issue 8.2, STS 204, STS 202)",
                   "Easily accessible defined as: ground floor, basement, and any window reachable from a flat roof, balcony, accessible drain pipe or similar feature within 2m",
                   "Windows above ground floor also to PAS 24 where accessible by flat roof, balcony, drain pipe or adjacent structure",
@@ -6378,7 +6378,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Windows must also meet BS 6375 parts 1, 2 and 3 for fitness-for-purpose performance",
                   "Resistance classification may also be demonstrated via BS EN 1627 (burglar resistance of building hardware) where applicable"
                 ]},
-                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                {cat:"External Lighting",items:[
                   "Dusk-to-dawn lighting to all external entrance doors, pedestrian routes, parking areas and communal bin/cycle stores",
                   "Lighting to communal entrances operated by photoelectric cell (dusk-to-dawn), not PIR alone",
                   "PIR-activated lighting acceptable for individual private dwelling entrances only",
@@ -6386,7 +6386,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Lighting design coordinated with CCTV for adequate image quality, following SBD Lighting Against Crime guide and BS 5489 (road lighting)",
                   "Lighting must not cause light pollution or nuisance to neighbouring properties (compliant with ILP guidance)"
                 ]},
-                {cat:"Boundary Treatments & Landscaping",icon:"\ud83c\udf33",items:[
+                {cat:"Boundary Treatments & Landscaping",items:[
                   "Clear definition between public and private space through boundary treatments",
                   "Rear garden boundaries enclosed by 1.8m close-boarded fencing, wall or equivalent",
                   "Front boundaries max 1m to maintain natural surveillance from dwelling to street",
@@ -6394,14 +6394,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Defensive planting (thorny species) beneath vulnerable windows and along boundaries",
                   "Tree canopies maintained above 2m, shrubs maintained below 1m to preserve sight lines"
                 ]},
-                {cat:"Parking & Cycle Security",icon:"\ud83d\ude97",items:[
+                {cat:"Parking & Cycle Security",items:[
                   "Car parking within view of active rooms (kitchen, living room) where possible",
                   "Communal parking well-lit with CCTV surveillance",
                   "Garage doorsets certified to LPS 1175 Issue 8.2 (min. A1) where integral or attached to dwelling",
                   "Cycle parking in secure, enclosed, lit storage with stands certified to Sold Secure (Bicycle) Silver minimum or SBD-listed",
                   "E-bike and e-scooter storage in fire-rated enclosure separated from the dwelling"
                 ]},
-                {cat:"CCTV & Electronic Security",icon:"\ud83d\udcf9",items:[
+                {cat:"CCTV & Electronic Security",items:[
                   "CCTV to communal entrances, car parks, cycle stores and bin stores in apartment developments",
                   "CCTV system designed to BS EN 62676-4 (video surveillance systems for security) with recognition-quality images",
                   "CCTV images recorded and retained for minimum 31 days",
@@ -6411,7 +6411,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Where monitored remotely, alarm receiving centre compliant with BS EN 50518 and BS 8591",
                   "CCTV management and operation in accordance with BS 7958 (CCTV management and operation)"
                 ]},
-                {cat:"Mail, Bins & Utilities",icon:"\ud83d\udcee",items:[
+                {cat:"Mail, Bins & Utilities",items:[
                   "Communal mail delivery via secure external mailboxes or dedicated mail room with access control",
                   "Anti-arson letterbox protection where letter slots are used in flat doors",
                   "Bin stores enclosed, lockable and positioned away from the building to reduce arson risk",
@@ -6424,7 +6424,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               title:"Commercial (Non-Residential) Development",
               guide:"SBD Commercial Guide 2024/26",
               sections:[
-                {cat:"External Doorsets",icon:"\ud83d\udeaa",items:[
+                {cat:"External Doorsets",items:[
                   "All external doorsets certified to PAS 24:2022 +A1:2024, or LPS 1175 Issue 8.2 (min. A1), or STS 202 (min. BR2)",
                   "Doorsets must also meet BS 6375 parts 1, 2 and 3 for fitness-for-purpose",
                   "Main entrance doorsets integrated with electronic access control",
@@ -6436,7 +6436,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Dual Certified doorsets (fire to BS EN 1634-1 + security to PAS 24) where both fire rating and security are required",
                   "Door closers on all external doors compliant with BS EN 1154"
                 ]},
-                {cat:"Internal Secure Doors",icon:"\ud83d\udd12",items:[
+                {cat:"Internal Secure Doors",items:[
                   "Server rooms, MER/SER and security control room: doorsets min. LPS 1175 Issue 8.2 B3, or STS 202 BR3",
                   "Plant room access secured with electronic access control",
                   "Offices with sensitive information \u2014 thumb-turn lockable doors for lockdown capability",
@@ -6444,7 +6444,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Post/mail room doors security-rated with independent ventilation where screening is required",
                   "Lock cylinders compliant with BS EN 1303 and TS 007 3-star (or 1-star + 2-star escutcheon)"
                 ]},
-                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                {cat:"Windows & Glazing",items:[
                   "Ground floor and easily accessible windows certified to PAS 24:2022 +A1:2024, or LPS 1175, or STS 204",
                   "Laminated glass (min. BS EN 356 P1A or equivalent) to all accessible ground floor glazing",
                   "Window opening restrictors on all accessible openable windows",
@@ -6453,14 +6453,14 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Internal beading preventing external glazing removal",
                   "Resistance classification may also reference BS EN 1627 (burglar resistance) where specified"
                 ]},
-                {cat:"Perimeter & Boundary",icon:"\ud83c\udff0",items:[
+                {cat:"Perimeter & Boundary",items:[
                   "Secure perimeter fencing/walls to defined site boundary \u2014 minimum 2.4m with anti-climb for high-risk sites",
                   "Perimeter fencing rated to LPS 1175 Issue 8.2 where threat assessment requires",
                   "Vehicle access barriers rated to PAS 68:2013 or IWA 14-1:2013 where HVM is required",
                   "Pedestrian gates with access control, self-closing mechanism (BS EN 1154), and anti-lift hinges",
                   "Clear 2m zone either side of perimeter for surveillance and maintenance"
                 ]},
-                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                {cat:"External Lighting",items:[
                   "Uniform dusk-to-dawn lighting at building shell, all entries, service areas and car parks",
                   "Lighting designed to BS 5489 (road lighting) and SBD Lighting Against Crime guide, coordinated with CCTV",
                   "Vandal-resistant fittings mounted at height (IK10 minimum impact rating)",
@@ -6468,7 +6468,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Permanent dusk-to-dawn lighting on perimeter and communal areas \u2014 no PIR/sensor-only",
                   "Emergency lighting on all escape routes per BS 5266-1"
                 ]},
-                {cat:"CCTV System",icon:"\ud83d\udcf9",items:[
+                {cat:"CCTV System",items:[
                   "CCTV system designed to BS EN 62676-4 (video surveillance systems for security)",
                   "CCTV coverage of entire building perimeter, all entry/exit points, vehicle entrances and service areas",
                   "Internal CCTV at reception, lift lobbies, stair cores, back-of-house corridors and deliveries",
@@ -6480,7 +6480,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Where remote video monitoring is used, compliant with BS 8418 (installation and remote monitoring of detector-activated CCTV)",
                   "ANPR at vehicle entrance barriers"
                 ]},
-                {cat:"Access Control System",icon:"\ud83d\udd11",items:[
+                {cat:"Access Control System",items:[
                   "Electronic Access Control (EACS) at all external entry points \u2014 system designed to BS EN 60839-11-1",
                   "Access zones defined by user groups and permissions with full audit trail",
                   "Door contacts on all perimeter doors with forced/left-open/tamper alarms",
@@ -6490,7 +6490,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Visitor management system with sign-in, photo ID and temporary pass issue",
                   "Speedlanes or turnstiles with tailgating detection at entrance lobby"
                 ]},
-                {cat:"Intruder Detection & Alarms",icon:"\ud83d\udea8",items:[
+                {cat:"Intruder Detection & Alarms",items:[
                   "Intruder alarm system min. Grade 3 per BS EN 50131-1 covering all external openings and internal sensitive areas",
                   "Panic/personal attack buttons at reception desk and security control room",
                   "Alarm system verified for police response capability where required",
@@ -6498,7 +6498,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "System monitored 24/7 by Alarm Receiving Centre compliant with BS EN 50518 and BS 8591",
                   "Fire alarm system designed to BS 5839-1 integrated with access control and CCTV"
                 ]},
-                {cat:"Security Control Room & Personnel",icon:"\ud83d\udcbb",items:[
+                {cat:"Security Control Room & Personnel",items:[
                   "Dedicated security monitoring location in secure, non-publicly visible area",
                   "Security control room door minimum LPS 1175 Issue 8.2 B3, fitted with access control and CCTV",
                   "Electronic key cabinet for mechanical key management with audit trail",
@@ -6507,7 +6507,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Security personnel provision in accordance with BS 7499 (static site guarding) or BS 7984 (keyholding) as applicable",
                   "CCTV operators trained to SIA/BS 7958 requirements"
                 ]},
-                {cat:"Cycle & Vehicle Parking",icon:"\ud83d\udeb2",items:[
+                {cat:"Cycle & Vehicle Parking",items:[
                   "Cycle parking in secure, enclosed, well-lit areas with stands certified to Sold Secure (Bicycle) Silver or SBD-listed",
                   "E-bike storage in fire-rated enclosure separated from main building",
                   "Car park CCTV at all entry/exit points and pedestrian routes",
@@ -6519,7 +6519,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               title:"Schools & Educational Facilities",
               guide:"SBD New Schools Guide 2014",
               sections:[
-                {cat:"Perimeter Fencing & Gates",icon:"\ud83c\udff0",items:[
+                {cat:"Perimeter Fencing & Gates",items:[
                   "Secure perimeter fence minimum 2.0m tall around the entire school boundary",
                   "Fencing types: welded mesh, railings or expanded metal \u2014 colour-coated to soften appearance",
                   "Fencing to LPS 1175 Issue 8.2 specification where risk assessment requires higher security",
@@ -6529,7 +6529,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Public footpaths adjacent to boundary addressed with defensive planting in addition to fencing",
                   "Fencing should be effective without creating a fortress impression \u2014 consult with CPDA/DOCO"
                 ]},
-                {cat:"External Doorsets",icon:"\ud83d\udeaa",items:[
+                {cat:"External Doorsets",items:[
                   "All external doorsets certified to PAS 24:2022 +A1:2024, or equivalent (LPS 1175 Issue 8.2, STS 201 Issue 5, STS 202)",
                   "Single main entrance as the only unlocked entry point during school hours",
                   "Main entrance through or immediately adjacent to reception with direct visual oversight",
@@ -6538,7 +6538,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Door closers compliant with BS EN 1154 on all external and communal doors",
                   "Dual Certified (fire to BS EN 1634-1 + security to PAS 24) doorsets where fire-rated doors also require security"
                 ]},
-                {cat:"Internal Doors & Access Control",icon:"\ud83d\udd12",items:[
+                {cat:"Internal Doors & Access Control",items:[
                   "Access control zoning separating public/visitor areas from teaching spaces",
                   "Secure lobby or vestibule at main entrance for visitor processing before entry to school",
                   "Internal doors to server rooms, IT suites and admin offices \u2014 security rated (min. PAS 24 or LPS 1175 A1)",
@@ -6547,27 +6547,27 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Science prep rooms and chemical/hazardous material stores secured with appropriate locks and access control",
                   "Lock cylinders compliant with TS 007 3-star (or 1-star + 2-star escutcheon) and BS EN 1303"
                 ]},
-                {cat:"Windows & Glazing",icon:"\ud83e\ude9f",items:[
+                {cat:"Windows & Glazing",items:[
                   "Ground floor and easily accessible windows certified to PAS 24:2022 +A1:2024 or STS 204",
                   "Window opening restrictors to prevent unauthorised access and egress",
                   "Laminated glass (min. BS EN 356 P1A) to ground floor windows in high-risk areas (IT suites, admin, exam stores)",
                   "Internal beading on all accessible windows to prevent external glazing removal",
                   "Roof lights and clerestory windows secured where accessible from flat roofs or climbing aids"
                 ]},
-                {cat:"External Lighting",icon:"\ud83d\udca1",items:[
+                {cat:"External Lighting",items:[
                   "External lighting scheme sufficient to support CCTV system (coordinated design to BS 5489)",
                   "Dusk-to-dawn lighting to all entrances, car parks, pedestrian routes and perimeter",
                   "Light fittings protected where vulnerable to vandalism \u2014 polycarbonate diffusers, mounted at height",
                   "Emergency lighting to all escape routes per BS 5266-1"
                 ]},
-                {cat:"CCTV System",icon:"\ud83d\udcf9",items:[
+                {cat:"CCTV System",items:[
                   "CCTV system designed to BS EN 62676-4 at main entrance, reception, car parks, perimeter and key areas",
                   "Internal CCTV to main corridors, stair cores, server room and sensitive areas",
                   "Images recorded and retained for minimum 31 days",
                   "System monitored from school office or remotely (BS 8418 where remote video monitoring used)",
                   "CCTV management in accordance with BS 7958"
                 ]},
-                {cat:"Secure Storage & IT",icon:"\ud83d\udcbb",items:[
+                {cat:"Secure Storage & IT",items:[
                   "IT suites protected with security-rated doors (min. PAS 24) and windows",
                   "Portable equipment secured with cable locks or cages meeting LPS 1175 or Sold Secure certification",
                   "Server room and network cabinets secured with electronic access control and environmental monitoring",
@@ -6575,21 +6575,21 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "Medical room on ground floor near entrance with secure storage for medication and controlled substances",
                   "Exam paper storage in security-rated and fire-rated cabinets"
                 ]},
-                {cat:"Visitor Management",icon:"\ud83d\udc65",items:[
+                {cat:"Visitor Management",items:[
                   "All visitors enter via single controlled main entrance through or past reception",
                   "Visitor sign-in with identification verification and DBS check confirmation for regular visitors",
                   "Visitors issued with clearly visible passes and escorted in sensitive areas",
                   "Delivery and contractor access managed through reception or designated secure service entrance",
                   "Parent/carer collection points designed to separate visitors from unrestricted school areas"
                 ]},
-                {cat:"Landscaping & External Areas",icon:"\ud83c\udf33",items:[
+                {cat:"Landscaping & External Areas",items:[
                   "Vegetation maintained below 1m height or above 2m to preserve sight lines throughout grounds",
                   "Defensive planting (thorny species) along vulnerable boundaries and beneath accessible windows",
                   "No mature trees or climbing aids adjacent to perimeter fencing",
                   "Play areas and sports pitches within natural surveillance from occupied building spaces",
                   "External furniture and equipment robust, securely fixed with tamper-resistant fixings"
                 ]},
-                {cat:"Intruder Alarm & Emergency Systems",icon:"\ud83d\udea8",items:[
+                {cat:"Intruder Alarm & Emergency Systems",items:[
                   "Intruder alarm system (min. Grade 2 per BS EN 50131-1) covering all external openings and sensitive internal areas",
                   "Alarm system monitored by ARC compliant with BS EN 50518 and BS 8591 with nominated keyholder response",
                   "Fire alarm system designed to BS 5839-1 integrated with access control for automatic door release",
