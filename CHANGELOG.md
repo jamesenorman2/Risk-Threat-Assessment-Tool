@@ -4,6 +4,13 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.038 — 2026-06-07
+**Remove dead emoji icon data from SBD requirements**
+- Removed unused `icon` fields from `SBD_DATA` category definitions — these emoji were never rendered in the UI but remained as leftover data from before icons were dropped from the SBD section (per outstanding `todo` item: icons don't look good, especially in Word exports)
+- Cleared the resolved `todo` file — the remaining items (POI Word export filtering, Arial 9pt export styling, AVL/Impact A4-friendly chunked exports, SBD "N/A" status excluded from export) were already implemented in prior releases
+
+---
+
 ## v2.008 — 2026-04-21
 **Setup wizard: site profile moved to step 2**
 - Site profile questions now appear immediately after development type selection, before assets and threats are reviewed
