@@ -1,0 +1,76 @@
+# TODO / Improvement Backlog
+# Written 2026-06-09 (session: app-wide improvements). Safe to hand to a future
+# session — each item is self-contained. Top 20 ranked by value-for-effort.
+
+## Top 20 improvement ideas
+
+ 1. PDF report export — branded, print-ready report (cover page, contents,
+    matrices, register, treatment roadmap). Today only Word/Excel copy exists.
+ 2. Multi-assessment manager — home screen listing saved assessments with
+    open/rename/delete. localStorage currently holds ONE assessment; switching
+    projects risks silent overwrite.
+ 3. Undo/redo (Ctrl+Z) — scoring grids are click-heavy and a stray click on a
+    score bar or "Clear All" is destructive.
+ 4. Interactive dashboard matrix — click a risk-matrix cell to filter the risk
+    register to those risks; click-through from summary tiles.
+ 5. Reviewer workflow — per-risk comments with author/timestamp, and a
+    review/sign-off status per section (draft → reviewed → issued).
+ 6. Assessment compare/diff — load two saved JSON files and show risk deltas
+    (pre/post design change, year-on-year review).
+ 7. Treatment prioritisation — capture indicative cost + effort per measure,
+    auto-build a quick-win / planned / long-term roadmap table for the report.
+ 8. Executive summary auto-draft — generate narrative text from the data (top
+    risks, crime trend, posture) as a starting point for the assessor.
+ 9. QA / completeness gate before export — checklist flagging unscored
+    threats, missing ALARP justifications, empty required context fields.
+10. Photo attachments on POIs and Existing Controls (site walkaround
+    evidence), included in Word/PDF export.
+11. Tablet/mobile site-survey mode — POI capture optimised for touch on a
+    walkaround; the desktop layout is dense on small screens.
+12. Offline crime-data snapshot — store fetched Police.uk data inside the
+    saved assessment so reports are reproducible later (data changes monthly).
+13. Non-UK mode — Police.uk only covers England/Wales/NI; allow manual crime
+    stats entry + international threat-level sources for overseas sites.
+14. Proper accounts/backend — replace APP_PASSWORD + GitHub-token-in-browser
+    with real auth and server-side persistence (also fixes: plaintext password
+    in session cookie, secret baked into client bundle by build.js).
+15. Org template library — save/share company-standard criteria text, threat
+    sets and treatment libraries as versioned template files.
+16. Full WCAG AA pass — contrast on score chips, focus trap inside modals,
+    screen-reader labels on score bars, aria-live for toasts.
+17. Keyboard bulk scoring — extend existing 1-5/arrow keys with "apply to
+    whole row/column" and copy-down, for large grids.
+18. Performance: split the 616KB single file (lazy-load Leaflet, html2canvas,
+    crime tab) for faster first paint; consider build step producing chunks.
+19. Automated tests + CI — Playwright smoke test per tab + export functions
+    (a single 7,800-line file regresses easily); GitHub Action on PR.
+20. In-app help/onboarding — "?" tooltips per section explaining methodology
+    terms (TA, DBT, ALARP) for less-experienced assessors; link methodology.
+
+## Questions for James (answers will steer the backlog)
+- Is this single-assessor (just you) or will colleagues use it? (drives #2,
+  #5, #14, #15)
+- Do clients receive the Word export, or would a branded PDF be the primary
+  deliverable? (drives #1, #8)
+- Any non-UK / overseas sites in the pipeline? (drives #13)
+- Should saved client data live anywhere other than the browser + your GitHub
+  repo? Compliance/GDPR view on projects/ folder living in git history? (#14)
+
+## Known security items (deliberately not changed without sign-off)
+- middleware.js stores the plaintext APP_PASSWORD in the session cookie —
+  switch to a hashed/opaque token (needs matching change in api/db.js +
+  api/report.py).
+- build.js bakes APP_PASSWORD into the obfuscated client JS via
+  __API_SECRET__ — recoverable by anyone with the file; rely on the session
+  cookie instead.
+- projects/ (client assessment data) is committed to git history — confirm
+  this is intended; consider a private data repo.
+
+## Done this session (v2.039–v2.040)
+- Crime comparison month-maths bug (Jan/Feb invalid months); 3-month fallback
+- Duplicate Assessment no longer wipes autosave (data-loss window)
+- Load-file validation (shape checks) + FileReader error handler
+- Escape + ARIA roles on confirm dialog and back-up browser modal
+- Keyboard focus outlines on all button variants; meta description/theme-color
+- Residual Risk table header overlap fix; button label nowrap; POI empty-state
+  CTA; standardised "Copy to Word"
