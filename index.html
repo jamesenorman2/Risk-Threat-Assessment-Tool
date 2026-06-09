@@ -85,7 +85,7 @@ tr[data-sbar]:focus,tr[data-sbar].kb-focus{outline:2px solid #1B2A4A;outline-off
 .input-ghost:focus{border-bottom-color:#94a3b8;box-shadow:none}
 select.input{padding:4px 8px;font-size:13px}
 /* Buttons */
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
 .btn-dark{background:#0f172a;color:#fff}.btn-dark:hover{background:#1e293b}
 .btn-outline{background:#fff;color:#475569;border:1px solid #e2e8f0}.btn-outline:hover{background:#f8fafc}
 .btn-sm{padding:4px 10px;font-size:13px;border-radius:6px}
@@ -1246,7 +1246,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.039";
+const VERSION="2.040";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -4343,7 +4343,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
               navigator.clipboard.writeText(text).then(function(){showToast("Assets copied as text")});
             });
-          }},"📋 Copy for Word"),
+          }},"📋 Copy to Word"),
           React.createElement("button",{className:"preset-btn",style:{marginLeft:4},onClick:function(){captureForWord("section-assets","Assets captured \u2014 paste into Word")}},"📷 Capture")
         ),
         React.createElement(HelpBox,{title:"Asset Criticality Scoring",
@@ -4624,7 +4624,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             html+="</table>";
             var blob=new Blob([html],{type:"text/html"});
             navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){showToast("Threat-asset mapping copied for Word")}).catch(function(){showToast("Copy failed")});
-          }},"📋 Copy for Word")
+          }},"📋 Copy to Word")
         ),
         React.createElement("div",{style:{padding:16}},
           cThreats.map(function(t,i){
@@ -4735,9 +4735,10 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           );
         }),
         pois.length===0&&React.createElement("div",{className:"card",style:{padding:32,textAlign:"center",color:"#94a3b8",fontSize:13}},
-          "No Points of Interest added yet. Click the button below to identify vulnerable locations."
+          React.createElement("div",{style:{marginBottom:14}},"No Points of Interest added yet — identify vulnerable locations such as entrances, loading bays or plant rooms."),
+          React.createElement("button",{className:"btn btn-dark",onClick:addPoi},"+ Add Point of Interest")
         ),
-        React.createElement("div",{style:{marginTop:8}},
+        pois.length>0&&React.createElement("div",{style:{marginTop:8}},
           React.createElement("button",{className:"btn btn-outline",onClick:addPoi},"+ Add Point of Interest")
         )
       ),
@@ -5314,22 +5315,22 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("colgroup",null,
                 React.createElement("col",{style:{width:40}}),
                 React.createElement("col",null),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:50}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:60}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:145}}),
-                React.createElement("col",{style:{width:80}}),
-                React.createElement("col",{style:{width:80}})
+                React.createElement("col",{style:{width:56}}),
+                React.createElement("col",{style:{width:56}}),
+                React.createElement("col",{style:{width:92}}),
+                React.createElement("col",{style:{width:72}}),
+                React.createElement("col",{style:{width:100}}),
+                React.createElement("col",{style:{width:140}}),
+                React.createElement("col",{style:{width:140}}),
+                React.createElement("col",{style:{width:72}}),
+                React.createElement("col",{style:{width:88}})
               ),
               i===0&&React.createElement("thead",null,React.createElement("tr",null,
                 React.createElement("th",{style:{width:40}},"R#"),React.createElement("th",{className:"left"},"Threat"),
-                React.createElement("th",{style:{width:50}},"Pre-L"),React.createElement("th",{style:{width:50}},"Pre-I"),React.createElement("th",{style:{width:80}},"Pre-Rating"),
-                React.createElement("th",{style:{width:60}},"Treat"),React.createElement("th",{style:{width:60}},"Controls"),
-                React.createElement("th",{style:{width:145}},"Post Likelihood"),React.createElement("th",{style:{width:145}},"Post Impact"),
-                React.createElement("th",{style:{width:80}},"Residual"),React.createElement("th",{style:{width:80}},"Accept?")
+                React.createElement("th",{style:{width:56,whiteSpace:"nowrap"}},"Pre-L"),React.createElement("th",{style:{width:56,whiteSpace:"nowrap"}},"Pre-I"),React.createElement("th",{style:{width:92,whiteSpace:"nowrap"}},"Pre-Rating"),
+                React.createElement("th",{style:{width:72}},"Treat"),React.createElement("th",{style:{width:100}},"Controls"),
+                React.createElement("th",{style:{width:140}},"Post Likelihood"),React.createElement("th",{style:{width:140}},"Post Impact"),
+                React.createElement("th",{style:{width:72}},"Residual"),React.createElement("th",{style:{width:88}},"Accept?")
               )),
               React.createElement("tbody",null,
                 React.createElement("tr",{style:{background:isHigh?"#fef2f2":""}},
@@ -5731,7 +5732,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){
                 showToast("Treatment summary copied \u2014 paste into Word with Ctrl+V");
               }).catch(function(){showToast("Copy failed \u2014 check browser permissions")});
-            }},"\ud83d\udccb Copy for Word")
+            }},"\ud83d\udccb Copy to Word")
           )
         ),
 
@@ -6019,7 +6020,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 a.style.display="none";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a)},200);
                 showToast("Exported as Word file (clipboard not available)");
               });
-            }},"\ud83d\udccb Copy for Word")
+            }},"\ud83d\udccb Copy to Word")
           )
         ),
 

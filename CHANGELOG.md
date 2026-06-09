@@ -4,6 +4,15 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.040 — 2026-06-09
+**UX polish pass (screenshot-audited)**
+- Fixed Residual Risk & Treatments table: "Controls" header overflowed its 60px column and overlapped "Post Likelihood"; columns rebalanced and Pre-L/Pre-I/Pre-Rating no longer wrap mid-word
+- Buttons no longer wrap their labels onto two lines (e.g. "Copy to Word" on the Vulnerability tab)
+- Points of Interest empty state now contains the "+ Add Point of Interest" action and explains what a POI is
+- Standardised "Copy for Word" → "Copy to Word" across all tabs
+
+---
+
 ## v2.039 — 2026-06-09
 **App-wide reliability and accessibility fixes**
 - Fixed crime comparison month calculation: in January/February it produced invalid months (`YYYY-00`, `YYYY--1`) or the wrong year, so the 10/50-mile comparison silently returned no data; now uses proper date arithmetic and tries the three most recent months per point
