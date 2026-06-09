@@ -4,6 +4,17 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.039 — 2026-06-09
+**App-wide reliability and accessibility fixes**
+- Fixed crime comparison month calculation: in January/February it produced invalid months (`YYYY-00`, `YYYY--1`) or the wrong year, so the 10/50-mile comparison silently returned no data; now uses proper date arithmetic and tries the three most recent months per point
+- Duplicate Assessment no longer clears the browser autosave before the duplicated state is re-saved, closing a window where closing the tab immediately after duplicating lost all unsaved work
+- Loading an assessment file now validates the JSON is an object and that list fields (assets, threats, meetings, POIs) are arrays, preventing crashes from malformed files; added a file-read error handler
+- Confirm dialogs and the back-up browser modal now close on Escape and carry proper dialog ARIA roles; the back-up browser close button has an accessible label
+- Added visible keyboard focus outlines to buttons that previously had none (toolbar, sidebar, presets, lock, threat chips, treatment toggles, add/remove buttons)
+- Added meta description and theme-color tags
+
+---
+
 ## v2.038 — 2026-06-07
 **Remove dead emoji icon data from SBD requirements**
 - Removed unused `icon` fields from `SBD_DATA` category definitions — these emoji were never rendered in the UI but remained as leftover data from before icons were dropped from the SBD section (per outstanding `todo` item: icons don't look good, especially in Word exports)
