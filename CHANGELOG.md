@@ -4,6 +4,16 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.043 — 2026-06-10
+**Multi-assessment manager**
+- The browser can now hold multiple assessments side by side. New "Assessments" button in the toolbar (and the Workspace breadcrumb) opens a manager listing every assessment stored in this browser with name, client and last-updated time
+- Open, create and delete assessments from the manager; the current assessment is saved automatically before switching
+- "Duplicate" now creates a genuine separate copy you can switch between — previously it renamed the working copy in place
+- Existing single-assessment data is migrated automatically on first load; deleting the active assessment falls back to the next one (or a fresh blank)
+- Client assessment data (projects/) is no longer tracked in the code repository
+
+---
+
 ## v2.040 — 2026-06-09
 **UX polish pass (screenshot-audited)**
 - Fixed Residual Risk & Treatments table: "Controls" header overflowed its 60px column and overlapped "Post Likelihood"; columns rebalanced and Pre-L/Pre-I/Pre-Rating no longer wrap mid-word

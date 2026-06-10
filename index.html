@@ -711,7 +711,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 
 // ── SentinelToolbar ──────────────────────────────────────────────────
-function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,initials}){
+function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,initials}){
   const[exportOpen,setExportOpen]=React.useState(false);
   const[moreOpen,setMoreOpen]=React.useState(false);
   const exportRef=React.useRef(null);
@@ -729,6 +729,9 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
   const dropItemDanger={...dropItem,color:"#dc2626"};
   return React.createElement("div",{className:"stb-wrap"},
     React.createElement("div",{className:"stb-group"},
+      React.createElement("button",{className:"stb-btn",onClick:onAssessments,title:"Manage assessments"},
+        sIcon("grid"),React.createElement("span",{className:"stb-lbl"}," Assessments")),
+      React.createElement("div",{className:"stb-div"}),
       React.createElement("button",{className:"stb-btn stb-btn-primary",onClick:onSave,title:"Save assessment"},
         sIcon("save"),React.createElement("span",{className:"stb-lbl"}," Save")),
       React.createElement("div",{className:"stb-div"}),
@@ -772,7 +775,7 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
 }
 
 // ── AppHeader ────────────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onMenuToggle,lastFileSave}){
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onMenuToggle,lastFileSave}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
@@ -787,7 +790,7 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
     ),
     // Breadcrumb + save status
     React.createElement("div",{className:"sentinel-bc"},
-      React.createElement("span",{className:"bc-ws"},"Workspace"),
+      React.createElement("button",{className:"bc-ws",onClick:onAssessments,title:"Manage assessments",style:{background:"none",border:"none",cursor:"pointer",padding:0,font:"inherit",color:"inherit"}},"Workspace"),
       React.createElement("span",{className:"bc-sep"},"/"),
       React.createElement("span",{className:"bc-client"},ctx.client||"No client"),
       React.createElement("span",{className:"bc-sep"},"/"),
@@ -800,7 +803,7 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
     ),
     // Toolbar
     React.createElement(SentinelToolbar,{
-      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,initials
+      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,initials
     })
   );
 }
@@ -1246,7 +1249,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.042";
+const VERSION="2.043";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1487,11 +1490,42 @@ function App(){
     return ()=>document.removeEventListener("keydown",onKey);
   },[]);
 
+  // ── Multi-assessment store ───────────────────────────────────────
+  // Each assessment lives at "sra-rta-data:<id>"; metadata in "sra-rta-index";
+  // the active id in "sra-rta-active". The legacy single-slot "sra-rta-data"
+  // is migrated to its own entry on first run.
+  const readAsmIndex=function(){try{var x=JSON.parse(localStorage.getItem("sra-rta-index")||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}};
+  const writeAsmIndex=function(ix){try{localStorage.setItem("sra-rta-index",JSON.stringify(ix))}catch(e){}};
+  const[activeAsmId,setActiveAsmId]=useState(function(){
+    try{
+      var act=localStorage.getItem("sra-rta-active");
+      var legacy=localStorage.getItem("sra-rta-data");
+      if(legacy){
+        var id=act||("a"+Date.now());
+        if(!localStorage.getItem("sra-rta-data:"+id))localStorage.setItem("sra-rta-data:"+id,legacy);
+        localStorage.removeItem("sra-rta-data");
+        var ix=readAsmIndex();
+        if(!ix.some(function(e){return e.id===id})){var p={};try{p=JSON.parse(legacy)||{}}catch(e){}ix.push({id:id,name:(p.ctx&&p.ctx.project)||"Untitled Assessment",client:(p.ctx&&p.ctx.client)||"",updated:Date.now()});writeAsmIndex(ix);}
+        localStorage.setItem("sra-rta-active",id);
+        return id;
+      }
+      if(act)return act;
+      var fresh="a"+Date.now();localStorage.setItem("sra-rta-active",fresh);return fresh;
+    }catch(e){return "a"+Date.now()}
+  });
+  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope});
+  const touchAsmIndex=function(){
+    var ix=readAsmIndex();var e=ix.find(function(x){return x.id===activeAsmId});
+    if(!e){e={id:activeAsmId};ix.push(e)}
+    e.name=ctx.project||"Untitled Assessment";e.client=ctx.client||"";e.updated=Date.now();
+    writeAsmIndex(ix);
+  };
+
   // Load database defaults, then restore from localStorage
   useEffect(()=>{
     fetch("/api/db",{credentials:"same-origin",headers:{"x-api-key":"__API_SECRET__"}}).then(function(r){return r.json()}).then(function(defs){
       defaultsRef.current=defs;
-      var d=localStorage.getItem("sra-rta-data");
+      var d=localStorage.getItem("sra-rta-data:"+activeAsmId);
       if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets&&p.assets.length>0)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
       if(p.threats&&p.threats.length>0){var loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}))}else setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));
       if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
@@ -1506,11 +1540,11 @@ function App(){
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
-  useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data")&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
+  useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data:"+activeAsmId)&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data",JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope}));setLastLocalSave(new Date());},500);
+    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();setLastLocalSave(new Date());},500);
     return()=>clearTimeout(timer);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
+  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
 
   // Close the GitHub back-up browser on Escape
   useEffect(()=>{
@@ -1519,6 +1553,67 @@ function App(){
     window.addEventListener("keydown",h);
     return()=>window.removeEventListener("keydown",h);
   },[ghBrowser.open]);
+
+  // ── Assessment manager (multiple assessments per browser) ─────────
+  const[asmManagerOpen,setAsmManagerOpen]=useState(false);
+  const[asmIndexView,setAsmIndexView]=useState([]);
+  const openAsmManager=()=>{setAsmIndexView(readAsmIndex());setAsmManagerOpen(true)};
+  useEffect(()=>{
+    if(!asmManagerOpen)return;
+    const h=(e)=>{if(e.key==="Escape")setAsmManagerOpen(false)};
+    window.addEventListener("keydown",h);
+    return()=>window.removeEventListener("keydown",h);
+  },[asmManagerOpen]);
+  const persistCurrentAsm=()=>{
+    try{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();}catch(e){}
+  };
+  const loadAsmIntoState=(id)=>{
+    resetAssessmentState();
+    var d=null;try{d=localStorage.getItem("sra-rta-data:"+id)}catch(e){}
+    if(d){try{applyLoadedData(JSON.parse(d))}catch(e){showToast("Could not open assessment — stored data is corrupted")}}
+    try{localStorage.setItem("sra-rta-active",id)}catch(e){}
+    setActiveAsmId(id);
+  };
+  const openAssessment=(id)=>{
+    if(id===activeAsmId){setAsmManagerOpen(false);return}
+    persistCurrentAsm();
+    loadAsmIntoState(id);
+    setShowSetupWizard(false);
+    setTab("context");
+    setAsmManagerOpen(false);
+  };
+  const createAssessment=()=>{
+    persistCurrentAsm();
+    var id="a"+Date.now();
+    var ix=readAsmIndex();ix.push({id:id,name:"Untitled Assessment",client:"",updated:Date.now()});writeAsmIndex(ix);
+    resetAssessmentState();
+    try{localStorage.setItem("sra-rta-active",id)}catch(e){}
+    setActiveAsmId(id);
+    setTab("context");
+    setAsmManagerOpen(false);
+    setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);
+  };
+  const deleteAssessment=(id)=>{
+    var entry=readAsmIndex().find(function(x){return x.id===id});
+    askConfirm({title:"Delete assessment",body:"“"+((entry&&entry.name)||"Untitled Assessment")+"” will be permanently removed from this browser. Saved .json files and cloud back-ups are not affected.",confirmLabel:"Delete",danger:true}).then(function(ok){
+      if(!ok)return;
+      try{localStorage.removeItem("sra-rta-data:"+id)}catch(e){}
+      var ix=readAsmIndex().filter(function(x){return x.id!==id});writeAsmIndex(ix);
+      setAsmIndexView(ix);
+      if(id===activeAsmId){
+        if(ix.length>0){loadAsmIntoState(ix[0].id);}
+        else{
+          var nid="a"+Date.now();
+          writeAsmIndex([{id:nid,name:"Untitled Assessment",client:"",updated:Date.now()}]);
+          setAsmIndexView(readAsmIndex());
+          resetAssessmentState();
+          try{localStorage.setItem("sra-rta-active",nid)}catch(e){}
+          setActiveAsmId(nid);
+        }
+        setTab("context");
+      }
+    });
+  };
 
   // Auto-load shared treatment DB from GitHub once on startup when config is ready
   useEffect(()=>{
@@ -1641,7 +1736,17 @@ function App(){
   const duplicateAssessment=()=>{
     const now=new Date();
     const suffix=" (Copy "+now.getDate()+"/"+(now.getMonth()+1)+")";
-    setCtx(function(c){return{...c,project:(c.project||"Untitled")+suffix,projectNum:(c.projectNum||"")+" COPY",date:now.toISOString().slice(0,10)};});
+    // Persist the original under its own id, then carry on editing a new copy
+    try{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();}catch(e){}
+    const newId="a"+Date.now();
+    const newCtx={...ctx,project:(ctx.project||"Untitled")+suffix,projectNum:(ctx.projectNum||"")+" COPY",date:now.toISOString().slice(0,10)};
+    try{
+      localStorage.setItem("sra-rta-data:"+newId,JSON.stringify({...buildSnapshot(),ctx:newCtx}));
+      var ix=readAsmIndex();ix.push({id:newId,name:newCtx.project,client:newCtx.client||"",updated:Date.now()});writeAsmIndex(ix);
+      localStorage.setItem("sra-rta-active",newId);
+    }catch(e){showToast("Could not duplicate — browser storage may be full");return}
+    setActiveAsmId(newId);
+    setCtx(newCtx);
     setTab("context");
     showToast("Assessment duplicated — update project name and number");
   };
@@ -1792,12 +1897,18 @@ function App(){
     }catch(e){if(!silent){setThreatLibSync(p=>({...p,status:"error"}));showToast("Error loading threat library from GitHub");}}
   };
 
+  // Reset all per-assessment state to a blank assessment (shared by
+  // clearAll, the assessment manager and delete flows)
+  const resetAssessmentState=()=>{
+    setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+  };
+
   const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
     // Snapshot current state for undo (5-minute window)
     _clearSnapshotRef.current={ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,ts:Date.now()};
-    setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
-    localStorage.removeItem("sra-rta-data");
+    resetAssessmentState();
+    localStorage.removeItem("sra-rta-data:"+activeAsmId);
     setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);
     showToast("Assessment cleared",{label:"Undo",fn:function(){
       var snap=_clearSnapshotRef.current;
@@ -3708,6 +3819,39 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     // Setup Wizard
     showSetupWizard&&renderSetupWizard(),
 
+    // Assessment manager modal
+    asmManagerOpen&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Assessments",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16},onClick:()=>setAsmManagerOpen(false)},
+      React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:620,maxWidth:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
+        React.createElement("div",{style:{padding:"16px 20px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1e293b"}},"Assessments"),
+            React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},asmIndexView.length+(asmIndexView.length===1?" assessment":" assessments")+" stored in this browser")
+          ),
+          React.createElement("button",{"aria-label":"Close",title:"Close",onClick:()=>setAsmManagerOpen(false),style:{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#94a3b8"}},"✕")
+        ),
+        React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"8px 0"}},
+          asmIndexView.length===0&&React.createElement("div",{style:{textAlign:"center",padding:24,color:"#94a3b8",fontSize:12}},"No assessments stored yet."),
+          asmIndexView.slice().sort(function(a,b){return(b.updated||0)-(a.updated||0)}).map(function(a){
+            var isActive=a.id===activeAsmId;
+            return React.createElement("div",{key:a.id,style:{padding:"12px 20px",display:"flex",alignItems:"center",gap:12,borderBottom:"1px solid #f8fafc",background:isActive?"#f0f9ff":""}},
+              React.createElement("div",{style:{flex:1,minWidth:0,cursor:"pointer"},onClick:function(){openAssessment(a.id)}},
+                React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.name||"Untitled Assessment"),
+                React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},(a.client?a.client+" · ":"")+(a.updated?"Updated "+new Date(a.updated).toLocaleString():""))
+              ),
+              isActive
+                ?React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#0369a1",background:"#e0f2fe",borderRadius:10,padding:"3px 9px",flexShrink:0}},"OPEN")
+                :React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){openAssessment(a.id)}},"Open"),
+              React.createElement("button",{className:"btn-x",title:"Delete assessment","aria-label":"Delete "+(a.name||"assessment"),onClick:function(){deleteAssessment(a.id)}},"✕")
+            );
+          })
+        ),
+        React.createElement("div",{style:{padding:"12px 20px",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}},
+          React.createElement("div",{style:{fontSize:11,color:"#94a3b8",flex:1,minWidth:200}},"Stored locally in this browser. Use Save or cloud Back-ups for copies you can share or restore elsewhere."),
+          React.createElement("button",{className:"btn btn-dark",onClick:createAssessment},"+ New Assessment")
+        )
+      )
+    ),
+
     // GitHub file browser modal
     ghBrowser.open&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Load from Back-ups",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center"},onClick:()=>setGhBrowser({open:false,files:[],loading:false,path:"projects"})},
       React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:560,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
@@ -3763,6 +3907,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onSetup:function(){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);},
       onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
       ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
+      onAssessments:openAsmManager,
       onMenuToggle:function(){setMobileNavOpen(function(v){return !v;})},
       lastFileSave:lastFileSave,
     }),

@@ -20,9 +20,10 @@
 
  1. PDF report export — branded, print-ready report (cover page, contents,
     matrices, register, treatment roadmap). Today only Word/Excel copy exists.
- 2. Multi-assessment manager — home screen listing saved assessments with
-    open/rename/delete. localStorage currently holds ONE assessment; switching
-    projects risks silent overwrite.
+ 2. [DONE v2.043] Multi-assessment manager — toolbar "Assessments" button;
+    per-assessment localStorage keys + index; open/create/delete/switch with
+    auto-save before switching; legacy single-slot data migrated on load.
+    Possible follow-ups: rename-in-list, search/filter for long lists.
  3. Undo/redo (Ctrl+Z) — scoring grids are click-heavy and a stray click on a
     score bar or "Clear All" is destructive.
  4. Interactive dashboard matrix — click a risk-matrix cell to filter the risk
