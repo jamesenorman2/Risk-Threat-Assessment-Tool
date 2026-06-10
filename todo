@@ -1,8 +1,22 @@
 # TODO / Improvement Backlog
 # Written 2026-06-09 (session: app-wide improvements). Safe to hand to a future
-# session — each item is self-contained. Top 20 ranked by value-for-effort.
+# session — each item is self-contained.
+#
+# PRIORITIES CONFIRMED BY JAMES 2026-06-10:
+#   - Colleagues WILL use the tool  → multi-assessment manager (#2), reviewer
+#     workflow (#5), real auth/backend (#14), template library (#15)
+#   - WORD is the client deliverable → polish Word export (#1 becomes "improve
+#     Word export fidelity", not PDF)
+#   - Overseas sites in pipeline    → non-UK mode (#13)
+#   - Client data in repo NOT acceptable → secure storage (#14); projects/
+#     untracked from git in v2.041; FULL HISTORY PURGE still pending (needs
+#     git-filter-repo + force push — destructive, requires James's go-ahead;
+#     recovery of old back-ups until then: `git show <old-commit>:projects/...`)
+#   - RECOMMENDED INTERIM STEP: create a separate PRIVATE repo (e.g.
+#     rta-client-data), point Settings → GitHub owner/repo at it; the app then
+#     saves/loads back-ups there and client data never touches the code repo.
 
-## Top 20 improvement ideas
+## Top 20 improvement ideas (re-ranked after answers)
 
  1. PDF report export — branded, print-ready report (cover page, contents,
     matrices, register, treatment roadmap). Today only Word/Excel copy exists.
@@ -47,14 +61,12 @@
 20. In-app help/onboarding — "?" tooltips per section explaining methodology
     terms (TA, DBT, ALARP) for less-experienced assessors; link methodology.
 
-## Questions for James (answers will steer the backlog)
-- Is this single-assessor (just you) or will colleagues use it? (drives #2,
-  #5, #14, #15)
-- Do clients receive the Word export, or would a branded PDF be the primary
-  deliverable? (drives #1, #8)
-- Any non-UK / overseas sites in the pipeline? (drives #13)
-- Should saved client data live anywhere other than the browser + your GitHub
-  repo? Compliance/GDPR view on projects/ folder living in git history? (#14)
+## Questions for James — ANSWERED 2026-06-10
+- Colleagues will use it: YES → #2/#5/#14/#15 promoted
+- Word is the deliverable: YES → improve Word export, PDF deprioritised
+- Overseas sites: YES → #13 promoted
+- Client data in repo acceptable: NO → projects/ untracked (v2.041); history
+  purge + private data repo pending James's decision
 
 ## Known security items (deliberately not changed without sign-off)
 - middleware.js stores the plaintext APP_PASSWORD in the session cookie —
