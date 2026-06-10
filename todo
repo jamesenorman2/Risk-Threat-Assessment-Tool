@@ -8,18 +8,24 @@
 #   - WORD is the client deliverable → polish Word export (#1 becomes "improve
 #     Word export fidelity", not PDF)
 #   - Overseas sites in pipeline    → non-UK mode (#13)
-#   - Client data in repo NOT acceptable → secure storage (#14); projects/
-#     untracked from git in v2.041; FULL HISTORY PURGE still pending (needs
-#     git-filter-repo + force push — destructive, requires James's go-ahead;
-#     recovery of old back-ups until then: `git show <old-commit>:projects/...`)
+#   - Client data in repo NOT acceptable → projects/ untracked AND history
+#     purged with git-filter-repo + force push (2026-06-10, approved by James).
+#     NOTE: any old local clones still contain the data — re-clone them.
+#     GitHub may cache old objects server-side; for guaranteed removal ask
+#     GitHub Support to run a GC on the repo.
 #   - RECOMMENDED INTERIM STEP: create a separate PRIVATE repo (e.g.
 #     rta-client-data), point Settings → GitHub owner/repo at it; the app then
 #     saves/loads back-ups there and client data never touches the code repo.
 
 ## Top 20 improvement ideas (re-ranked after answers)
 
- 1. PDF report export — branded, print-ready report (cover page, contents,
-    matrices, register, treatment roadmap). Today only Word/Excel copy exists.
+ 1. Word export fidelity (Word is THE deliverable — confirmed by James).
+    [DONE v2.044]: HTML-escaping of all user text in Word/Excel/Print exports;
+    Word running header + footer with Page X of Y fields.
+    REMAINING: open the .doc in real desktop Word and review pagination/table
+    widths; consider a true .docx (e.g. via api/report.py docx path) so the
+    file isn't flagged as HTML-based; table of contents; embed crime map
+    snapshot images in export.
  2. [DONE v2.043] Multi-assessment manager — toolbar "Assessments" button;
     per-assessment localStorage keys + index; open/create/delete/switch with
     auto-save before switching; legacy single-slot data migrated on load.

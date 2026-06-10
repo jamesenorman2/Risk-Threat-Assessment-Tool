@@ -4,6 +4,14 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.044 — 2026-06-10
+**Word deliverable: escaping + page headers/footers**
+- All exports (Word, Excel, Print/HTML) now HTML-escape user-entered text. Previously a client called "R&D Holdings", a note containing "<2m" or quotes in any field corrupted or garbled the exported document
+- Word export gains a running page header (project name + project number) and footer with real Word page numbers (Page X of Y), client, generation date and tool version
+- Client data history purge: projects/ removed from ALL git history (git-filter-repo) and force-pushed
+
+---
+
 ## v2.043 — 2026-06-10
 **Multi-assessment manager**
 - The browser can now hold multiple assessments side by side. New "Assessments" button in the toolbar (and the Workspace breadcrumb) opens a manager listing every assessment stored in this browser with name, client and last-updated time
