@@ -1162,7 +1162,7 @@ function SentinelContextScreen({
             React.createElement(SField,{label:"Revision",         value:ctx.revision||ctx.ref, onChange:function(e){upCtx("revision",e.target.value)}}),
             React.createElement(SField,{label:"Client",           value:ctx.client,     onChange:function(e){upCtx("client",e.target.value)}}),
             React.createElement(SField,{label:"Site address",     value:ctx.address,    onChange:function(e){upCtx("address",e.target.value)}}),
-            React.createElement(SField,{label:"Province / region",value:ctx.postcode,   onChange:function(e){upCtx("postcode",e.target.value)}}),
+            React.createElement(SField,{label:ctx.country==="United Kingdom"?"Postcode":"Postcode / Province / region",value:ctx.postcode,   onChange:function(e){upCtx("postcode",e.target.value)}}),
             React.createElement(SField,{label:"Country",          value:ctx.country,    isSelect:true,
               selectOptions:COUNTRIES||["United Kingdom","United States","Australia","Other"],
               onChange:function(e){upCtx("country",e.target.value)}}),
@@ -1246,7 +1246,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.040";
+const VERSION="2.041";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
