@@ -1011,7 +1011,7 @@ function AreaAnalysisCard({onCopyPrompt,onPasteResponse}){
       React.createElement("div",{className:"ai-btns"},
         React.createElement("button",{className:"ai-btn-dark",onClick:onCopyPrompt||function(){}},sIcon("copy")," Copy prompt"),
         React.createElement("button",{className:"ai-btn-outline",onClick:onPasteResponse||function(){}},sIcon("paste")," Paste response"),
-        React.createElement("button",{className:"ai-btn-ghost"},sIcon("ext")," Open ChatGPT")
+        React.createElement("button",{className:"ai-btn-ghost",onClick:function(){window.open("https://oscar.aecom.global/home/oscar","_blank","noopener")}},sIcon("ext")," Open AECOM Oscar")
       )
     )
   );
@@ -1246,7 +1246,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.041";
+const VERSION="2.042";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
