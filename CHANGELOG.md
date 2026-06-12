@@ -4,6 +4,14 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.045 — 2026-06-12
+**UI consistency pass: Sentinel design tokens applied app-wide**
+- The 15 tabs still on the pre-redesign visual style (Crime, Assets, Threats, POI, Vulnerability, Impact, Controls, Risk Register, Residual Risk, Summary, Dashboard, SBD, Methodology, Database, Settings) now share the same colours, type scale, radii and focus styles as the Context tab, via a remap of the shared legacy CSS onto the Sentinel design tokens (`--ink-*`, `--s-*`, `--accent`, `--ok`/`--warn`/`--info`, `--vh-bg`) — no JSX/logic changes
+- Fixed a contrast bug: sticky threat-table column headers had white text on a near-white background (invisible); now dark text on the Sentinel surface colour
+- Toast notifications, focus rings, "locked"/destructive button states and the terrorism/crime threat-chip colours now use the same semantic tokens as the rest of the app instead of one-off hex values
+- Removed ~70 lines of dead pre-redesign CSS (`.header`, `.nav`, `.content`, `.grid-5`, `.grid-7`, unused `.app` rules) that were never referenced after the Sentinel sidebar replaced the old tab bar
+- Replaced four hardcoded `#d4d4d4` empty-state colours with the shared muted token
+
 ## v2.044 — 2026-06-10
 **Word deliverable: escaping + page headers/footers**
 - All exports (Word, Excel, Print/HTML) now HTML-escape user-entered text. Previously a client called "R&D Holdings", a note containing "<2m" or quotes in any field corrupted or garbled the exported document
