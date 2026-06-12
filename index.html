@@ -397,6 +397,9 @@ select.input{padding:4px 8px;font-size:12.5px}
 }
 /* ── Mobile (≤768px) — drawer sidebar, stacked layout ── */
 @media(max-width:768px){
+  /* Form fields below 16px trigger iOS/Android "zoom to caret" on focus,
+     which leaves the page zoomed in with no easy way back out */
+  input,select,textarea{font-size:16px!important}
   .sentinel-app{grid-template-columns:1fr;grid-template-rows:52px 1fr}
   /* Sidebar becomes a fixed off-screen drawer */
   .sentinel-sidebar{
@@ -1228,7 +1231,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.045";
+const VERSION="2.046";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});

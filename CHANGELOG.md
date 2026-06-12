@@ -4,6 +4,11 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.046 — 2026-06-12
+**Fix: mobile pinch-zoom getting stuck after tapping a form field**
+- On Android/iOS, all form inputs, dropdowns and textareas rendered below the 16px threshold (12.5px, per the Sentinel type scale). Tapping into any field on a phone made the browser auto-zoom in to the caret, and the page stayed zoomed in afterwards with no easy way to zoom back out
+- On screens ≤768px wide, all `input`/`select`/`textarea` elements now render at 16px, which stops the browser from auto-zooming on focus. Desktop sizing (12.5px) is unchanged
+
 ## v2.045 — 2026-06-12
 **UI consistency pass: Sentinel design tokens applied app-wide**
 - The 15 tabs still on the pre-redesign visual style (Crime, Assets, Threats, POI, Vulnerability, Impact, Controls, Risk Register, Residual Risk, Summary, Dashboard, SBD, Methodology, Database, Settings) now share the same colours, type scale, radii and focus styles as the Context tab, via a remap of the shared legacy CSS onto the Sentinel design tokens (`--ink-*`, `--s-*`, `--accent`, `--ok`/`--warn`/`--info`, `--vh-bg`) — no JSX/logic changes
