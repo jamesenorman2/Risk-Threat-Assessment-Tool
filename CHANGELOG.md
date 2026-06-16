@@ -4,6 +4,12 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.049 — 2026-06-16
+**Dashboard risk-profile cards now click through to a filtered Risk Register (backlog #4)**
+- The five risk-count cards in the Dashboard's "Pre-Mitigation Risk Profile" matrix (Very High/High/Medium/Low/Very Low) are now buttons — clicking one jumps to the Risk Register tab pre-filtered to that severity
+- Risk Register shows a banner while a filter is active, naming the severity and with a "✕" to clear it back to the full list
+- R# row numbers stay consistent with the unfiltered list (and with the dashboard matrix's own R# labels) while filtered, instead of renumbering from 1
+
 ## v2.048 — 2026-06-14
 **QA / completeness gate before export (backlog #9)**
 - Word and Excel export now run a completeness check first: empty project/client name, no assets, no threats, threats missing a Threat Assessment/Vulnerability/Impact score, and High/Very High risks with no residual score or ALARP justification

@@ -1261,9 +1261,11 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.048";
+const VERSION="2.049";
 function App(){
   const[tab,setTab]=useState("context");
+  const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
+  const goToRegisterFiltered=rating=>{setRegisterSeverityFilter(rating);setTab("register");};
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
   const[meetings,setMeetings]=useState([]);
   const[pois,setPois]=useState([]);
@@ -5367,6 +5369,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           }},"\ud83d\udccb Copy to Word"),
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:4},onClick:function(){captureForWord("section-register","Risk register captured \u2014 paste into Word")}},"\ud83d\udcf7 Capture")
         ),
+        registerSeverityFilter&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:14,padding:"6px 10px",borderRadius:6,background:RC[registerSeverityFilter].bg,color:RC[registerSeverityFilter].t,fontSize:12,fontWeight:600,width:"fit-content"}},
+          "Showing "+registerSeverityFilter+" risks only",
+          React.createElement("button",{onClick:function(){setRegisterSeverityFilter(null)},"aria-label":"Clear filter",title:"Clear filter",
+            style:{background:"rgba(255,255,255,0.25)",border:"none",borderRadius:4,color:"inherit",cursor:"pointer",fontSize:12,padding:"1px 6px",fontWeight:700}},"\u2715")
+        ),
         React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:16}},
           React.createElement("div",{style:{padding:12,borderRadius:8,border:"1px solid #bbf7d0",background:"#f0fdf4"}},
             React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#16a34a",marginBottom:4}},"Reduce"),
@@ -5394,7 +5401,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("th",null,"Rating"),React.createElement("th",null,"Treatment")
             )),
             React.createElement("tbody",null,
-              cRisks.filter(r=>r.n).map((r,i)=>React.createElement("tr",{key:r.id},
+              cRisks.map((r,i)=>({r,i})).filter(x=>x.r.n&&(!registerSeverityFilter||x.r.rat===registerSeverityFilter)).map(x=>{const r=x.r,i=x.i;return React.createElement("tr",{key:r.id},
                 React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
                 React.createElement("td",{className:"text-left font-medium"},r.n),
                 React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
@@ -5409,7 +5416,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   React.createElement("option",{value:""},"—"),
                   TREATS.map(t=>React.createElement("option",{key:t,value:t},t))
                 ))
-              ))
+              );})
             )
           )
         )
@@ -6254,7 +6261,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:12}},
             ...["Very High","High","Medium","Low","Very Low"].map(function(r){
               var cnt=cRisks.filter(function(x){return x.rat===r}).length;var c=RC[r];
-              return React.createElement("div",{key:r,style:{backgroundColor:c.bg,borderRadius:8,padding:12,textAlign:"center"}},
+              return React.createElement("button",{key:r,onClick:function(){goToRegisterFiltered(r)},
+                title:"View "+r+" risks in the Risk Register",
+                style:{backgroundColor:c.bg,borderRadius:8,padding:12,textAlign:"center",border:"none",cursor:"pointer",font:"inherit"}},
                 React.createElement("div",{style:{fontSize:28,fontWeight:800,color:c.t}},cnt),
                 React.createElement("div",{style:{fontSize:11,fontWeight:600,color:c.t,opacity:0.85}},r)
               );
