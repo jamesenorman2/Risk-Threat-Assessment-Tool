@@ -4,6 +4,11 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.048 — 2026-06-14
+**QA / completeness gate before export (backlog #9)**
+- Word and Excel export now run a completeness check first: empty project/client name, no assets, no threats, threats missing a Threat Assessment/Vulnerability/Impact score, and High/Very High risks with no residual score or ALARP justification
+- If anything is flagged, a confirm dialog lists the issues and lets the assessor export anyway or go back and fix them first — nothing is blocked outright, this only surfaces gaps that were previously silent
+
 ## v2.047 — 2026-06-14
 **Accessibility: focus trap on all modals + screen-reader labels (backlog #16)**
 - All four modal dialogs (Confirm, Setup Wizard, Assessments manager, Load from Back-ups) now trap Tab/Shift+Tab focus inside the dialog while open and restore focus to the trigger element on close, instead of letting keyboard focus escape to the page behind them

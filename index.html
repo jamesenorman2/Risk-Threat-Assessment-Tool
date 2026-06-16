@@ -1261,7 +1261,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.047";
+const VERSION="2.048";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -2752,6 +2752,33 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   const postM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
     cRisks.forEach((r,i)=>{if(r.resL&&r.resI)m[5-r.resL][r.resI-1].push("R"+(i+1))});return m},[cRisks]);
 
+  // QA / completeness gate — flag obvious gaps before export, don't block them
+  const getCompletenessIssues=()=>{
+    const issues=[];
+    if(!ctx.project)issues.push("Project name is empty (Context tab)");
+    if(!ctx.client)issues.push("Client name is empty (Context tab)");
+    if(!assets.length)issues.push("No assets have been added (Assets tab)");
+    if(!threats.length)issues.push("No threats have been added (Threats tab)");
+    const namedRisks=cRisks.filter(r=>r.n);
+    const unscored=namedRisks.filter(r=>!r.lik||!r.imp);
+    if(unscored.length)issues.push(unscored.length+" threat"+(unscored.length===1?" is":"s are")+" missing a Threat Assessment, Vulnerability or Impact score, so no risk rating could be calculated");
+    const highNoJustification=namedRisks.filter(r=>(r.rat==="High"||r.rat==="Very High")&&!r.resRat&&!(residualJustifications[r.id]||"").trim());
+    if(highNoJustification.length)issues.push(highNoJustification.length+" High/Very High risk"+(highNoJustification.length===1?" has":"s have")+" no residual score or ALARP justification (Residual Risk tab)");
+    return issues;
+  };
+  const exportGuard=async()=>{
+    const issues=getCompletenessIssues();
+    if(!issues.length)return true;
+    return await askConfirm({
+      title:"Assessment may be incomplete",
+      body:React.createElement(React.Fragment,null,
+        React.createElement("div",{style:{marginBottom:8}},"This assessment has "+issues.length+" outstanding item"+(issues.length===1?"":"s")+":"),
+        React.createElement("ul",{style:{margin:0,paddingLeft:18}},issues.map((iss,idx)=>React.createElement("li",{key:idx,style:{marginBottom:4}},iss)))
+      ),
+      confirmLabel:"Export anyway"
+    });
+  };
+
   // Export Word (Pro) — server-rendered .docx via /api/report
   const exportWordPro=async()=>{
     showToast("Generating branded Word report...");
@@ -2787,6 +2814,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
   // Export Word
   const exportWord=async()=>{
+    if(!(await exportGuard()))return;
     showToast("Generating Word document...");
     // Build HTML tables for Word
     let html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
@@ -3129,7 +3157,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   };
 
   // Export Excel
-  const exportExcel=()=>{
+  const exportExcel=async()=>{
+    if(!(await exportGuard()))return;
     showToast("Generating Excel file...");
     const rc=v=>!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold",2:"background:#16803c;color:#fff;font-weight:bold",3:"background:#b45309;color:#000;font-weight:bold",4:"background:#c2570a;color:#fff;font-weight:bold",5:"background:#b91c1c;color:#fff;font-weight:bold"})[v]||"";
     const ratc=r=>!r?"":({
