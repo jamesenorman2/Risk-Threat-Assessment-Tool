@@ -1261,7 +1261,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.049";
+const VERSION="2.050";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1450,7 +1450,12 @@ function App(){
 
   // Keyboard scoring: 1–5 sets value on the focused score cell, arrows roam,
   // 0/Backspace clears, end-of-row wraps to first cell of next threat/criterion.
+  // Shift+1-5 applies the value to every score cell in the current row (e.g. all
+  // criteria for one asset/threat); Alt+1-5 applies it to the same column position
+  // in every row of the table (e.g. one criterion across all assets/threats);
+  // Ctrl/Cmd+D copies the focused cell's value into the cell directly below it.
   useEffect(()=>{
+    const getRowCells=(r)=>r&&r.matches&&r.matches("[data-sbar]")?[r]:Array.from(r.querySelectorAll("[data-sbar]"));
     const onKey=(e)=>{
       const active=document.activeElement;
       if(!active||!active.matches||!active.matches("[data-sbar]"))return;
@@ -1458,9 +1463,50 @@ function App(){
       const tag=(e.target&&e.target.tagName)||"";
       if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT")return;
       const k=e.key;
+      const digitFromCode=/^Digit[1-5]$|^Numpad[1-5]$/.test(e.code)?e.code.slice(-1):null;
       const cells=Array.from(document.querySelectorAll("[data-sbar]"));
       const idx=cells.indexOf(active);
       const focusAt=(i)=>{const c=cells[i];if(c){c.focus();c.scrollIntoView({block:"nearest",inline:"nearest"})}};
+      if(digitFromCode&&(e.shiftKey||e.altKey)){
+        e.preventDefault();
+        const row=active.closest("tr");
+        if(!row)return;
+        const rowCells=getRowCells(row);
+        if(e.shiftKey){
+          rowCells.forEach(cell=>{const btn=cell.querySelector(`button[data-v="${digitFromCode}"]`);if(btn)btn.click()});
+        }else{
+          const off=rowCells.indexOf(active);
+          const table=row.closest("table");
+          if(table&&off>=0){
+            Array.from(table.querySelectorAll("tr")).forEach(r=>{
+              const cells2=getRowCells(r);
+              const cell=cells2[off];
+              if(cell){const btn=cell.querySelector(`button[data-v="${digitFromCode}"]`);if(btn)btn.click()}
+            });
+          }
+        }
+        return;
+      }else if((e.ctrlKey||e.metaKey)&&(k==="d"||k==="D")){
+        e.preventDefault();
+        const sel=active.querySelector("button.sel");
+        const val=sel&&sel.getAttribute("data-v");
+        if(!val)return;
+        const row=active.closest("tr");
+        if(!row)return;
+        const rowCells=getRowCells(row);
+        const off=rowCells.indexOf(active);
+        let nextRow=row.nextElementSibling;
+        while(nextRow&&!getRowCells(nextRow).length)nextRow=nextRow.nextElementSibling;
+        if(!nextRow)return;
+        const nextCells=getRowCells(nextRow);
+        const tgt=nextCells[off]||nextCells[0];
+        if(tgt){
+          const btn=tgt.querySelector(`button[data-v="${val}"]`);
+          if(btn)btn.click();
+          tgt.focus();tgt.scrollIntoView({block:"nearest",inline:"nearest"});
+        }
+        return;
+      }
       if(k>="1"&&k<="5"){
         const btn=active.querySelector(`button[data-v="${k}"]`);
         if(btn){btn.click();e.preventDefault();focusAt(Math.min(idx+1,cells.length-1))}
@@ -4529,7 +4575,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("br",null),
           React.createElement("strong",null,"Point of Interest (POI)"),": ",React.createElement("em",null,"where")," threats are likely to meet assets — a specific location, entry, or feature (main entrance, loading bay, atrium). Managed on the ",React.createElement("strong",null,"POI tab"),", used to target treatments to physical locations."
         ),
-        React.createElement("p",{"data-capture-hide":"1",className:"section-sub"},"Click a score to select. Click again to deselect.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear")),
+        React.createElement("p",{"data-capture-hide":"1",className:"section-sub"},"Click a score to select. Click again to deselect.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down")),
         React.createElement("div",{"data-capture-hide":"1",className:"preset-bar"},
           React.createElement("span",{className:"preset-label"},"Quick fill:"),
           ...Object.keys(assetPresetsDB).map(type=>
@@ -4615,7 +4661,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Threat Register"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Click Capability and Intent scores. DBTs auto-identify at score \u2265 3.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1\u20135 sets score, \u2190\u2192 moves, 0 clears."},"\u2328 1\u20135 score \u00b7 \u2190\u2192 move \u00b7 0 clear"))
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Click Capability and Intent scores. DBTs auto-identify at score \u2265 3.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1\u20135 sets score, \u2190\u2192 moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"\u2328 1\u20135 score \u00b7 \u2190\u2192 move \u00b7 0 clear \u00b7 \u21e7+1-5 row \u00b7 \u2325+1-5 col \u00b7 \u2318D copy down"))
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var chunks=[];
@@ -4961,7 +5007,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Attractiveness, Vulnerability & Likelihood"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Capability and Intent from the Threats tab are shown read-only. Score 6 Target Attractiveness criteria + Vulnerability. Likelihood auto-calculates.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear"))
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Capability and Intent from the Threats tab are shown read-only. Score 6 Target Attractiveness criteria + Vulnerability. Likelihood auto-calculates.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down"))
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
@@ -5118,7 +5164,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Impact Assessment"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score 5 impact criteria. Hover over any score button to see what it means. Rating auto-calculates.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear"))
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score 5 impact criteria. Hover over any score button to see what it means. Rating auto-calculates.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down"))
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
@@ -5204,7 +5250,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Existing Controls"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Describe controls, click effectiveness and confidence scores.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear"))
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Describe controls, click effectiveness and confidence scores.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down"))
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
@@ -5427,7 +5473,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-2"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears."},"⌨ 1–5 score · ←→ move · 0 clear"))
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down"))
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});

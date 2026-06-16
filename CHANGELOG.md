@@ -4,6 +4,12 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.050 — 2026-06-16
+**Keyboard bulk scoring: whole row/column apply + copy-down (backlog #17)**
+- Scoring grids (Assets, Threats, Vulnerability, Controls, Residual Risk, Impact) now support bulk keyboard entry on top of the existing 1-5/arrow-key scoring: Shift+1-5 sets every score cell in the current row (e.g. all criteria for one asset) to that value in one keypress; Alt+1-5 sets the same column position across every row of the table (e.g. one criterion for every threat); Ctrl/Cmd+D copies the focused cell's value into the cell directly below and moves focus there for rapid fill-down
+- Useful for large grids where many threats/assets share the same score for a given criterion — previously every cell had to be set individually
+- The "⌨" keyboard-shortcut hint shown above each scoring grid now lists the new shortcuts
+
 ## v2.049 — 2026-06-16
 **Dashboard risk-profile cards now click through to a filtered Risk Register (backlog #4)**
 - The five risk-count cards in the Dashboard's "Pre-Mitigation Risk Profile" matrix (Very High/High/Medium/Low/Very Low) are now buttons — clicking one jumps to the Risk Register tab pre-filtered to that severity
