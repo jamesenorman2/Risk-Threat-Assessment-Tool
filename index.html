@@ -577,6 +577,43 @@ function HelpBox({title,description,scaleItems}){
     )
   );
 }
+// In-app glossary for methodology abbreviations used throughout the tool (backlog #20)
+const GLOSSARY={
+  TA:{term:"Target Attractiveness (TA)",def:"How appealing and accessible the site is to a given threat, averaged across 6 criteria: Visibility, Status, Threat Access, Collateral Exposure, Crime Profile and Historical Precedence. See the Methodology tab for the full scoring scale."},
+  DBT:{term:"Design Basis Threat (DBT)",def:"A threat whose Threat Score (average of Capability + Intent) is 3 or above. DBTs are carried forward through the full risk assessment; threats scoring below 3 are noted but not assessed further. See the Methodology tab."},
+  ALARP:{term:"ALARP",def:"“As Low As Reasonably Practicable.” After treatment, residual risk should be reduced to the point where further reduction is not reasonably practicable given cost, effort or impracticality — not necessarily to zero. The justification field records why the residual level is considered ALARP. See the Methodology tab."},
+  LIKELIHOOD:{term:"Likelihood",def:"Calculated as ROUND((Threat Score + Target Attractiveness + Vulnerability) / 3), giving a 1 (Very Unlikely) to 5 (Very Likely) score. See the Methodology tab."},
+  CAPINT:{term:"Capability & Intent",def:"The two independent axes a threat actor is scored on. Threat Score = ROUND((Capability + Intent) / 2). See the Methodology tab."},
+  VULN:{term:"Vulnerability",def:"How susceptible the site is to a given threat, scored across the criteria shown on the Vulnerability tab. Feeds into the Likelihood calculation. See the Methodology tab."}
+};
+function TermTip({k,goMethodology}){
+  const[open,setOpen]=React.useState(false);
+  const ref=React.useRef(null);
+  const g=GLOSSARY[k];
+  React.useEffect(function(){
+    if(!open)return;
+    const onDoc=function(e){if(ref.current&&!ref.current.contains(e.target))setOpen(false)};
+    const onEsc=function(e){if(e.key==="Escape")setOpen(false)};
+    document.addEventListener("mousedown",onDoc);
+    document.addEventListener("keydown",onEsc);
+    return function(){document.removeEventListener("mousedown",onDoc);document.removeEventListener("keydown",onEsc)};
+  },[open]);
+  if(!g)return null;
+  return React.createElement("span",{ref,style:{position:"relative",display:"inline-block",marginLeft:4},"data-capture-hide":"1"},
+    React.createElement("button",{type:"button","aria-label":"What is "+g.term+"?","aria-expanded":open,
+      onClick:function(e){e.stopPropagation();e.preventDefault();setOpen(function(v){return !v})},
+      style:{width:14,height:14,borderRadius:"50%",border:"1px solid var(--s-line)",background:"var(--s-surface-2)",color:"var(--ink-2)",fontSize:9,fontWeight:700,lineHeight:1,cursor:"pointer",padding:0,verticalAlign:"middle",display:"inline-flex",alignItems:"center",justifyContent:"center"}
+    },"?"),
+    open&&React.createElement("div",{role:"tooltip",style:{position:"absolute",zIndex:200,top:"100%",left:0,marginTop:4,width:230,background:"var(--ink-1)",color:"#fff",fontSize:11,fontWeight:400,lineHeight:1.5,padding:"8px 10px",borderRadius:6,textAlign:"left",whiteSpace:"normal",boxShadow:"0 4px 14px rgba(0,0,0,0.25)"}},
+      React.createElement("div",{style:{fontWeight:700,marginBottom:4}},g.term),
+      g.def,
+      goMethodology&&React.createElement("div",{style:{marginTop:6}},
+        React.createElement("button",{type:"button",onClick:function(e){e.stopPropagation();setOpen(false);goMethodology()},
+          style:{background:"none",border:"none",color:"#7dd3fc",cursor:"pointer",padding:0,fontSize:11,textDecoration:"underline"}},"Open Methodology tab")
+      )
+    )
+  );
+}
 
 // ── Sentinel navigation structure ──────────────────────────────────
 const SENTINEL_NAV=[
@@ -1261,7 +1298,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.050";
+const VERSION="2.051";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -4754,8 +4791,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("th",{className:"c-num"},"T#"),
               React.createElement("th",{className:"c-type"},"Type"),
               React.createElement("th",{className:"c-name left"},"Threat"),React.createElement("th",{className:"c-desc left"},"Description"),
-              React.createElement("th",{className:"c-score-bar"},"Capability"),React.createElement("th",{className:"c-score-bar"},"Intent"),
-              React.createElement("th",{className:"c-badge"},"Score"),React.createElement("th",{className:"c-level"},"Level"),React.createElement("th",{className:"c-dbt"},"DBT"),React.createElement("th",{className:"c-actions"},"")
+              React.createElement("th",{className:"c-score-bar"},"Capability",React.createElement(TermTip,{k:"CAPINT",goMethodology:function(){setTab("methodology")}})),React.createElement("th",{className:"c-score-bar"},"Intent"),
+              React.createElement("th",{className:"c-badge"},"Score"),React.createElement("th",{className:"c-level"},"Level"),React.createElement("th",{className:"c-dbt"},"DBT",React.createElement(TermTip,{k:"DBT",goMethodology:function(){setTab("methodology")}})),React.createElement("th",{className:"c-actions"},"")
             )),
             React.createElement("tbody",null,
               // Terrorism header row
@@ -5106,8 +5143,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   {k:"history",l:"History"}
                 ].map(c=>React.createElement("th",{key:c.k,className:"criterion",style:{minWidth:90}},c.l)),
                 React.createElement("th",{className:"vuln-col",style:{minWidth:100}},"Vulnerability"),
-                React.createElement("th",{className:"derived",style:{width:30},title:"Target Attractiveness \u2014 auto"},"TA"),
-                React.createElement("th",{className:"derived",style:{width:30},title:"Likelihood score"},"L"),
+                React.createElement("th",{className:"derived",style:{width:30},title:"Target Attractiveness \u2014 auto"},"TA",React.createElement(TermTip,{k:"TA",goMethodology:function(){setTab("methodology")}})),
+                React.createElement("th",{className:"derived",style:{width:30},title:"Likelihood score"},"L",React.createElement(TermTip,{k:"LIKELIHOOD",goMethodology:function(){setTab("methodology")}})),
                 React.createElement("th",{className:"derived",style:{width:56}},"Level"),
                 React.createElement("th",{style:{width:24},title:"Copy row scores to all threats in same category"},"")
               )
@@ -5442,7 +5479,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("table",null,
             React.createElement("thead",null,React.createElement("tr",null,
               React.createElement("th",null,"R#"),React.createElement("th",{className:"left"},"Threat"),
-              React.createElement("th",null,"T"),React.createElement("th",null,"TA"),React.createElement("th",null,"V"),
+              React.createElement("th",null,"T"),React.createElement("th",null,"TA",React.createElement(TermTip,{k:"TA",goMethodology:function(){setTab("methodology")}})),React.createElement("th",null,"V"),
               React.createElement("th",null,"L"),React.createElement("th",null,"I"),React.createElement("th",null,"L×I"),
               React.createElement("th",null,"Rating"),React.createElement("th",null,"Treatment")
             )),
@@ -5630,7 +5667,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 "\u26a0\ufe0f Insufficient controls — residual likelihood should not drop more than 1 below pre-mitigation (",r.lik," \u2192 ",rsc.l,"). Justify this reduction or revise the score."
               ),
               React.createElement("div",{style:{display:"flex",alignItems:"flex-start",gap:8}},
-                React.createElement("label",{style:{fontSize:10,fontWeight:700,color:"#475569",whiteSpace:"nowrap",paddingTop:6,minWidth:120}},"ALARP Justification:"),
+                React.createElement("label",{style:{fontSize:10,fontWeight:700,color:"#475569",whiteSpace:"nowrap",paddingTop:6,minWidth:120}},"ALARP Justification:",React.createElement(TermTip,{k:"ALARP",goMethodology:function(){setTab("methodology")}})),
                 React.createElement("textarea",{
                   className:"input",
                   style:{fontSize:11,minHeight:40,resize:"vertical",lineHeight:1.4,flex:1},
@@ -6542,7 +6579,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("th",{className:"left",style:{fontSize:11}},"Threat"),
               React.createElement("th",{style:{width:55,fontSize:11}},"Type"),
               React.createElement("th",{style:{width:30,fontSize:11}},"T"),
-              React.createElement("th",{style:{width:30,fontSize:11}},"TA"),
+              React.createElement("th",{style:{width:30,fontSize:11}},"TA",React.createElement(TermTip,{k:"TA",goMethodology:function(){setTab("methodology")}})),
               React.createElement("th",{style:{width:30,fontSize:11}},"V"),
               React.createElement("th",{style:{width:30,fontSize:11}},"L"),
               React.createElement("th",{style:{width:30,fontSize:11}},"I"),

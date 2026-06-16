@@ -4,6 +4,11 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.051 — 2026-06-16
+**In-app help tooltips for methodology terms (backlog #20)**
+- Added small "?" tooltip buttons next to TA, DBT, ALARP, Likelihood and Capability/Intent wherever they appear as column headers or field labels (Threats, Vulnerability, Risk Register, Residual Risk, Dashboard) — click to see a plain-language definition, with a link through to the Methodology tab
+- Aimed at less-experienced assessors who don't already know the HB167 abbreviations; existing collapsible section help-boxes are unchanged
+
 ## v2.050 — 2026-06-16
 **Keyboard bulk scoring: whole row/column apply + copy-down (backlog #17)**
 - Scoring grids (Assets, Threats, Vulnerability, Controls, Residual Risk, Impact) now support bulk keyboard entry on top of the existing 1-5/arrow-key scoring: Shift+1-5 sets every score cell in the current row (e.g. all criteria for one asset) to that value in one keypress; Alt+1-5 sets the same column position across every row of the table (e.g. one criterion for every threat); Ctrl/Cmd+D copies the focused cell's value into the cell directly below and moves focus there for rapid fill-down
