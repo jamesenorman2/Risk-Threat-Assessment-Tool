@@ -4,6 +4,13 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.047 — 2026-06-14
+**Accessibility: focus trap on all modals + screen-reader labels (backlog #16)**
+- All four modal dialogs (Confirm, Setup Wizard, Assessments manager, Load from Back-ups) now trap Tab/Shift+Tab focus inside the dialog while open and restore focus to the trigger element on close, instead of letting keyboard focus escape to the page behind them
+- The Setup Wizard now has a proper `role="dialog"`/`aria-modal` and closes on Escape (previously it had neither)
+- Toast notifications now use `role="status" aria-live="polite"` so screen readers announce them
+- Score buttons (1-5 scoring grids used throughout Vulnerability/Threats/Risk Register) are now `role="radio"`/`role="radiogroup"` with `aria-label`/`aria-checked` describing the value and its meaning, not just a hover tooltip
+
 ## v2.046 — 2026-06-12
 **Fix: mobile pinch-zoom getting stuck after tapping a form field**
 - On Android/iOS, all form inputs, dropdowns and textareas rendered below the 16px threshold (12.5px, per the Sentinel type scale). Tapping into any field on a phone made the browser auto-zoom in to the caret, and the page stayed zoomed in afterwards with no easy way to zoom back out

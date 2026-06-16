@@ -523,10 +523,12 @@ function getRR(l,i){return(l&&i)?RM[5-l][i-1]:null}
 // ============================================================
 function ScoreBar({value,onChange,size,tips}){
   const s=size==="sm"?"score-btn sm":"score-btn";
-  return React.createElement("div",{className:"score-bar",tabIndex:0,"data-sbar":"1",
+  return React.createElement("div",{className:"score-bar",tabIndex:0,"data-sbar":"1",role:"radiogroup","aria-label":"Score, 1 to 5",
     onMouseDown:e=>{const t=e.target;if(t.tagName!=="BUTTON")e.currentTarget.focus()}},
     [1,2,3,4,5].map(v=>React.createElement("button",{key:v,className:`${s}${value===v?" sel":""}`,
       style:{backgroundColor:SC[v].bg,color:SC[v].t},title:tips&&tips[v]||SC[v].l||"",
+      "aria-label":v+((tips&&tips[v])||SC[v].l?": "+((tips&&tips[v])||SC[v].l):""),
+      role:"radio","aria-checked":value===v,
       "data-v":v,tabIndex:-1,
       onClick:e=>{onChange(value===v?null:v);const bar=e.currentTarget.closest("[data-sbar]");if(bar)setTimeout(()=>bar.focus(),0)}},
       React.createElement(React.Fragment,null,
@@ -1210,8 +1212,36 @@ function SentinelContextScreen({
   );
 }
 
+// ── Focus trap for modal dialogs: keeps Tab/Shift+Tab cycling inside the
+// dialog and returns focus to the trigger element on close ──────────────
+const FOCUSABLE_SEL='button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+function useFocusTrap(open,ref){
+  React.useEffect(function(){
+    if(!open||!ref.current)return;
+    var container=ref.current;
+    var prevActive=document.activeElement;
+    var focusables=container.querySelectorAll(FOCUSABLE_SEL);
+    if(focusables.length)focusables[0].focus();
+    function onKeyDown(e){
+      if(e.key!=="Tab")return;
+      var list=container.querySelectorAll(FOCUSABLE_SEL);
+      if(!list.length)return;
+      var first=list[0],last=list[list.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    }
+    container.addEventListener("keydown",onKeyDown);
+    return function(){
+      container.removeEventListener("keydown",onKeyDown);
+      if(prevActive&&prevActive.focus)prevActive.focus();
+    };
+  },[open]);
+}
+
 // ── ConfirmModal ─────────────────────────────────────────────────────
 function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
+  const modalRef=React.useRef(null);
+  useFocusTrap(open,modalRef);
   React.useEffect(function(){
     if(!open)return;
     var h=function(e){if(e.key==="Escape")onCancel()};
@@ -1220,7 +1250,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   },[open,onCancel]);
   if(!open)return null;
   return React.createElement("div",{role:"alertdialog","aria-modal":"true","aria-labelledby":"confirm-modal-title",style:{position:"fixed",inset:0,background:"rgba(15,23,42,0.6)",zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",padding:16},onClick:onCancel},
-    React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:"100%",maxWidth:420,padding:"24px 24px 20px"},onClick:function(e){e.stopPropagation()}},
+    React.createElement("div",{ref:modalRef,style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:"100%",maxWidth:420,padding:"24px 24px 20px"},onClick:function(e){e.stopPropagation()}},
       React.createElement("div",{id:"confirm-modal-title",style:{fontWeight:700,fontSize:16,color:"#1e293b",marginBottom:8}},title||"Confirm"),
       body&&React.createElement("div",{style:{fontSize:13,color:"#475569",lineHeight:1.6,marginBottom:20}},body),
       React.createElement("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
@@ -1231,7 +1261,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.046";
+const VERSION="2.047";
 function App(){
   const[tab,setTab]=useState("context");
   const[ctx,setCtx]=useState({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
@@ -1528,7 +1558,19 @@ function App(){
     return()=>clearTimeout(timer);
   },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
 
+  // Close the setup wizard on Escape (same action as the "Skip Setup" button)
+  const wizardModalRef=useRef(null);
+  useFocusTrap(showSetupWizard,wizardModalRef);
+  useEffect(()=>{
+    if(!showSetupWizard)return;
+    const h=(e)=>{if(e.key==="Escape")setShowSetupWizard(false)};
+    window.addEventListener("keydown",h);
+    return()=>window.removeEventListener("keydown",h);
+  },[showSetupWizard]);
+
   // Close the GitHub back-up browser on Escape
+  const ghModalRef=useRef(null);
+  useFocusTrap(ghBrowser.open,ghModalRef);
   useEffect(()=>{
     if(!ghBrowser.open)return;
     const h=(e)=>{if(e.key==="Escape")setGhBrowser({open:false,files:[],loading:false,path:"projects"})};
@@ -1539,6 +1581,8 @@ function App(){
   // ── Assessment manager (multiple assessments per browser) ─────────
   const[asmManagerOpen,setAsmManagerOpen]=useState(false);
   const[asmIndexView,setAsmIndexView]=useState([]);
+  const asmModalRef=useRef(null);
+  useFocusTrap(asmManagerOpen,asmModalRef);
   const openAsmManager=()=>{setAsmIndexView(readAsmIndex());setAsmManagerOpen(true)};
   useEffect(()=>{
     if(!asmManagerOpen)return;
@@ -3458,6 +3502,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   // ============================================================
   const renderSetupWizard=()=>{
     const ol={position:"fixed",inset:0,background:"rgba(15,23,42,0.65)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16};
+    const olAttrs={style:ol,role:"dialog","aria-modal":"true","aria-label":"Setup Wizard"};
     const card={background:"#fff",borderRadius:16,boxShadow:"0 24px 80px rgba(0,0,0,0.4)",width:"100%",maxWidth:780,maxHeight:"92vh",display:"flex",flexDirection:"column",overflow:"hidden"};
     const hdr={padding:"24px 28px 16px",borderBottom:"1px solid #f1f5f9",flexShrink:0};
     const body={padding:"18px 28px",overflowY:"auto",flex:1};
@@ -3513,7 +3558,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
     if(wizardStep===1){
       const defs=defaultsRef.current||{};
-      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+      return React.createElement("div",olAttrs,React.createElement("div",{style:card,ref:wizardModalRef},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"What type of development are you assessing?"),
@@ -3548,7 +3593,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       const removeWA=(id)=>setWizardAssets(p=>p.filter(a=>a.id!==id));
       const updateWA=(id,f,v)=>setWizardAssets(p=>p.map(a=>a.id===id?{...a,[f]:v}:a));
       const addWA=()=>setWizardAssets(p=>[...p,{id:Date.now(),cat:"",desc:"",included:true}]);
-      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+      return React.createElement("div",olAttrs,React.createElement("div",{style:card,ref:wizardModalRef},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Review and customise assets"),
@@ -3656,7 +3701,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginTop:10,width:"100%",fontSize:11},onClick:()=>addWT(label)},"+ Add "+label+" Threat")
         );
       };
-      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+      return React.createElement("div",olAttrs,React.createElement("div",{style:card,ref:wizardModalRef},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Select threats to assess"),
@@ -3687,7 +3732,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         )
       );
       const answered=SITE_QS.filter(q=>wizardAnswers[q.id]).length;
-      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+      return React.createElement("div",olAttrs,React.createElement("div",{style:card,ref:wizardModalRef},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Tell us about this site"),
@@ -3721,7 +3766,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         sub&&React.createElement("div",{style:{fontSize:10,color:col,opacity:0.7,marginTop:2}},sub)
       );
       const answeredQs=SITE_QS.filter(q=>wizardAnswers[q.id]);
-      return React.createElement("div",{style:ol},React.createElement("div",{style:card},
+      return React.createElement("div",olAttrs,React.createElement("div",{style:card,ref:wizardModalRef},
         React.createElement("div",{style:hdr},
           badge,
           React.createElement("h2",{style:{fontSize:20,fontWeight:800,color:"#1B2A4A",margin:"4px 0 4px"}},"Confirm your assessment setup"),
@@ -3796,7 +3841,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
   return React.createElement("div",{className:"sentinel-app"},
     // Toast
-    toast&&React.createElement("div",{className:"toast",style:{display:"flex",alignItems:"center",gap:12}},
+    toast&&React.createElement("div",{className:"toast",role:"status","aria-live":"polite","aria-atomic":"true",style:{display:"flex",alignItems:"center",gap:12}},
       React.createElement("span",null,(toast&&toast.msg)||toast),
       toast&&toast.action&&React.createElement("button",{
         onClick:function(){toast.action.fn();setToast(null);},
@@ -3813,7 +3858,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
     // Assessment manager modal
     asmManagerOpen&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Assessments",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16},onClick:()=>setAsmManagerOpen(false)},
-      React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:620,maxWidth:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
+      React.createElement("div",{ref:asmModalRef,style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:620,maxWidth:"100%",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
         React.createElement("div",{style:{padding:"16px 20px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
           React.createElement("div",null,
             React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1e293b"}},"Assessments"),
@@ -3846,7 +3891,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
 
     // GitHub file browser modal
     ghBrowser.open&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Load from Back-ups",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center"},onClick:()=>setGhBrowser({open:false,files:[],loading:false,path:"projects"})},
-      React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:560,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
+      React.createElement("div",{ref:ghModalRef,style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:560,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
         React.createElement("div",{style:{padding:"16px 20px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
           React.createElement("div",null,
             React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1e293b"}},"Load from Back-ups"),
