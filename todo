@@ -30,8 +30,11 @@
     per-assessment localStorage keys + index; open/create/delete/switch with
     auto-save before switching; legacy single-slot data migrated on load.
     Possible follow-ups: rename-in-list, search/filter for long lists.
- 3. Undo/redo (Ctrl+Z) — scoring grids are click-heavy and a stray click on a
-    score bar or "Clear All" is destructive.
+ 3. [DONE v2.052] Undo/redo (Ctrl+Z) — debounced history stack covers the
+    working-assessment fields (context, assets, threats, all scoring grids,
+    meetings, POIs, treatments, threat/treatment DB, SBD compliance). Ctrl+Z
+    undoes, Ctrl+Y/Ctrl+Shift+Z redoes; toolbar buttons mirror availability.
+    Skipped while focus is in a text field so native field-undo still works.
  4. Interactive dashboard matrix — click a risk-matrix cell to filter the risk
     register to those risks; click-through from summary tiles.
  5. Reviewer workflow — per-risk comments with author/timestamp, and a

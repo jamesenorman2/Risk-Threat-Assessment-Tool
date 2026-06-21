@@ -698,6 +698,8 @@ function sIcon(name,size){
     trash:`<path d="M2.5 4.5h11M6 4.5V3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1.5M4 4.5l.7 9a.5.5 0 0 0 .5.5h5.6a.5.5 0 0 0 .5-.5l.7-9"/>`,
     edit:`<path d="M11 2.5l2.5 2.5L5.5 13 2.5 13.5 3 10.5 11 2.5z"/>`,
     menu:`<path d="M2 4h12M2 8h12M2 12h12"/>`,
+    undo:`<path d="M4 3.5v4h4"/><path d="M4 7.5a5.5 5.5 0 1 1 1.6 3.9"/>`,
+    redo:`<path d="M12 3.5v4H8"/><path d="M12 7.5a5.5 5.5 0 1 0-1.6 3.9"/>`,
   };
   const d=paths[name]||"";
   // Return a React element via dangerouslySetInnerHTML on a span wrapper
@@ -732,7 +734,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 
 // ── SentinelToolbar ──────────────────────────────────────────────────
-function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,initials}){
+function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials}){
   const[exportOpen,setExportOpen]=React.useState(false);
   const[moreOpen,setMoreOpen]=React.useState(false);
   const exportRef=React.useRef(null);
@@ -760,7 +762,12 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
         sIcon("upload"),React.createElement("span",{className:"stb-lbl"}," Load")),
       React.createElement("div",{className:"stb-div"}),
       React.createElement("button",{className:"stb-btn",onClick:onDuplicate,title:"Duplicate this assessment"},
-        sIcon("copy"),React.createElement("span",{className:"stb-lbl"}," Duplicate"))
+        sIcon("copy"),React.createElement("span",{className:"stb-lbl"}," Duplicate")),
+      React.createElement("div",{className:"stb-div"}),
+      React.createElement("button",{className:"stb-btn",onClick:onUndo,disabled:!canUndo,title:"Undo (Ctrl+Z)",style:canUndo?undefined:{opacity:0.4,cursor:"default"}},
+        sIcon("undo")),
+      React.createElement("button",{className:"stb-btn",onClick:onRedo,disabled:!canRedo,title:"Redo (Ctrl+Y)",style:canRedo?undefined:{opacity:0.4,cursor:"default"}},
+        sIcon("redo"))
     ),
     ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group stb-hide-md"},
       React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
@@ -796,7 +803,7 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
 }
 
 // ── AppHeader ────────────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onMenuToggle,lastFileSave}){
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,onMenuToggle,lastFileSave}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
@@ -824,7 +831,7 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
     ),
     // Toolbar
     React.createElement(SentinelToolbar,{
-      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,initials
+      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials
     })
   );
 }
@@ -1298,7 +1305,7 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.051";
+const VERSION="2.052";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1611,6 +1618,79 @@ function App(){
     }catch(e){return "a"+Date.now()}
   });
   const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope});
+
+  // ── Undo/redo (Ctrl+Z / Ctrl+Y) ────────────────────────────────────
+  // Tracks the working-assessment fields a stray click can wipe out (the
+  // same fields resetAssessmentState() touches). Settings/library-level
+  // state (scales, ghConfig, presets DB, etc.) is deliberately excluded.
+  const buildHistorySnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope});
+  const applyHistorySnapshot=(s)=>{
+    setCtx(s.ctx);setAssets(s.assets);setThreats(s.threats);setVs(s.vs);setIs(s.is_);setCd(s.cd);setTx(s.tx);setRs(s.rs);setAcc(s.acc);setMeetings(s.meetings);setPois(s.pois);
+    setActiveAssetPreset(s.activeAssetPreset);setActiveThreatPreset(s.activeThreatPreset);setAssetsLocked(s.assetsLocked);setThreatsLocked(s.threatsLocked);
+    setResidualJustifications(s.residualJustifications);setTreatOptional(s.treatOptional);setTreatmentMeasures(s.treatmentMeasures);
+    setThreatDB(s.threatDB);setTreatmentDB(s.treatmentDB);setSbdCompliance(s.sbdCompliance);setTreatCategoryScope(s.treatCategoryScope);
+  };
+  const historyRef=useRef({undo:[],redo:[],baseline:null,suspend:false});
+  const[historyCounts,setHistoryCounts]=useState({undo:0,redo:0});
+  const syncHistoryCounts=()=>{const h=historyRef.current;setHistoryCounts({undo:h.undo.length,redo:h.redo.length});};
+  const undo=()=>{
+    const h=historyRef.current;if(!h.undo.length)return;
+    const current=buildHistorySnapshot();
+    const prev=h.undo.pop();
+    h.redo.push(current);if(h.redo.length>50)h.redo.shift();
+    h.suspend=true;h.baseline=prev;
+    applyHistorySnapshot(prev);
+    syncHistoryCounts();
+  };
+  const redo=()=>{
+    const h=historyRef.current;if(!h.redo.length)return;
+    const current=buildHistorySnapshot();
+    const next=h.redo.pop();
+    h.undo.push(current);if(h.undo.length>50)h.undo.shift();
+    h.suspend=true;h.baseline=next;
+    applyHistorySnapshot(next);
+    syncHistoryCounts();
+  };
+  // Clear history whenever the active assessment changes (switch/load/duplicate) —
+  // undoing into the wrong assessment's data would be worse than no undo at all.
+  useEffect(()=>{historyRef.current={undo:[],redo:[],baseline:null,suspend:false};setHistoryCounts({undo:0,redo:0});},[activeAsmId]);
+  // Debounced history capture: a burst of clicks within ~600ms collapses into
+  // one undo step, so rapid scoring doesn't require repeated Ctrl+Z presses.
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    const h=historyRef.current;
+    if(h.suspend){h.suspend=false;return;}
+    if(!h.baseline){h.baseline=buildHistorySnapshot();return;}
+    const timer=setTimeout(()=>{
+      const snap=buildHistorySnapshot();
+      h.undo.push(h.baseline);if(h.undo.length>50)h.undo.shift();
+      h.redo=[];
+      h.baseline=snap;
+      syncHistoryCounts();
+    },600);
+    return()=>clearTimeout(timer);
+  },[dataLoaded,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope]);
+  // Keep a ref to the latest undo/redo closures so the one-time global
+  // keydown listener below never sees stale state.
+  const undoRedoRef=useRef({undo,redo});
+  useEffect(()=>{undoRedoRef.current={undo,redo};});
+  useEffect(()=>{
+    const h=(e)=>{
+      if(!(e.ctrlKey||e.metaKey))return;
+      const key=e.key.toLowerCase();
+      if(key!=="z"&&key!=="y")return;
+      const ae=document.activeElement;
+      const tag=ae&&ae.tagName;
+      // Let native text-field undo run inside inputs/textareas
+      if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||(ae&&ae.isContentEditable))return;
+      e.preventDefault();
+      if(key==="y"||(key==="z"&&e.shiftKey))undoRedoRef.current.redo();
+      else undoRedoRef.current.undo();
+    };
+    window.addEventListener("keydown",h);
+    return()=>window.removeEventListener("keydown",h);
+  },[]);
+
   const touchAsmIndex=function(){
     var ix=readAsmIndex();var e=ix.find(function(x){return x.id===activeAsmId});
     if(!e){e={id:activeAsmId};ix.push(e)}
@@ -4059,6 +4139,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
       ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
       onAssessments:openAsmManager,
+      onUndo:undo, onRedo:redo, canUndo:historyCounts.undo>0, canRedo:historyCounts.redo>0,
       onMenuToggle:function(){setMobileNavOpen(function(v){return !v;})},
       lastFileSave:lastFileSave,
     }),
