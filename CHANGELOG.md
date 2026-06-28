@@ -4,6 +4,24 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.055 — 2026-06-28
+**Fix: smoke-test CI failures (false positives, not a real regression)**
+- The "Smoke tests" GitHub Action was failing on every run (including the
+  v2.053 run that introduced it, before any v2.054 changes). Root cause:
+  `index.html`'s `fetchThreatLevel()` makes a best-effort live fetch to
+  mi5.gov.uk for the national threat level banner; mi5.gov.uk sends no CORS
+  headers, so the browser logs a console error for the blocked cross-origin
+  request even though the app's own try/catch handles the rejection and
+  falls back to a cached value. `tests/smoke.spec.js` treats any console
+  error as a failure, so this expected browser-level CORS logging — only
+  visible with full internet access, as real CI has — failed all three
+  tests
+- `tests/smoke.spec.js` now mocks the mi5.gov.uk endpoint via
+  `page.route()` with a fulfilled response (CORS header + matching
+  "THREAT LEVEL IS SUBSTANTIAL" body) so the live-fetch resolves cleanly on
+  the first request instead of hitting real external CORS policy
+- No application code changed; this is a test-only fix
+
 ## v2.054 — 2026-06-28
 **Reviewer workflow — per-risk comments + section sign-off status (backlog #5)**
 - Risk Register rows now have a "Notes" column with a comment thread per

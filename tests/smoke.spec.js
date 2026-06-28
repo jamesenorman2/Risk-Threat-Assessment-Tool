@@ -30,8 +30,28 @@ function trackPageErrors(page) {
   return errors;
 }
 
+// The app does a best-effort live fetch of the national threat level from
+// mi5.gov.uk on every load (index.html fetchThreatLevel). mi5.gov.uk doesn't
+// send CORS headers, so the browser logs a console error for the blocked
+// cross-origin request even though the app's own try/catch handles the
+// rejection and falls back to a cached value — this is real CI's full
+// internet access surfacing browser-level CORS logging that a fully
+// network-blocked sandbox never triggers. Mock the endpoint so tests don't
+// depend on an external site's CORS policy.
+async function mockThreatLevel(page) {
+  await page.route("https://www.mi5.gov.uk/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: "<html><body>THE THREAT LEVEL IS SUBSTANTIAL</body></html>",
+    })
+  );
+}
+
 test("app loads and defaults to the Context tab", async ({ page }) => {
   const errors = trackPageErrors(page);
+  await mockThreatLevel(page);
   await page.goto("/");
   await expect(page.locator(".sentinel-sidebar")).toBeVisible();
   await expect(
@@ -45,6 +65,7 @@ test("every sidebar tab navigates without a console/page error", async ({
   page,
 }) => {
   const errors = trackPageErrors(page);
+  await mockThreatLevel(page);
   await page.goto("/");
 
   for (const label of NAV_ITEMS) {
@@ -60,6 +81,7 @@ test("every sidebar tab navigates without a console/page error", async ({
 
 test("can add an asset on the Assets tab", async ({ page }) => {
   const errors = trackPageErrors(page);
+  await mockThreatLevel(page);
   await page.goto("/");
   await page.locator("button.sni", { hasText: "Assets" }).click();
 
