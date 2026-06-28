@@ -35,8 +35,8 @@
     meetings, POIs, treatments, threat/treatment DB, SBD compliance). Ctrl+Z
     undoes, Ctrl+Y/Ctrl+Shift+Z redoes; toolbar buttons mirror availability.
     Skipped while focus is in a text field so native field-undo still works.
- 4. Interactive dashboard matrix — click a risk-matrix cell to filter the risk
-    register to those risks; click-through from summary tiles.
+ 4. [DONE v2.049] Interactive dashboard matrix — Dashboard risk-count cards
+    click through to a filtered Risk Register (severity banner + clear filter).
  5. Reviewer workflow — per-risk comments with author/timestamp, and a
     review/sign-off status per section (draft → reviewed → issued).
  6. Assessment compare/diff — load two saved JSON files and show risk deltas
@@ -45,8 +45,9 @@
     auto-build a quick-win / planned / long-term roadmap table for the report.
  8. Executive summary auto-draft — generate narrative text from the data (top
     risks, crime trend, posture) as a starting point for the assessor.
- 9. QA / completeness gate before export — checklist flagging unscored
-    threats, missing ALARP justifications, empty required context fields.
+ 9. [DONE v2.048] QA / completeness gate before export — Word/Excel export
+    runs a checklist (unscored threats, missing ALARP justifications, empty
+    required context fields) and confirms before exporting anyway.
 10. Photo attachments on POIs and Existing Controls (site walkaround
     evidence), included in Word/PDF export.
 11. Tablet/mobile site-survey mode — POI capture optimised for touch on a
@@ -60,16 +61,22 @@
     in session cookie, secret baked into client bundle by build.js).
 15. Org template library — save/share company-standard criteria text, threat
     sets and treatment libraries as versioned template files.
-16. Full WCAG AA pass — contrast on score chips, focus trap inside modals,
-    screen-reader labels on score bars, aria-live for toasts.
-17. Keyboard bulk scoring — extend existing 1-5/arrow keys with "apply to
-    whole row/column" and copy-down, for large grids.
+16. [DONE v2.047] Full WCAG AA pass — modal focus traps + restore-on-close,
+    role=dialog/aria-modal on the Setup Wizard, aria-live toasts, score
+    buttons as role=radio/radiogroup with aria-label/aria-checked.
+17. [DONE v2.050] Keyboard bulk scoring — Shift+1-5 applies to the whole row,
+    Alt+1-5 applies to the whole column, Ctrl/Cmd+D copies the cell above down.
 18. Performance: split the 616KB single file (lazy-load Leaflet, html2canvas,
     crime tab) for faster first paint; consider build step producing chunks.
-19. Automated tests + CI — Playwright smoke test per tab + export functions
-    (a single 7,800-line file regresses easily); GitHub Action on PR.
-20. In-app help/onboarding — "?" tooltips per section explaining methodology
-    terms (TA, DBT, ALARP) for less-experienced assessors; link methodology.
+19. [DONE v2.053, partial] Automated tests + CI — Playwright smoke test
+    (loads the app, walks every sidebar tab checking for console/page errors,
+    adds an asset) plus a GitHub Action running it on every PR and push to
+    main (`tests/`, `playwright.config.js`, `.github/workflows/smoke-tests.yml`).
+    REMAINING: per-export-function tests (Word/Excel/print HTML structure),
+    coverage of the scoring grids/treatments/SBD tabs beyond "did it render",
+    and a visual-regression pass.
+20. [DONE v2.051] In-app help/onboarding — "?" tooltips next to TA, DBT,
+    ALARP, Likelihood and Capability/Intent linking through to Methodology.
 
 ## Questions for James — ANSWERED 2026-06-10
 - Colleagues will use it: YES → #2/#5/#14/#15 promoted

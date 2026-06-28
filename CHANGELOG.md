@@ -4,6 +4,34 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.053 — 2026-06-28
+**Automated smoke tests + CI (backlog #19, partial)**
+- Added a Playwright smoke test suite (`tests/`) that loads the app, walks
+  every sidebar tab checking for console/page errors, and adds an asset on
+  the Assets tab — a basic regression net for the single 7,800+ line
+  `index.html`
+- Added a GitHub Action (`.github/workflows/smoke-tests.yml`) that runs the
+  suite on every push to `main` and every pull request
+- `npm test` runs the suite locally (serves `index.html` via a tiny static
+  server, no build step required)
+- Backfilled changelog/todo bookkeeping for backlog items #4, #9, #16, #17
+  and #20, which had shipped in earlier sessions but weren't marked done
+
+## v2.052 — 2026-06-21
+**Undo/redo (Ctrl+Z) for the working assessment (backlog #3)**
+- Scoring grids are click-heavy and a stray click on a score bar or "Clear
+  All" was destructive with no way back. Adds a debounced history stack
+  (settles ~600ms after the last change, so a burst of clicks collapses into
+  one undo step) covering context, assets, threats, all scoring objects,
+  meetings, POIs, treatment/residual data, threat/treatment DB and SBD
+  compliance
+- Ctrl+Z undoes, Ctrl+Y or Ctrl+Shift+Z redoes; skipped while focus is in a
+  text input/textarea/select so native field-level undo still works
+- New toolbar Undo/Redo buttons next to Duplicate, disabled when there's
+  nothing to undo/redo
+- History resets on assessment switch/load/duplicate so you can never undo
+  into a different assessment's data
+
 ## v2.051 — 2026-06-16
 **In-app help tooltips for methodology terms (backlog #20)**
 - Added small "?" tooltip buttons next to TA, DBT, ALARP, Likelihood and Capability/Intent wherever they appear as column headers or field labels (Threats, Vulnerability, Risk Register, Residual Risk, Dashboard) — click to see a plain-language definition, with a link through to the Methodology tab
