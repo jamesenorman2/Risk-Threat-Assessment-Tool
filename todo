@@ -37,8 +37,12 @@
     Skipped while focus is in a text field so native field-undo still works.
  4. [DONE v2.049] Interactive dashboard matrix — Dashboard risk-count cards
     click through to a filtered Risk Register (severity banner + clear filter).
- 5. Reviewer workflow — per-risk comments with author/timestamp, and a
-    review/sign-off status per section (draft → reviewed → issued).
+ 5. [DONE v2.054] Reviewer workflow — per-risk comments with author/timestamp
+    (Risk Register "Notes" column, expandable thread) and a review/sign-off
+    status per section (draft → reviewed → issued) on the Risk Register,
+    Treatments & Residual Risk, and Treatment Summary tabs.
+    Possible follow-ups: extend status control to remaining tabs, surface a
+    sidebar badge for sections still in draft, allow per-comment edit.
  6. Assessment compare/diff — load two saved JSON files and show risk deltas
     (pre/post design change, year-on-year review).
  7. Treatment prioritisation — capture indicative cost + effort per measure,

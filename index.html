@@ -1305,7 +1305,53 @@ function ConfirmModal({open,title,body,confirmLabel,danger,onConfirm,onCancel}){
   );
 }
 
-const VERSION="2.053";
+// ── Reviewer workflow (backlog #5): per-section sign-off status ──────
+const REVIEW_STATUSES=["draft","reviewed","issued"];
+const REVIEW_STATUS_LABEL={draft:"Draft",reviewed:"Reviewed",issued:"Issued"};
+const REVIEW_STATUS_COLOR={draft:{bg:"#f1f5f9",t:"#475569"},reviewed:{bg:"#fef3c7",t:"#92400e"},issued:{bg:"#dcfce7",t:"#15803d"}};
+function ReviewStatusControl({sectionId,sectionReview,onChange}){
+  const entry=(sectionReview&&sectionReview[sectionId])||{status:"draft",by:"",ts:null};
+  const c=REVIEW_STATUS_COLOR[entry.status]||REVIEW_STATUS_COLOR.draft;
+  return React.createElement("div",{"data-capture-hide":"1",style:{display:"flex",alignItems:"center",gap:6,fontSize:11,flexShrink:0}},
+    React.createElement("label",{style:{color:"#64748b"},htmlFor:"review-status-"+sectionId},"Status:"),
+    React.createElement("select",{id:"review-status-"+sectionId,className:"input","aria-label":"Review status",style:{fontSize:11,padding:"2px 4px",background:c.bg,color:c.t,fontWeight:600,border:"none"},
+      value:entry.status,
+      onChange:function(e){onChange(sectionId,e.target.value)}
+    },
+      REVIEW_STATUSES.map(function(s){return React.createElement("option",{key:s,value:s},REVIEW_STATUS_LABEL[s])})
+    ),
+    entry.by&&React.createElement("span",{style:{color:"#94a3b8",whiteSpace:"nowrap"}},"by "+entry.by+(entry.ts?" · "+new Date(entry.ts).toLocaleDateString():""))
+  );
+}
+// Per-risk reviewer comment thread, expanded inline in the Risk Register table
+function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
+  const[text,setText]=React.useState("");
+  return React.createElement("tr",{className:"risk-comments-row"},
+    React.createElement("td",{colSpan:colSpan,style:{background:"#f8fafc",padding:"10px 14px"}},
+      comments.length===0&&React.createElement("div",{style:{fontSize:11,color:"#94a3b8",fontStyle:"italic",marginBottom:8}},"No comments yet."),
+      comments.length>0&&React.createElement("div",{style:{marginBottom:8}},
+        comments.map(function(c){
+          return React.createElement("div",{key:c.id,style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,padding:"6px 0",borderBottom:"1px solid #e2e8f0"}},
+            React.createElement("div",null,
+              React.createElement("div",{style:{fontSize:11,color:"#1e293b"}},c.text),
+              React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginTop:2}},(c.author||"Unknown")+" · "+new Date(c.ts).toLocaleString())
+            ),
+            React.createElement("button",{className:"btn-x",style:{fontSize:10,flexShrink:0},title:"Delete comment",onClick:function(){onRemove(riskId,c.id)}},"×")
+          );
+        })
+      ),
+      React.createElement("div",{style:{display:"flex",gap:6}},
+        React.createElement("input",{className:"input",style:{flex:1,fontSize:11,padding:"4px 8px"},placeholder:"Add a reviewer comment...",value:text,
+          onChange:function(e){setText(e.target.value)},
+          onKeyDown:function(e){if(e.key==="Enter"){e.preventDefault();if(text.trim()){onAdd(riskId,text);setText("")}}}
+        }),
+        React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){if(text.trim()){onAdd(riskId,text);setText("")}}},"Add")
+      )
+    )
+  );
+}
+
+const VERSION="2.054";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1427,6 +1473,9 @@ function App(){
   const[showAddThreat,setShowAddThreat]=useState(false);
   const[residualJustifications,setResidualJustifications]=useState({});
   const[treatOptional,setTreatOptional]=useState({});
+  const[riskComments,setRiskComments]=useState({});
+  const[sectionReview,setSectionReview]=useState({});
+  const[expandedRiskComments,setExpandedRiskComments]=useState(null);
   const[threatDB,setThreatDB]=useState([]);
   const[treatmentDB,setTreatmentDB]=useState([]);
   const[assetPresetsDB,setAssetPresetsDB]=useState({});
@@ -1617,18 +1666,19 @@ function App(){
       var fresh="a"+Date.now();localStorage.setItem("sra-rta-active",fresh);return fresh;
     }catch(e){return "a"+Date.now()}
   });
-  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope});
+  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
 
   // ── Undo/redo (Ctrl+Z / Ctrl+Y) ────────────────────────────────────
   // Tracks the working-assessment fields a stray click can wipe out (the
   // same fields resetAssessmentState() touches). Settings/library-level
   // state (scales, ghConfig, presets DB, etc.) is deliberately excluded.
-  const buildHistorySnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope});
+  const buildHistorySnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
   const applyHistorySnapshot=(s)=>{
     setCtx(s.ctx);setAssets(s.assets);setThreats(s.threats);setVs(s.vs);setIs(s.is_);setCd(s.cd);setTx(s.tx);setRs(s.rs);setAcc(s.acc);setMeetings(s.meetings);setPois(s.pois);
     setActiveAssetPreset(s.activeAssetPreset);setActiveThreatPreset(s.activeThreatPreset);setAssetsLocked(s.assetsLocked);setThreatsLocked(s.threatsLocked);
     setResidualJustifications(s.residualJustifications);setTreatOptional(s.treatOptional);setTreatmentMeasures(s.treatmentMeasures);
     setThreatDB(s.threatDB);setTreatmentDB(s.treatmentDB);setSbdCompliance(s.sbdCompliance);setTreatCategoryScope(s.treatCategoryScope);
+    setRiskComments(s.riskComments);setSectionReview(s.sectionReview);
   };
   const historyRef=useRef({undo:[],redo:[],baseline:null,suspend:false});
   const[historyCounts,setHistoryCounts]=useState({undo:0,redo:0});
@@ -1669,7 +1719,7 @@ function App(){
       syncHistoryCounts();
     },600);
     return()=>clearTimeout(timer);
-  },[dataLoaded,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope]);
+  },[dataLoaded,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
   // Keep a ref to the latest undo/redo closures so the one-time global
   // keydown listener below never sees stale state.
   const undoRedoRef=useRef({undo,redo});
@@ -1712,7 +1762,8 @@ function App(){
       if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB)&&Object.keys(p.assetPresetsDB).length>0)setAssetPresetsDB(p.assetPresetsDB);else setAssetPresetsDB(defs.ASSET_PRESETS);
       if(p.threatPresetsDB&&typeof p.threatPresetsDB==="object"&&!Array.isArray(p.threatPresetsDB)&&Object.keys(p.threatPresetsDB).length>0)setThreatPresetsDB(p.threatPresetsDB);else setThreatPresetsDB(defs.THREAT_PRESETS);
       if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
-      if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}}
+      if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);
+      if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}}
       else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
@@ -1721,7 +1772,7 @@ function App(){
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();setLastLocalSave(new Date());},500);
     return()=>clearTimeout(timer);
-  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope]);
+  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
 
   // Close the setup wizard on Escape (same action as the "Skip Setup" button)
   const wizardModalRef=useRef(null);
@@ -1861,8 +1912,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,riskComments,sectionReview,_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,riskComments,sectionReview]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -1956,6 +2007,7 @@ function App(){
     if(p.ctx&&typeof p.ctx==="object")setCtx(p.ctx);if(Array.isArray(p.assets))setAssets(p.assets);if(Array.isArray(p.threats))setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
     if(Array.isArray(p.meetings))setMeetings(p.meetings);if(Array.isArray(p.pois))setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
+    if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);
   };
 
 
@@ -2092,7 +2144,7 @@ function App(){
   // clearAll, the assessment manager and delete flows)
   const resetAssessmentState=()=>{
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setRiskComments({});setSectionReview({});
   };
 
   const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
@@ -2107,6 +2159,22 @@ function App(){
       setCtx(snap.ctx);setAssets(snap.assets);setThreats(snap.threats);setVs(snap.vs);setIs(snap.is_);setCd(snap.cd);setTx(snap.tx);setRs(snap.rs);setAcc(snap.acc);setMeetings(snap.meetings);setPois(snap.pois);
       setShowSetupWizard(false);_clearSnapshotRef.current=null;showToast("Assessment restored");
     }});})};
+
+  // Reviewer workflow (backlog #5): per-section sign-off status + per-risk comments
+  const setSectionStatus=(sectionId,status)=>{
+    setSectionReview(p=>({...p,[sectionId]:{status,by:ctx.assessor||"",ts:Date.now()}}));
+  };
+  const addRiskComment=(riskId,text)=>{
+    if(!text||!text.trim())return;
+    setRiskComments(p=>{
+      var arr=p[riskId]?[...p[riskId]]:[];
+      arr.push({id:"c"+Date.now(),text:text.trim(),author:ctx.assessor||"Unknown",ts:Date.now()});
+      return{...p,[riskId]:arr};
+    });
+  };
+  const removeRiskComment=(riskId,commentId)=>{
+    setRiskComments(p=>({...p,[riskId]:(p[riskId]||[]).filter(function(c){return c.id!==commentId})}));
+  };
 
   // Meetings helpers
   const addMeeting=()=>setMeetings(p=>[...p,{id:Date.now(),date:"",desc:"",attendees:""}]);
@@ -5519,6 +5587,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h2",{className:"section-title"},"Risk Register"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Auto-populated from threat, vulnerability and impact assessments. Select a treatment strategy for each risk.")
           ),
+          React.createElement(ReviewStatusControl,{sectionId:"register",sectionReview:sectionReview,onChange:setSectionStatus}),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
             var chunks=[];
@@ -5562,10 +5631,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("th",null,"R#"),React.createElement("th",{className:"left"},"Threat"),
               React.createElement("th",null,"T"),React.createElement("th",null,"TA",React.createElement(TermTip,{k:"TA",goMethodology:function(){setTab("methodology")}})),React.createElement("th",null,"V"),
               React.createElement("th",null,"L"),React.createElement("th",null,"I"),React.createElement("th",null,"L×I"),
-              React.createElement("th",null,"Rating"),React.createElement("th",null,"Treatment")
+              React.createElement("th",null,"Rating"),React.createElement("th",null,"Treatment"),React.createElement("th",null,"Notes")
             )),
             React.createElement("tbody",null,
-              cRisks.map((r,i)=>({r,i})).filter(x=>x.r.n&&(!registerSeverityFilter||x.r.rat===registerSeverityFilter)).map(x=>{const r=x.r,i=x.i;return React.createElement("tr",{key:r.id},
+              cRisks.map((r,i)=>({r,i})).filter(x=>x.r.n&&(!registerSeverityFilter||x.r.rat===registerSeverityFilter)).map(x=>{const r=x.r,i=x.i;const comments=riskComments[r.id]||[];const expanded=expandedRiskComments===r.id;return React.createElement(React.Fragment,{key:r.id},
+                React.createElement("tr",null,
                 React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
                 React.createElement("td",{className:"text-left font-medium"},r.n),
                 React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
@@ -5579,7 +5649,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   value:tx[r.id]||"",onChange:e=>setTx(p=>({...p,[r.id]:e.target.value||null}))},
                   React.createElement("option",{value:""},"—"),
                   TREATS.map(t=>React.createElement("option",{key:t,value:t},t))
-                ))
+                )),
+                React.createElement("td",null,React.createElement("button",{className:"btn btn-outline btn-sm",style:{fontSize:11,padding:"2px 7px"},
+                  onClick:function(){setExpandedRiskComments(expanded?null:r.id)},
+                  "aria-label":"Toggle comments for "+r.n},"💬 "+comments.length))
+                ),
+                expanded&&React.createElement(RiskCommentsPanel,{riskId:r.id,comments:comments,onAdd:addRiskComment,onRemove:removeRiskComment,colSpan:11})
               );})
             )
           )
@@ -5593,6 +5668,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h2",{className:"section-title"},"Residual Risk & Treatments"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Score post-treatment Likelihood and Impact. Threats rated High or Very High expand to show targeted assets with treatment measure entry.",React.createElement("span",{className:"kb-hint",title:"Click a score cell, then use the keyboard. 1–5 sets score, ←→ moves, 0 clears. Shift+1-5 sets the whole row, Alt+1-5 sets the whole column, Ctrl/Cmd+D copies the value down."},"⌨ 1–5 score · ←→ move · 0 clear · ⇧+1-5 row · ⌥+1-5 col · ⌘D copy down"))
           ),
+          React.createElement(ReviewStatusControl,{sectionId:"residual",sectionReview:sectionReview,onChange:setSectionStatus}),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
             var filtered=cRisks.filter(function(r){return r.n});
             var scBg=function(v){return!v?"":({1:"background:#4a5568;color:#fff;font-weight:bold;text-align:center",2:"background:#16803c;color:#fff;font-weight:bold;text-align:center",3:"background:#b45309;color:#000;font-weight:bold;text-align:center",4:"background:#c2570a;color:#fff;font-weight:bold;text-align:center",5:"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"})[v]||""};
@@ -5996,6 +6072,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("h2",{className:"section-title"},"Treatment Summary"),
             React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"All recommended treatment measures consolidated per asset and per point of interest. Duplicates removed.")
           ),
+          React.createElement(ReviewStatusControl,{sectionId:"summary",sectionReview:sectionReview,onChange:setSectionStatus}),
           React.createElement("div",{className:"flex gap-2",style:{flexWrap:"wrap"}},
             React.createElement("button",{className:"btn btn-dark btn-sm",onClick:exportWord,title:"Export full Word report",style:{display:"flex",alignItems:"center",gap:5}},sIcon("docs")," Word"),
             React.createElement("button",{className:"btn btn-outline btn-sm",onClick:exportExcel,title:"Export Excel spreadsheet",style:{display:"flex",alignItems:"center",gap:5}},sIcon("grid")," Excel"),

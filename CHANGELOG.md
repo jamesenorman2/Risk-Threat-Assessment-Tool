@@ -4,6 +4,18 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.054 — 2026-06-28
+**Reviewer workflow — per-risk comments + section sign-off status (backlog #5)**
+- Risk Register rows now have a "Notes" column with a comment thread per
+  risk (author + timestamp, taken from the Assessor field in Context);
+  comments expand inline and persist with the assessment
+- Added a "Status:" control (Draft → Reviewed → Issued) to the Risk
+  Register, Treatments & Residual Risk, and Treatment Summary tab headers,
+  recording who set the status and when
+- Both are wired into autosave, undo/redo, multi-assessment switching, and
+  JSON file save/load, following the same pattern as the existing
+  `residualJustifications` per-risk state
+
 ## v2.053 — 2026-06-28
 **Automated smoke tests + CI (backlog #19, partial)**
 - Added a Playwright smoke test suite (`tests/`) that loads the app, walks
