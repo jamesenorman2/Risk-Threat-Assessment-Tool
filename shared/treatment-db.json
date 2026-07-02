@@ -266,7 +266,8 @@
     "int_physical": [],
     "int_electronic": [
       "Electronic access control preventing unauthorised internal movement",
-      "Stair core and lift lobby access control at each level"
+      "Stair core and lift lobby access control at each level",
+      "Access control readers compatible with the Common Civil Service Pass (CCSP) / GovPass standard for government-occupied buildings"
     ],
     "procedures": []
   },
@@ -419,7 +420,8 @@
       "User behaviour monitoring and anomaly detection",
       "Clear desk and screen policy enforcement",
       "Security clearance for sensitive roles",
-      "Separation of duties for critical processes"
+      "Separation of duties for critical processes",
+      "Pass management aligned with the Common Civil Service Pass (CCSP) scheme for government-occupied buildings — issue, audit and revocation"
     ]
   },
   {
