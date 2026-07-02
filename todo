@@ -58,8 +58,11 @@
     walkaround; the desktop layout is dense on small screens.
 12. Offline crime-data snapshot — store fetched Police.uk data inside the
     saved assessment so reports are reproducible later (data changes monthly).
-13. Non-UK mode — Police.uk only covers England/Wales/NI; allow manual crime
-    stats entry + international threat-level sources for overseas sites.
+13. [PARTIAL v2.056] Non-UK mode — manual crime context entry existed for
+    non-UK countries; it now flows into Word/Excel/Print exports.
+    REMAINING: hide/replace UK terrorism (MI5) section for overseas sites;
+    optional structured crime-stat entry (counts by category) so charts work
+    for manual data; note Scotland is also outside Police.uk coverage.
 14. Proper accounts/backend — replace APP_PASSWORD + GitHub-token-in-browser
     with real auth and server-side persistence (also fixes: plaintext password
     in session cookie, secret baked into client bundle by build.js).

@@ -1351,7 +1351,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.055";
+const VERSION="2.056";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -3111,6 +3111,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(ctx.scope)html+=`<div class="card"><div class="card-hdr">Scope Boundaries</div><div class="card-body">${E(ctx.scope)}</div></div>`;
     if(ctx.assumptions)html+=`<div class="card"><div class="card-hdr">Key Assumptions</div><div class="card-body">${E(ctx.assumptions)}</div></div>`;
     if(ctx.notes)html+=`<div class="card"><div class="card-hdr">Notes</div><div class="card-body">${E(ctx.notes).replace(/\n/g,"<br/>")}</div></div>`;
+    if(ctx.crimeContext)html+=`<div class="card"><div class="card-hdr">Local Crime &amp; Security Context${ctx.country?" — "+E(ctx.country):""}</div><div class="card-body">${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</div></div>`;
     if(meetings.length>0){
       html+=`<h3>Stakeholder Meetings &amp; Consultations</h3><table><tr><th style="text-align:left">Date</th><th style="text-align:left">Description</th><th style="text-align:left">Attendees</th></tr>`;
       meetings.forEach(m=>{html+=`<tr><td class="tl">${E(m.date)}</td><td class="tl">${E(m.desc)}</td><td class="tl" style="font-size:8pt">${E(m.attendees)}</td></tr>`});
@@ -3287,6 +3288,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(ctx.scope)h+=`<p><b>Scope:</b> ${E(ctx.scope)}</p>`;
     if(ctx.assumptions)h+=`<p><b>Assumptions:</b> ${E(ctx.assumptions)}</p>`;
     if(ctx.notes)h+=`<p><b>Notes:</b> ${E(ctx.notes).replace(/\n/g,"<br/>")}</p>`;
+    if(ctx.crimeContext)h+=`<p><b>Crime & Security Context${ctx.country?" ("+E(ctx.country)+")":""}:</b> ${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</p>`;
     if(meetings.length>0){
       h+=`<h3>Stakeholder Meetings</h3><table><tr><th>Date</th><th class="tl">Description</th><th class="tl">Attendees</th></tr>`;
       meetings.forEach(m=>{h+=`<tr><td>${E(m.date)}</td><td class="tl">${E(m.desc)}</td><td class="tl">${E(m.attendees)}</td></tr>`});
@@ -3423,6 +3425,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<p><b>Project:</b> ${E(ctx.project)||"—"} &nbsp;&nbsp; <b>Project No:</b> ${E(ctx.projectNum)||"—"} &nbsp;&nbsp; <b>Reference:</b> ${E(ctx.ref)||"—"} &nbsp;&nbsp; <b>Date:</b> ${E(ctx.date)||"—"} &nbsp;&nbsp; <b>Stage:</b> ${E(ctx.stage)||"—"}</div>`;
     h+=`<p><b>Assessor:</b> ${E(ctx.assessor)||"—"} &nbsp;&nbsp; <b>Client:</b> ${E(ctx.client)||"—"}</div>`;
     if(ctx.notes){h+=`<h3>Notes</h3><p>${E(ctx.notes).replace(/\n/g,"<br/>")}</p>`}
+    if(ctx.crimeContext){h+=`<h3>Crime & Security Context${ctx.country?" ("+E(ctx.country)+")":""}</h3><p>${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</p>`}
     if(meetings.length>0){
       h+=`<h3>Stakeholder Meetings</h3><table><tr><th>Date</th><th class="left">Description</th><th class="left">Attendees</th></tr>`;
       meetings.forEach(m=>{h+=`<tr><td>${E(m.date)}</td><td class="left">${E(m.desc)}</td><td class="left">${E(m.attendees)}</td></tr>`});

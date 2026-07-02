@@ -4,6 +4,10 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.056 — 2026-06-28
+**Overseas sites: crime context now reaches the reports (backlog #13, partial)**
+- The manual "Crime & security context" entered for non-UK sites on the Crime & Terrorism tab is now included in the Word export, Excel export and Print report — previously it was captured but never exported
+
 ## v2.055 — 2026-06-28
 **Fix: smoke-test CI failures (false positives, not a real regression)**
 - The "Smoke tests" GitHub Action was failing on every run (including the
