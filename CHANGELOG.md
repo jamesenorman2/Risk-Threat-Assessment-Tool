@@ -4,6 +4,22 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.057 — 2026-07-05
+**Non-UK mode: finish the remaining items (backlog #13)**
+- The MI5/JTAC "UK Terrorism Context" panel (threat level + incident list) is
+  UK-specific and was previously shown regardless of country. It's now gated
+  to `country === "United Kingdom"`; non-UK assessments instead see an
+  "International Terrorism & Security Context" panel that surfaces the
+  manually-entered crime & security context and a pointer to consult the
+  relevant national security agency
+- Added optional structured crime category counts (category + count rows)
+  to the non-UK manual entry — renders as a bar chart in-app and as a table
+  in the Word/Excel/print exports, so non-UK sites can get a category chart
+  like UK sites get from Police.uk
+- Added an advisory note when a UK postcode looks Scottish (Police.uk has no
+  Police Scotland coverage — England/Wales/NI only), so assessors know the
+  crime figures may be incomplete for that site
+
 ## v2.056 — 2026-06-28
 **Overseas sites: crime context now reaches the reports (backlog #13, partial)**
 - The manual "Crime & security context" entered for non-UK sites on the Crime & Terrorism tab is now included in the Word export, Excel export and Print report — previously it was captured but never exported

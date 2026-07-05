@@ -716,6 +716,27 @@ function sIcon(name,size){
 // containing "<" corrupt the exported document.
 function escHtml(s){return s==null?"":String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
+// Postcode areas that lie wholly (or almost wholly) within Scotland — used to
+// warn that Police.uk (England/Wales/NI only) won't cover the site.
+const SCOTLAND_POSTCODE_AREAS=["AB","DD","DG","EH","FK","G","HS","IV","KA","KW","KY","ML","PA","PH","TD","ZE"];
+function isScottishPostcode(pc){
+  if(!pc)return false;
+  var m=String(pc).trim().toUpperCase().match(/^([A-Z]{1,2})/);
+  return m?SCOTLAND_POSTCODE_AREAS.indexOf(m[1])!==-1:false;
+}
+
+// Renders manually-entered crime category counts (non-UK / no Police.uk data) as
+// an export table. Shared by the Word, Excel and print exports.
+function manualCrimeStatsHtml(ctx,E,leftClass){
+  leftClass=leftClass||"tl";
+  var rows=(ctx.manualCrimeStats||[]).filter(function(r){return r&&r.category&&Number(r.count)>0});
+  if(rows.length===0)return"";
+  var body=rows.map(function(r){
+    return"<tr><td class=\""+leftClass+"\">"+E(r.category)+"</td><td>"+E(r.count)+"</td></tr>";
+  }).join("");
+  return"<h3>Reported Crime Categories"+(ctx.country?" — "+E(ctx.country):"")+"</h3><table><tr><th class=\""+leftClass+"\">Category</th><th>Count</th></tr>"+body+"</table>";
+}
+
 const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n:"2"},{id:"assets",l:"Assets",n:"3"},{id:"threats",l:"Threats",n:"4"},
   {id:"poi",l:"Points of Interest",n:"5"},
   {id:"vulnerability",l:"Attractiveness, Vulnerability & Likelihood",n:"6"},{id:"impact",l:"Impact",n:"7"},{id:"controls",l:"Existing Controls",n:"8"},
@@ -1351,7 +1372,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.056";
+const VERSION="2.057";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -3112,6 +3133,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(ctx.assumptions)html+=`<div class="card"><div class="card-hdr">Key Assumptions</div><div class="card-body">${E(ctx.assumptions)}</div></div>`;
     if(ctx.notes)html+=`<div class="card"><div class="card-hdr">Notes</div><div class="card-body">${E(ctx.notes).replace(/\n/g,"<br/>")}</div></div>`;
     if(ctx.crimeContext)html+=`<div class="card"><div class="card-hdr">Local Crime &amp; Security Context${ctx.country?" — "+E(ctx.country):""}</div><div class="card-body">${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</div></div>`;
+    html+=manualCrimeStatsHtml(ctx,E,"tl");
     if(meetings.length>0){
       html+=`<h3>Stakeholder Meetings &amp; Consultations</h3><table><tr><th style="text-align:left">Date</th><th style="text-align:left">Description</th><th style="text-align:left">Attendees</th></tr>`;
       meetings.forEach(m=>{html+=`<tr><td class="tl">${E(m.date)}</td><td class="tl">${E(m.desc)}</td><td class="tl" style="font-size:8pt">${E(m.attendees)}</td></tr>`});
@@ -3289,6 +3311,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     if(ctx.assumptions)h+=`<p><b>Assumptions:</b> ${E(ctx.assumptions)}</p>`;
     if(ctx.notes)h+=`<p><b>Notes:</b> ${E(ctx.notes).replace(/\n/g,"<br/>")}</p>`;
     if(ctx.crimeContext)h+=`<p><b>Crime & Security Context${ctx.country?" ("+E(ctx.country)+")":""}:</b> ${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</p>`;
+    h+=manualCrimeStatsHtml(ctx,E,"tl");
     if(meetings.length>0){
       h+=`<h3>Stakeholder Meetings</h3><table><tr><th>Date</th><th class="tl">Description</th><th class="tl">Attendees</th></tr>`;
       meetings.forEach(m=>{h+=`<tr><td>${E(m.date)}</td><td class="tl">${E(m.desc)}</td><td class="tl">${E(m.attendees)}</td></tr>`});
@@ -3426,6 +3449,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<p><b>Assessor:</b> ${E(ctx.assessor)||"—"} &nbsp;&nbsp; <b>Client:</b> ${E(ctx.client)||"—"}</div>`;
     if(ctx.notes){h+=`<h3>Notes</h3><p>${E(ctx.notes).replace(/\n/g,"<br/>")}</p>`}
     if(ctx.crimeContext){h+=`<h3>Crime & Security Context${ctx.country?" ("+E(ctx.country)+")":""}</h3><p>${E(ctx.crimeContext).replace(/\n/g,"<br/>")}</p>`}
+    h+=manualCrimeStatsHtml(ctx,E,"left");
     if(meetings.length>0){
       h+=`<h3>Stakeholder Meetings</h3><table><tr><th>Date</th><th class="left">Description</th><th class="left">Attendees</th></tr>`;
       meetings.forEach(m=>{h+=`<tr><td>${E(m.date)}</td><td class="left">${E(m.desc)}</td><td class="left">${E(m.attendees)}</td></tr>`});
@@ -4270,7 +4294,45 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               value:ctx.crimeContext||"",
               onChange:function(e){setCtx(function(c){return{...c,crimeContext:e.target.value}})}
             })
+          ),
+          React.createElement("div",{style:{background:"#fff",border:"1px solid #fde68a",borderTop:"none",borderRadius:"0 0 10px 10px",padding:14}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexWrap:"wrap",gap:6}},
+              React.createElement("label",{style:{fontSize:12,fontWeight:600,color:"#475569"}},"Reported crime categories (optional — adds a category chart to the report)"),
+              React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){setCtx(function(c){return{...c,manualCrimeStats:[...(c.manualCrimeStats||[]),{category:"",count:""}]}})}},"+ Add category")
+            ),
+            (ctx.manualCrimeStats||[]).map(function(row,i){
+              return React.createElement("div",{key:i,style:{display:"flex",gap:8,alignItems:"center",marginBottom:6}},
+                React.createElement("input",{className:"input",style:{flex:2},placeholder:"e.g. Burglary",value:row.category||"",
+                  onChange:function(e){setCtx(function(c){var arr=(c.manualCrimeStats||[]).slice();arr[i]={...arr[i],category:e.target.value};return{...c,manualCrimeStats:arr}})}}),
+                React.createElement("input",{className:"input",type:"number",min:0,style:{flex:1},placeholder:"Count",value:row.count||"",
+                  onChange:function(e){setCtx(function(c){var arr=(c.manualCrimeStats||[]).slice();arr[i]={...arr[i],count:e.target.value};return{...c,manualCrimeStats:arr}})}}),
+                React.createElement("button",{style:{background:"none",border:"none",color:"#dc2626",cursor:"pointer",fontSize:16,padding:"0 6px"},title:"Remove category",
+                  onClick:function(){setCtx(function(c){return{...c,manualCrimeStats:(c.manualCrimeStats||[]).filter(function(_,idx){return idx!==i})}})}},"✕")
+              );
+            }),
+            (function(){
+              var rows=(ctx.manualCrimeStats||[]).filter(function(r){return r.category&&Number(r.count)>0});
+              if(rows.length===0)return null;
+              var max=Math.max.apply(null,rows.map(function(r){return Number(r.count)||0}));
+              return React.createElement("div",{style:{marginTop:10}},
+                rows.map(function(r,i){
+                  var pct=Math.round((Number(r.count)/max)*100);
+                  return React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:6,marginBottom:3}},
+                    React.createElement("div",{style:{width:110,fontSize:12,color:"#475569",flexShrink:0,wordBreak:"break-word"}},r.category),
+                    React.createElement("div",{style:{flex:1,height:12,background:"#f1f5f9",borderRadius:2,overflow:"hidden"}},
+                      React.createElement("div",{style:{width:pct+"%",height:"100%",background:"#b45309",borderRadius:2}})
+                    ),
+                    React.createElement("div",{style:{width:28,fontSize:12,fontWeight:600,textAlign:"right"}},r.count)
+                  );
+                })
+              );
+            })()
           )
+        ),
+
+        // Scotland: Police.uk has no coverage (England/Wales/NI only)
+        ctx.country==="United Kingdom"&&ctx.postcode&&isScottishPostcode(ctx.postcode)&&React.createElement("div",{style:{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:12,color:"#1e3a8a"}},
+          React.createElement("strong",null,"ℹ Scotland: "),"Police.uk crime data covers England, Wales & Northern Ireland only — Police Scotland does not submit to this API, so figures shown (if any) may be incomplete for this postcode."
         ),
 
         // No postcode (UK only)
@@ -4632,6 +4694,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         // ============================================================
         // TERRORISM CONTEXT
         // ============================================================
+        ctx.country==="United Kingdom"?
         React.createElement("div",{id:"terrorism-report-section",style:{marginTop:24}},
 
           // Header with refresh and export
@@ -4753,7 +4816,20 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("div",{style:{fontSize:12,color:"#94a3b8",padding:"10px 16px"}},"Sources: MI5, Counter Terrorism Policing, JTAC, open source reporting. Not exhaustive.")
         )
-      )
+        )
+        :
+        React.createElement("div",{id:"terrorism-report-section",style:{marginTop:24}},
+          React.createElement("div",{style:{background:"#7f1d1d",borderRadius:"10px 10px 0 0",padding:"14px 20px",color:"#fff"}},
+            React.createElement("div",{style:{fontSize:15,fontWeight:700}},"International Terrorism & Security Context"),
+            React.createElement("div",{style:{fontSize:12,opacity:0.8}},"MI5/JTAC threat levels are UK-specific and do not apply outside the UK.")
+          ),
+          React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",borderRadius:"0 0 10px 10px",padding:16,background:"#fff"}},
+            ctx.crimeContext
+              ?React.createElement("div",{style:{fontSize:13,color:"#334155",lineHeight:1.6,whiteSpace:"pre-wrap"}},ctx.crimeContext)
+              :React.createElement("div",{style:{fontSize:13,color:"#94a3b8"}},"No crime & security context entered yet — add it above so it appears here and in exports."),
+            React.createElement("div",{style:{fontSize:12,color:"#64748b",marginTop:10}},"For terrorism threat guidance outside the UK, consult the relevant national security agency or your organisation's travel security advisor for "+(ctx.country||"this location")+".")
+          )
+        )
       ),
 
       // ASSETS
