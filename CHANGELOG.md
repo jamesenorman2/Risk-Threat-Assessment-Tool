@@ -4,6 +4,15 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.058 — 2026-07-12
+**Assessment manager: rename-in-list + search/filter (backlog #2 follow-up)**
+- Each entry in the "Assessments" list now has a rename (✎) button — edits the
+  name inline, persists to the assessment index and (for the active
+  assessment) `ctx.project`, or to the stored data blob for background
+  assessments so the name doesn't revert on next autosave
+- A search box appears above the list once there are more than 5 stored
+  assessments, filtering by name or client as you type
+
 ## v2.057 — 2026-07-05
 **Non-UK mode: finish the remaining items (backlog #13)**
 - The MI5/JTAC "UK Terrorism Context" panel (threat level + incident list) is

@@ -1372,7 +1372,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.057";
+const VERSION="2.058";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1818,9 +1818,12 @@ function App(){
   // ── Assessment manager (multiple assessments per browser) ─────────
   const[asmManagerOpen,setAsmManagerOpen]=useState(false);
   const[asmIndexView,setAsmIndexView]=useState([]);
+  const[asmFilter,setAsmFilter]=useState("");
+  const[asmEditingId,setAsmEditingId]=useState(null);
+  const[asmEditingName,setAsmEditingName]=useState("");
   const asmModalRef=useRef(null);
   useFocusTrap(asmManagerOpen,asmModalRef);
-  const openAsmManager=()=>{setAsmIndexView(readAsmIndex());setAsmManagerOpen(true)};
+  const openAsmManager=()=>{setAsmIndexView(readAsmIndex());setAsmFilter("");setAsmEditingId(null);setAsmManagerOpen(true)};
   useEffect(()=>{
     if(!asmManagerOpen)return;
     const h=(e)=>{if(e.key==="Escape")setAsmManagerOpen(false)};
@@ -1876,6 +1879,20 @@ function App(){
         setTab("context");
       }
     });
+  };
+  const renameAssessment=(id,rawName)=>{
+    var name=(rawName||"").trim()||"Untitled Assessment";
+    var ix=readAsmIndex();var e=ix.find(function(x){return x.id===id});
+    if(e){e.name=name;writeAsmIndex(ix);setAsmIndexView(ix);}
+    if(id===activeAsmId){
+      setCtx(function(c){return{...c,project:name}});
+    }else{
+      try{
+        var raw=localStorage.getItem("sra-rta-data:"+id);
+        if(raw){var p=JSON.parse(raw);p.ctx=p.ctx||{};p.ctx.project=name;localStorage.setItem("sra-rta-data:"+id,JSON.stringify(p));}
+      }catch(err){}
+    }
+    setAsmEditingId(null);
   };
 
   // Auto-load shared treatment DB from GitHub once on startup when config is ready
@@ -4155,21 +4172,37 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           ),
           React.createElement("button",{"aria-label":"Close",title:"Close",onClick:()=>setAsmManagerOpen(false),style:{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#94a3b8"}},"✕")
         ),
+        asmIndexView.length>5&&React.createElement("div",{style:{padding:"10px 20px 0"}},
+          React.createElement("input",{type:"text",value:asmFilter,onChange:function(e){setAsmFilter(e.target.value)},placeholder:"Search assessments…","aria-label":"Search assessments",style:{width:"100%",padding:"7px 10px",fontSize:12,border:"1px solid #e2e8f0",borderRadius:6,boxSizing:"border-box"}})
+        ),
         React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"8px 0"}},
           asmIndexView.length===0&&React.createElement("div",{style:{textAlign:"center",padding:24,color:"#94a3b8",fontSize:12}},"No assessments stored yet."),
-          asmIndexView.slice().sort(function(a,b){return(b.updated||0)-(a.updated||0)}).map(function(a){
+          (function(){
+            var q=asmFilter.trim().toLowerCase();
+            var list=asmIndexView.slice().sort(function(a,b){return(b.updated||0)-(a.updated||0)});
+            if(q)list=list.filter(function(a){return((a.name||"")+" "+(a.client||"")).toLowerCase().includes(q)});
+            if(asmIndexView.length>0&&list.length===0)return React.createElement("div",{style:{textAlign:"center",padding:24,color:"#94a3b8",fontSize:12}},"No assessments match “"+asmFilter+"”.");
+            return list.map(function(a){
             var isActive=a.id===activeAsmId;
+            var isEditing=asmEditingId===a.id;
             return React.createElement("div",{key:a.id,style:{padding:"12px 20px",display:"flex",alignItems:"center",gap:12,borderBottom:"1px solid #f8fafc",background:isActive?"#f0f9ff":""}},
-              React.createElement("div",{style:{flex:1,minWidth:0,cursor:"pointer"},onClick:function(){openAssessment(a.id)}},
-                React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.name||"Untitled Assessment"),
-                React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},(a.client?a.client+" · ":"")+(a.updated?"Updated "+new Date(a.updated).toLocaleString():""))
+              React.createElement("div",{style:{flex:1,minWidth:0,cursor:isEditing?"default":"pointer"},onClick:function(){if(!isEditing)openAssessment(a.id)}},
+                isEditing
+                  ?React.createElement("input",{type:"text",autoFocus:true,value:asmEditingName,onClick:function(e){e.stopPropagation()},onChange:function(e){setAsmEditingName(e.target.value)},
+                      onBlur:function(){renameAssessment(a.id,asmEditingName)},
+                      onKeyDown:function(e){e.stopPropagation();if(e.key==="Enter"){e.preventDefault();renameAssessment(a.id,asmEditingName)}else if(e.key==="Escape"){e.preventDefault();setAsmEditingId(null)}},
+                      "aria-label":"Rename assessment",style:{width:"100%",fontSize:13,fontWeight:600,color:"#1e293b",padding:"3px 6px",border:"1px solid #94a3b8",borderRadius:4,boxSizing:"border-box"}})
+                  :React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},a.name||"Untitled Assessment"),
+                !isEditing&&React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},(a.client?a.client+" · ":"")+(a.updated?"Updated "+new Date(a.updated).toLocaleString():""))
               ),
+              !isEditing&&React.createElement("button",{className:"btn-x",title:"Rename assessment","aria-label":"Rename "+(a.name||"assessment"),onClick:function(e){e.stopPropagation();setAsmEditingId(a.id);setAsmEditingName(a.name||"")}},"✎"),
               isActive
                 ?React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#0369a1",background:"#e0f2fe",borderRadius:10,padding:"3px 9px",flexShrink:0}},"OPEN")
                 :React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){openAssessment(a.id)}},"Open"),
               React.createElement("button",{className:"btn-x",title:"Delete assessment","aria-label":"Delete "+(a.name||"assessment"),onClick:function(){deleteAssessment(a.id)}},"✕")
             );
-          })
+            });
+          })()
         ),
         React.createElement("div",{style:{padding:"12px 20px",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}},
           React.createElement("div",{style:{fontSize:11,color:"#94a3b8",flex:1,minWidth:200}},"Stored locally in this browser. Use Save or cloud Back-ups for copies you can share or restore elsewhere."),

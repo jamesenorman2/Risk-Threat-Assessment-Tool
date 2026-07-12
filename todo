@@ -29,7 +29,9 @@
  2. [DONE v2.043] Multi-assessment manager — toolbar "Assessments" button;
     per-assessment localStorage keys + index; open/create/delete/switch with
     auto-save before switching; legacy single-slot data migrated on load.
-    Possible follow-ups: rename-in-list, search/filter for long lists.
+    [DONE v2.058] Follow-ups: rename-in-list (✎ button, inline edit, persists
+    to index + ctx.project/stored blob) and search/filter box (shown once
+    more than 5 assessments are stored).
  3. [DONE v2.052] Undo/redo (Ctrl+Z) — debounced history stack covers the
     working-assessment fields (context, assets, threats, all scoring grids,
     meetings, POIs, treatments, threat/treatment DB, SBD compliance). Ctrl+Z
