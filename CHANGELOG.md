@@ -4,6 +4,20 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.059 — 2026-07-19
+**Executive summary auto-draft (backlog #8)**
+- New `buildExecNarrative()` generates a narrative executive summary from the
+  assessment data: introduction (project, site, client, assessor, stage),
+  threat profile with Design Basis Threats, pre-mitigation risk profile with
+  headline risks, local crime context (Police.uk totals, top categories and
+  trend — or manual non-UK crime stats), treatment strategy and residual-risk
+  position including ALARP justification coverage, POI count, and a
+  standards/methodology closing line
+- Dashboard tab shows the draft in an "Executive Summary (auto-draft)" card
+  with a "Copy text" button; the draft updates live as the assessment changes
+- Word export gains an "Executive Summary" section after the cover page, and
+  the Dashboard "Copy to Word" output includes the narrative
+
 ## v2.058 — 2026-07-12
 **Assessment manager: rename-in-list + search/filter (backlog #2 follow-up)**
 - Each entry in the "Assessments" list now has a rename (✎) button — edits the

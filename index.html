@@ -1372,7 +1372,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.058";
+const VERSION="2.059";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -3050,6 +3050,88 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     });
   };
 
+  // Executive summary auto-draft — narrative paragraphs generated from the
+  // assessment data as a starting point for the assessor (backlog #8).
+  const prettyCrimeCat=(slug)=>String(slug||"").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase()).replace(/\bAsb\b/,"ASB");
+  const buildExecNarrative=()=>{
+    const paras=[];
+    const named=cRisks.filter(r=>r.n);
+    const scored=named.filter(r=>r.lik&&r.imp);
+    // 1. Introduction
+    let intro="This Security Risk Assessment covers "+(ctx.project||"the proposed development");
+    if(ctx.devType)intro+=", a "+ctx.devType.toLowerCase()+" development";
+    if(ctx.address||ctx.postcode)intro+=" at "+[ctx.address,ctx.postcode].filter(Boolean).join(", ");
+    intro+=".";
+    if(ctx.client)intro+=" It has been prepared for "+ctx.client;
+    if(ctx.assessor)intro+=(ctx.client?" by ":" It has been prepared by ")+ctx.assessor;
+    if(ctx.client||ctx.assessor)intro+=(ctx.date?" ("+ctx.date+")":"")+".";
+    if(ctx.stage)intro+=" The assessment reflects the design at "+ctx.stage+".";
+    paras.push(intro);
+    // 2. Threat profile
+    if(named.length>0){
+      const terror=named.filter(r=>r.cat==="Terrorism").length;
+      const crime=named.length-terror;
+      const dbts=named.filter(r=>r.dbt);
+      let p="A total of "+named.length+" threat"+(named.length===1?" was":"s were")+" assessed ("+terror+" Terrorism, "+crime+" Crime).";
+      if(dbts.length>0)p+=" "+dbts.length+" "+(dbts.length===1?"qualifies":"qualify")+" as Design Basis Threat"+(dbts.length===1?"":"s")+" (capability/intent score of 3 or more): "+dbts.map(r=>r.n).join("; ")+".";
+      paras.push(p);
+    }
+    // 3. Pre-mitigation risk profile
+    if(scored.length>0){
+      const byBand=b=>scored.filter(r=>r.rat===b);
+      const vh=byBand("Very High"),hi=byBand("High"),me=byBand("Medium");
+      const headline=vh.concat(hi);
+      let p="Pre-mitigation, "+scored.length+" risk"+(scored.length===1?" has":"s have")+" been scored: "+["Very High","High","Medium","Low","Very Low"].map(b=>byBand(b).length+" "+b).join(", ")+".";
+      if(headline.length>0)p+=" The headline risk"+(headline.length===1?" is":"s are")+" "+headline.map(r=>r.n+" ("+r.rat+")").join("; ")+".";
+      else if(me.length>0)p+=" No risks are rated High or Very High; the profile is dominated by Medium and lower ratings.";
+      paras.push(p);
+    }
+    // 4. Local crime context
+    if(crimeData&&crimeData.total>0){
+      const top=crimeData.byCategory.slice(0,3).map(e=>prettyCrimeCat(e[0])+" ("+e[1]+")").join(", ");
+      let p="Police.uk data for the 0.5-mile radius around the site records "+crimeData.total+" crimes over "+crimeData.monthsLoaded+" month"+(crimeData.monthsLoaded===1?"":"s")+". The leading categories are "+top+".";
+      const sm=crimeData.sortedMonths;
+      if(sm.length>=4){
+        const tot=m=>Object.values(crimeData.byMonth[m]||{}).reduce((s,x)=>s+x,0);
+        const half=Math.floor(sm.length/2);
+        const first=sm.slice(0,half).reduce((s,m)=>s+tot(m),0)/half;
+        const second=sm.slice(-half).reduce((s,m)=>s+tot(m),0)/half;
+        if(first>0)p+=second>first*1.15?" Recorded crime is trending upwards over the period.":second<first*0.85?" Recorded crime is trending downwards over the period.":" Recorded crime is broadly stable over the period.";
+      }
+      paras.push(p);
+    }else if((ctx.manualCrimeStats||[]).some(r=>r&&r.category&&Number(r.count)>0)){
+      const rows=(ctx.manualCrimeStats||[]).filter(r=>r&&r.category&&Number(r.count)>0);
+      const total=rows.reduce((s,r)=>s+Number(r.count),0);
+      const top=rows.slice().sort((a,b)=>Number(b.count)-Number(a.count)).slice(0,3).map(r=>r.category+" ("+r.count+")").join(", ");
+      paras.push("Reported crime data"+(ctx.country&&ctx.country!=="United Kingdom"?" for "+ctx.country:"")+" records "+total+" incidents across "+rows.length+" categor"+(rows.length===1?"y":"ies")+", led by "+top+".");
+    }
+    // 5. Treatment & residual position
+    if(scored.length>0){
+      const treated=scored.filter(r=>r.treat);
+      const resScored=scored.filter(r=>r.resRat);
+      let p="";
+      if(treated.length>0){
+        const counts=TREATS.map(t=>({t,c:treated.filter(r=>r.treat===t).length})).filter(x=>x.c>0);
+        p+="Treatment strategies have been assigned to "+treated.length+" of "+scored.length+" scored risks ("+counts.map(x=>x.c+" "+x.t).join(", ")+").";
+      }
+      if(resScored.length>0){
+        const stillHigh=resScored.filter(r=>r.resRat==="High"||r.resRat==="Very High");
+        const reduced=resScored.filter(r=>{const order={"Very Low":1,"Low":2,"Medium":3,"High":4,"Very High":5};return order[r.resRat]<order[r.rat]});
+        p+=(p?" ":"")+"Post-treatment residual scoring covers "+resScored.length+" risk"+(resScored.length===1?"":"s")+"; "+reduced.length+" show"+(reduced.length===1?"s":"")+" a reduced rating.";
+        if(stillHigh.length>0){
+          const justified=stillHigh.filter(r=>(residualJustifications[r.id]||"").trim());
+          p+=" "+stillHigh.length+" risk"+(stillHigh.length===1?" remains":"s remain")+" High or Very High after treatment"+(justified.length===stillHigh.length?", each with a recorded ALARP justification.":justified.length>0?"; "+(stillHigh.length-justified.length)+" still require"+((stillHigh.length-justified.length)===1?"s":"")+" an ALARP justification.":"; ALARP justifications should be recorded for these.");
+        }else{
+          p+=" No risks remain High or Very High after treatment.";
+        }
+      }
+      if(p)paras.push(p);
+    }
+    if(pois.length>0)paras.push(pois.length+" point"+(pois.length===1?"":"s")+" of interest ha"+(pois.length===1?"s":"ve")+" been identified and mapped against applicable threats to focus treatment measures on the most exposed locations.");
+    paras.push("The assessment follows the SRA methodology in alignment with ISO 31000:2018, ISO/IEC 31010:2019 and AS/NZS HB 167:2006. This summary was auto-drafted from the assessment data and should be reviewed and refined by the assessor before issue.");
+    return paras;
+  };
+
   // Export Word (Pro) — server-rendered .docx via /api/report
   const exportWordPro=async()=>{
     showToast("Generating branded Word report...");
@@ -3156,6 +3238,11 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       meetings.forEach(m=>{html+=`<tr><td class="tl">${E(m.date)}</td><td class="tl">${E(m.desc)}</td><td class="tl" style="font-size:8pt">${E(m.attendees)}</td></tr>`});
       html+=`</table>`;
     }
+
+    // Executive summary (auto-draft)
+    html+=`<h2>Executive Summary</h2>`;
+    html+=`<p class="sub">Auto-drafted from the assessment data — review and refine before issue.</p>`;
+    buildExecNarrative().forEach(p=>{html+=`<p>${E(p)}</p>`});
 
     // Standards section
     html+=`<h2>Methodology & Standards Compliance</h2>`;
@@ -6519,6 +6606,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               h+="<h1>Security Risk Assessment \u2014 Executive Summary</h1>";
               h+="<p><b>Project:</b> "+(ctx.project||"\u2014")+" | <b>Client:</b> "+(ctx.client||"\u2014")+" | <b>Date:</b> "+(ctx.date||"\u2014")+"</p>";
               h+="<p><b>Site:</b> "+(ctx.address||"")+" "+(ctx.postcode||"")+" | <b>Type:</b> "+(ctx.devType||"\u2014")+" | <b>Assessor:</b> "+(ctx.assessor||"\u2014")+"</p>";
+              // Auto-drafted narrative
+              h+="<h2>Summary Narrative</h2>";
+              buildExecNarrative().forEach(function(p){h+="<p>"+escHtml(p)+"</p>"});
               // Risk overview
               var vhC=cRisks.filter(function(r){return r.rat==="Very High"}).length;
               var hiC=cRisks.filter(function(r){return r.rat==="High"}).length;
@@ -6606,6 +6696,21 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("span",null,"Assessor: "+(ctx.assessor||"\u2014")),
             React.createElement("span",null,"Site: "+(ctx.address||"")+" "+(ctx.postcode||""))
           )
+        ),
+
+        // ── EXECUTIVE SUMMARY (AUTO-DRAFT) ──
+        React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",padding:16}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10}},
+            React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"#1B2A4A"}},"EXECUTIVE SUMMARY (AUTO-DRAFT)"),
+            React.createElement("span",{style:{fontSize:9,padding:"2px 8px",borderRadius:10,background:"#eff6ff",color:"#1e40af",fontWeight:600}},"Generated from assessment data"),
+            React.createElement("button",{className:"btn btn-outline btn-sm","data-capture-hide":"1",style:{marginLeft:"auto",fontSize:11,padding:"3px 8px"},
+              onClick:function(){
+                var text=buildExecNarrative().join("\n\n");
+                navigator.clipboard.writeText(text).then(function(){showToast("Executive summary copied as text")}).catch(function(){showToast("Copy failed — check browser permissions")});
+              }},"📋 Copy text")
+          ),
+          buildExecNarrative().map(function(p,pi){return React.createElement("p",{key:pi,style:{fontSize:12,lineHeight:1.65,color:"#334155",margin:"0 0 8px"}},p)}),
+          React.createElement("div",{style:{fontSize:10,color:"#94a3b8",fontStyle:"italic"}},"Auto-drafted — review and refine before including in the client report. The draft updates live as the assessment changes and is included in the Word export.")
         ),
 
         // ── PRE-MITIGATION RISK PROFILE ──

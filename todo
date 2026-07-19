@@ -49,8 +49,10 @@
     (pre/post design change, year-on-year review).
  7. Treatment prioritisation — capture indicative cost + effort per measure,
     auto-build a quick-win / planned / long-term roadmap table for the report.
- 8. Executive summary auto-draft — generate narrative text from the data (top
-    risks, crime trend, posture) as a starting point for the assessor.
+ 8. [DONE v2.059] Executive summary auto-draft — narrative generated from the
+    data (intro, threat profile/DBTs, risk profile + headline risks, crime
+    context incl. trend, treatment/residual position with ALARP coverage);
+    shown on the Dashboard with copy-as-text and included in Word export.
  9. [DONE v2.048] QA / completeness gate before export — Word/Excel export
     runs a checklist (unscored threats, missing ALARP justifications, empty
     required context fields) and confirms before exporting anyway.
