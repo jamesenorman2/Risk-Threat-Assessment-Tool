@@ -4,6 +4,20 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.060 — 2026-07-19
+**Treatment prioritisation & roadmap (backlog #7)**
+- Each recorded treatment measure can now carry an indicative cost (£/££/£££)
+  and effort (Low/Medium/High), set via compact dropdowns on the measure rows
+  in the Treatment Summary tab; stored per unique measure (`measureMeta`) and
+  persisted through save/load, autosave, undo/redo and assessment switching
+- New "Treatment Roadmap" in the Treatment Summary tab classifies unique
+  measures into Quick Wins (low effort, ≤ medium cost), Planned, and
+  Long-Term (high cost or effort) delivery horizons, each sorted by the
+  highest pre-mitigation rating among the threats the measure addresses;
+  unclassified measures are flagged
+- The roadmap tables are included in the full Word export and the Treatment
+  Summary "Copy to Word" output
+
 ## v2.059 — 2026-07-19
 **Executive summary auto-draft (backlog #8)**
 - New `buildExecNarrative()` generates a narrative executive summary from the

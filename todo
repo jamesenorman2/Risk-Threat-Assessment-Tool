@@ -47,8 +47,10 @@
     sidebar badge for sections still in draft, allow per-comment edit.
  6. Assessment compare/diff — load two saved JSON files and show risk deltas
     (pre/post design change, year-on-year review).
- 7. Treatment prioritisation — capture indicative cost + effort per measure,
-    auto-build a quick-win / planned / long-term roadmap table for the report.
+ 7. [DONE v2.060] Treatment prioritisation — indicative cost (£/££/£££) and
+    effort (Low/Med/High) per measure on the Treatment Summary rows;
+    auto-built Quick Wins / Planned / Long-Term roadmap tables (sorted by
+    highest addressed risk rating) in-app, in Word export and Copy-to-Word.
  8. [DONE v2.059] Executive summary auto-draft — narrative generated from the
     data (intro, threat profile/DBTs, risk profile + headline risks, crime
     context incl. trend, treatment/residual position with ALARP coverage);

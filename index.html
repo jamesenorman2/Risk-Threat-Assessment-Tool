@@ -503,6 +503,12 @@ const RC={
   "Very High":{bg:"#b91c1c",t:"#fff",icon:"⬆"},
 };
 const TREATS=["Reduce","Transfer","Avoid","Accept"];
+// Treatment roadmap (backlog #7): indicative cost/effort per measure
+const COST_LABELS={1:"£ Low",2:"££ Medium",3:"£££ High"};
+const EFFORT_LABELS={1:"Low",2:"Medium",3:"High"};
+const RATING_NAMES=[null,"Very Low","Low","Medium","High","Very High"];
+const RATING_ORDER={"Very Low":1,"Low":2,"Medium":3,"High":4,"Very High":5};
+const measureKeyOf=m=>String(m||"").trim().toLowerCase();
 const AC=["opImpact","dependencies","impactPeople","impactEnv"];
 const ACL={opImpact:"Op. Impact",dependencies:"Dependencies",impactPeople:"People",impactEnv:"Environment"};
 const TAC=["visibility","status","access","collateral","crime","history"];
@@ -1372,7 +1378,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.059";
+const VERSION="2.060";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1455,6 +1461,7 @@ function App(){
   const[rs,setRs]=useState({});
   const[acc,setAcc]=useState({});
   const[treatmentMeasures,setTreatmentMeasures]=useState({});
+  const[measureMeta,setMeasureMeta]=useState({}); // keyed by trimmed lowercase measure text: {cost:1-3,effort:1-3}
   const[sbdType,setSbdType]=useState("residential");
   const[toast,setToast]=useState(null);
   const[lastLocalSave,setLastLocalSave]=useState(null);
@@ -1687,17 +1694,17 @@ function App(){
       var fresh="a"+Date.now();localStorage.setItem("sra-rta-active",fresh);return fresh;
     }catch(e){return "a"+Date.now()}
   });
-  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
+  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
 
   // ── Undo/redo (Ctrl+Z / Ctrl+Y) ────────────────────────────────────
   // Tracks the working-assessment fields a stray click can wipe out (the
   // same fields resetAssessmentState() touches). Settings/library-level
   // state (scales, ghConfig, presets DB, etc.) is deliberately excluded.
-  const buildHistorySnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
+  const buildHistorySnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,measureMeta,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
   const applyHistorySnapshot=(s)=>{
     setCtx(s.ctx);setAssets(s.assets);setThreats(s.threats);setVs(s.vs);setIs(s.is_);setCd(s.cd);setTx(s.tx);setRs(s.rs);setAcc(s.acc);setMeetings(s.meetings);setPois(s.pois);
     setActiveAssetPreset(s.activeAssetPreset);setActiveThreatPreset(s.activeThreatPreset);setAssetsLocked(s.assetsLocked);setThreatsLocked(s.threatsLocked);
-    setResidualJustifications(s.residualJustifications);setTreatOptional(s.treatOptional);setTreatmentMeasures(s.treatmentMeasures);
+    setResidualJustifications(s.residualJustifications);setTreatOptional(s.treatOptional);setTreatmentMeasures(s.treatmentMeasures);setMeasureMeta(s.measureMeta||{});
     setThreatDB(s.threatDB);setTreatmentDB(s.treatmentDB);setSbdCompliance(s.sbdCompliance);setTreatCategoryScope(s.treatCategoryScope);
     setRiskComments(s.riskComments);setSectionReview(s.sectionReview);
   };
@@ -1740,7 +1747,7 @@ function App(){
       syncHistoryCounts();
     },600);
     return()=>clearTimeout(timer);
-  },[dataLoaded,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
+  },[dataLoaded,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,residualJustifications,treatOptional,treatmentMeasures,measureMeta,threatDB,treatmentDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
   // Keep a ref to the latest undo/redo closures so the one-time global
   // keydown listener below never sees stale state.
   const undoRedoRef=useRef({undo,redo});
@@ -1777,7 +1784,7 @@ function App(){
       if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets&&p.assets.length>0)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
       if(p.threats&&p.threats.length>0){var loadedAssetIds=new Set((p.assets||[]).map(function(a){return a.id}));setThreats(p.threats.map(function(t){return t.targets?{...t,targets:t.targets.filter(function(tid){return loadedAssetIds.has(tid)})}:t;}))}else setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));
       if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-      if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);
+      if(p.meetings)setMeetings(p.meetings);if(p.pois)setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.ghConfig)setGhConfig(p.ghConfig);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.measureMeta)setMeasureMeta(p.measureMeta);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);
       if(p.threatDB&&Array.isArray(p.threatDB)&&p.threatDB.length>0)setThreatDB(migrateLinkedAssets(p.threatDB,defs.ASSET_PRESETS));else setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));
       if(p.treatmentDB&&Array.isArray(p.treatmentDB)&&p.treatmentDB.length>0)setTreatmentDB(p.treatmentDB);else setTreatmentDB(defs.DEFAULT_TREATMENT_DB);
       if(p.assetPresetsDB&&typeof p.assetPresetsDB==="object"&&!Array.isArray(p.assetPresetsDB)&&Object.keys(p.assetPresetsDB).length>0)setAssetPresetsDB(p.assetPresetsDB);else setAssetPresetsDB(defs.ASSET_PRESETS);
@@ -1793,7 +1800,7 @@ function App(){
   useEffect(()=>{
     const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();setLastLocalSave(new Date());},500);
     return()=>clearTimeout(timer);
-  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
+  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
 
   // Close the setup wizard on Escape (same action as the "Skip Setup" button)
   const wizardModalRef=useRef(null);
@@ -1950,8 +1957,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,riskComments,sectionReview,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,riskComments,sectionReview]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,riskComments,sectionReview,_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,riskComments,sectionReview]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -2044,7 +2051,7 @@ function App(){
   const applyLoadedData=(p)=>{
     if(p.ctx&&typeof p.ctx==="object")setCtx(p.ctx);if(Array.isArray(p.assets))setAssets(p.assets);if(Array.isArray(p.threats))setThreats(p.threats);
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
-    if(Array.isArray(p.meetings))setMeetings(p.meetings);if(Array.isArray(p.pois))setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
+    if(Array.isArray(p.meetings))setMeetings(p.meetings);if(Array.isArray(p.pois))setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.measureMeta)setMeasureMeta(p.measureMeta);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
     if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);
   };
 
@@ -2182,7 +2189,7 @@ function App(){
   // clearAll, the assessment manager and delete flows)
   const resetAssessmentState=()=>{
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setRiskComments({});setSectionReview({});
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setMeasureMeta({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setRiskComments({});setSectionReview({});
   };
 
   const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
@@ -3132,6 +3139,86 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     return paras;
   };
 
+  // Treatment roadmap (backlog #7) — collect every unique recorded measure
+  // (across risks, assets and POIs) and classify it by indicative cost and
+  // effort into quick-win / planned / long-term delivery horizons.
+  const buildRoadmapData=()=>{
+    var catLookup={};
+    treatmentDB.forEach(function(entry){
+      (entry.ext_physical||[]).concat(entry.int_physical||[]).forEach(function(m){if(m)catLookup[measureKeyOf(m)]="Physical"});
+      (entry.ext_electronic||[]).concat(entry.int_electronic||[]).forEach(function(m){if(m)catLookup[measureKeyOf(m)]="Electronic"});
+      (entry.procedures||[]).forEach(function(m){if(m)catLookup[measureKeyOf(m)]="Procedural"});
+    });
+    var map={};
+    cRisks.filter(function(r){return r.n}).forEach(function(r){
+      var m=treatmentMeasures[r.id]||{};
+      Object.keys(m).forEach(function(locKey){
+        var label=null;
+        if(String(locKey).indexOf("poi_")===0){
+          var poi=pois.find(function(p){return"poi_"+p.id===locKey});
+          if(poi)label=(poi.name||"POI")+" (POI)";
+        }else{
+          var a=assets.find(function(a2){return a2.id===locKey});
+          if(a)label=a.cat;
+        }
+        if(!label)return;
+        (m[locKey]||[]).forEach(function(v){
+          if(!v)return;
+          var key=measureKeyOf(v);
+          if(!map[key])map[key]={v:String(v).trim(),key:key,cat:catLookup[key]||"Other",applies:[],threats:[],maxRating:0};
+          var e=map[key];
+          if(e.applies.indexOf(label)<0)e.applies.push(label);
+          if(e.threats.indexOf(r.n)<0)e.threats.push(r.n);
+          var ro=RATING_ORDER[r.rat]||0;if(ro>e.maxRating)e.maxRating=ro;
+        });
+      });
+    });
+    var all=Object.values(map).map(function(e){
+      var meta=measureMeta[e.key]||{};
+      var cost=meta.cost||null,effort=meta.effort||null;
+      var horizon=null;
+      if(cost||effort){
+        var effEff=effort||2,effCost=cost||2; // unset half defaults to Medium
+        if(effEff>=3||effCost>=3)horizon="longterm";
+        else if(effEff<=1&&effCost<=2)horizon="quick";
+        else horizon="planned";
+      }
+      return{...e,cost:cost,effort:effort,horizon:horizon};
+    });
+    var byPriority=function(a,b){return b.maxRating-a.maxRating||a.v.localeCompare(b.v)};
+    return{
+      all:all,
+      quick:all.filter(function(e){return e.horizon==="quick"}).sort(byPriority),
+      planned:all.filter(function(e){return e.horizon==="planned"}).sort(byPriority),
+      longterm:all.filter(function(e){return e.horizon==="longterm"}).sort(byPriority),
+      unclassified:all.filter(function(e){return!e.horizon}).sort(byPriority)
+    };
+  };
+  const setMeasureMetaField=(mKey,field,val)=>{
+    setMeasureMeta(function(p){
+      var n={...p};var cur={...(n[mKey]||{})};
+      if(val)cur[field]=Number(val);else delete cur[field];
+      if(!cur.cost&&!cur.effort)delete n[mKey];else n[mKey]=cur;
+      return n;
+    });
+  };
+  // Compact cost/effort pickers rendered next to each measure in the Treatment Summary
+  const MeasureMetaControls=({mKey})=>{
+    var meta=measureMeta[mKey]||{};
+    return React.createElement("span",{style:{display:"inline-flex",gap:4,marginLeft:"auto",flexShrink:0},"data-capture-hide":"1"},
+      React.createElement("select",{className:"input",style:{fontSize:10,padding:"1px 4px",width:"auto"},value:meta.cost||"",
+        title:"Indicative cost","aria-label":"Indicative cost",onChange:function(e){setMeasureMetaField(mKey,"cost",e.target.value)}},
+        React.createElement("option",{value:""},"Cost…"),
+        [1,2,3].map(function(c){return React.createElement("option",{key:c,value:c},COST_LABELS[c])})
+      ),
+      React.createElement("select",{className:"input",style:{fontSize:10,padding:"1px 4px",width:"auto"},value:meta.effort||"",
+        title:"Indicative effort","aria-label":"Indicative effort",onChange:function(e){setMeasureMetaField(mKey,"effort",e.target.value)}},
+        React.createElement("option",{value:""},"Effort…"),
+        [1,2,3].map(function(c){return React.createElement("option",{key:c,value:c},EFFORT_LABELS[c])})
+      )
+    );
+  };
+
   // Export Word (Pro) — server-rendered .docx via /api/report
   const exportWordPro=async()=>{
     showToast("Generating branded Word report...");
@@ -3321,6 +3408,23 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         });
         html+=`</table>`;
       });
+    }
+
+    // Treatment roadmap (backlog #7)
+    const rdW=buildRoadmapData();
+    if(rdW.quick.length||rdW.planned.length||rdW.longterm.length){
+      html+=`<h2>Treatment Roadmap</h2>`;
+      html+=`<p class="sub">Recommended measures prioritised by indicative cost and effort. Priority reflects the highest pre-mitigation rating among the threats each measure addresses.</p>`;
+      [["Quick Wins — implement first",rdW.quick],["Planned — programme into the works",rdW.planned],["Long-Term — capital planning horizon",rdW.longterm]].forEach(([label,items])=>{
+        if(!items.length)return;
+        html+=`<h3>${label}</h3><table><tr><th class="tl">Measure</th><th>Category</th><th class="tl">Applies To</th><th class="tl">Addresses Threats</th><th>Priority</th><th>Cost</th><th>Effort</th></tr>`;
+        items.forEach(e2=>{
+          const pr=RATING_NAMES[e2.maxRating]||"";
+          html+=`<tr><td class="tl">${E(e2.v)}</td><td>${E(e2.cat)}</td><td class="tl" style="font-size:8pt">${E(e2.applies.join(", "))}</td><td class="tl" style="font-size:8pt">${E(e2.threats.join(", "))}</td><td class="${ratc(pr)}">${pr||"—"}</td><td>${e2.cost?E(COST_LABELS[e2.cost]):"—"}</td><td>${e2.effort?E(EFFORT_LABELS[e2.effort]):"—"}</td></tr>`;
+        });
+        html+=`</table>`;
+      });
+      if(rdW.unclassified.length)html+=`<p class="sub">${rdW.unclassified.length} recorded measure${rdW.unclassified.length===1?" has":"s have"} no indicative cost/effort and ${rdW.unclassified.length===1?"is":"are"} not classified: ${E(rdW.unclassified.map(e2=>e2.v).join("; "))}.</p>`;
     }
 
     // Findings
@@ -6384,6 +6488,21 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 h+="<p style='color:#94a3b8;font-style:italic'>No treatment measures have been recorded yet.</p>";
               }
 
+              // Treatment roadmap (backlog #7)
+              var rdC=buildRoadmapData();
+              if(rdC.quick.length||rdC.planned.length||rdC.longterm.length){
+                h+="<h2>Treatment Roadmap</h2>";
+                h+="<p style='font-size:9pt;color:#64748b'>Recommended measures prioritised by indicative cost and effort.</p>";
+                [["Quick Wins — implement first",rdC.quick],["Planned — programme into the works",rdC.planned],["Long-Term — capital planning horizon",rdC.longterm]].forEach(function(pair){
+                  if(!pair[1].length)return;
+                  h+="<h3>"+pair[0]+"</h3><table><tr><th>Measure</th><th>Category</th><th>Applies To</th><th>Addresses Threats</th><th>Priority</th><th>Cost</th><th>Effort</th></tr>";
+                  pair[1].forEach(function(e2){
+                    h+="<tr><td>"+escHtml(e2.v)+"</td><td>"+escHtml(e2.cat)+"</td><td>"+escHtml(e2.applies.join(", "))+"</td><td>"+escHtml(e2.threats.join(", "))+"</td><td>"+(RATING_NAMES[e2.maxRating]||"—")+"</td><td>"+(e2.cost?escHtml(COST_LABELS[e2.cost]):"—")+"</td><td>"+(e2.effort?escHtml(EFFORT_LABELS[e2.effort]):"—")+"</td></tr>";
+                  });
+                  h+="</table>";
+                });
+              }
+
               h+="<p style='font-size:8pt;color:#94a3b8;margin-top:16pt;border-top:1pt solid #e2e8f0;padding-top:6pt'>Generated by Security Risk &amp; Threat Assessment Tool v"+VERSION+" on "+new Date().toLocaleDateString()+"</p>";
 
               var blob=new Blob([h],{type:"text/html"});
@@ -6511,7 +6630,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                               return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:8,marginBottom:3,lineHeight:1.5}},
                                 React.createElement("span",{style:{color:g.color,fontWeight:600,flexShrink:0,width:18,textAlign:"right",fontSize:10}},(idx+1)+"."),
                                 React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL"),
+                                React.createElement(MeasureMetaControls,{mKey:item.key})
                               );
                             })
                           );
@@ -6560,7 +6680,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                               return React.createElement("div",{key:idx,style:{display:"flex",alignItems:"baseline",gap:6,fontSize:12,paddingLeft:8,marginBottom:3,lineHeight:1.5}},
                                 React.createElement("span",{style:{color:g.color,fontWeight:600,flexShrink:0,width:18,textAlign:"right",fontSize:10}},(idx+1)+"."),
                                 React.createElement("span",{style:{color:item.isOpt?"#7c3aed":"#1e293b",fontStyle:item.isOpt?"italic":"normal"}},item.v),
-                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL")
+                                item.isOpt&&React.createElement("span",{style:{fontSize:9,padding:"1px 5px",borderRadius:3,background:"#f5f3ff",color:"#7c3aed",border:"1px solid #ddd6fe",fontWeight:600,flexShrink:0,fontStyle:"normal"}},"OPTIONAL"),
+                                React.createElement(MeasureMetaControls,{mKey:item.key})
                               );
                             })
                           );
@@ -6571,6 +6692,56 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 })
               )
             ),
+
+            // Treatment roadmap \u2014 quick wins / planned / long-term (backlog #7)
+            (function(){
+              var rd=buildRoadmapData();
+              if(rd.all.length===0)return null;
+              var groups=[
+                {key:"quick",label:"\u26a1 Quick Wins",sub:"Low effort, low-to-medium cost \u2014 implement first",color:"#16a34a",bg:"#f0fdf4",border:"#bbf7d0",items:rd.quick},
+                {key:"planned",label:"\ud83d\udcc5 Planned",sub:"Moderate cost or effort \u2014 programme into the works",color:"#2563eb",bg:"#eff6ff",border:"#bfdbfe",items:rd.planned},
+                {key:"longterm",label:"\ud83c\udfd7\ufe0f Long-Term",sub:"High cost or high effort \u2014 capital planning horizon",color:"#7c3aed",bg:"#f5f3ff",border:"#ddd6fe",items:rd.longterm}
+              ];
+              return React.createElement("div",{style:{marginBottom:24}},
+                React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1B2A4A",marginBottom:4,display:"flex",alignItems:"center",gap:8}},
+                  "Treatment Roadmap",
+                  React.createElement("span",{style:{fontSize:11,color:"#94a3b8",fontWeight:400}},"Prioritised by indicative cost and effort \u2014 set them on the measure rows above")
+                ),
+                rd.unclassified.length>0&&React.createElement("div",{style:{fontSize:11,color:"#92400e",background:"#fffbeb",border:"1px solid #fde68a",borderRadius:6,padding:"6px 10px",marginBottom:10}},
+                  rd.unclassified.length+" measure"+(rd.unclassified.length===1?" has":"s have")+" no indicative cost/effort yet and "+(rd.unclassified.length===1?"is":"are")+" not classified: "+rd.unclassified.map(function(e){return e.v}).join("; ")
+                ),
+                groups.map(function(g){
+                  if(g.items.length===0)return null;
+                  return React.createElement("div",{key:g.key,className:"card",style:{marginBottom:10,border:"1px solid "+g.border,overflow:"hidden"}},
+                    React.createElement("div",{style:{padding:"8px 14px",background:g.bg,borderBottom:"1px solid "+g.border,display:"flex",alignItems:"baseline",gap:8}},
+                      React.createElement("span",{style:{fontSize:13,fontWeight:700,color:g.color}},g.label),
+                      React.createElement("span",{style:{fontSize:10,color:"#64748b"}},g.sub),
+                      React.createElement("span",{style:{marginLeft:"auto",fontSize:10,fontWeight:600,color:g.color}},g.items.length+" measure"+(g.items.length!==1?"s":""))
+                    ),
+                    React.createElement("table",{style:{marginBottom:0}},
+                      React.createElement("thead",null,React.createElement("tr",null,
+                        React.createElement("th",{className:"left"},"Measure"),React.createElement("th",null,"Category"),
+                        React.createElement("th",{className:"left"},"Applies To"),React.createElement("th",{className:"left"},"Addresses Threats"),
+                        React.createElement("th",null,"Priority"),React.createElement("th",null,"Cost"),React.createElement("th",null,"Effort")
+                      )),
+                      React.createElement("tbody",null,
+                        g.items.map(function(e){
+                          return React.createElement("tr",{key:e.key},
+                            React.createElement("td",{className:"text-left font-medium",style:{fontSize:12}},e.v),
+                            React.createElement("td",{style:{fontSize:11}},e.cat),
+                            React.createElement("td",{className:"text-left",style:{fontSize:11,color:"#64748b"}},e.applies.join(", ")),
+                            React.createElement("td",{className:"text-left",style:{fontSize:11,color:"#64748b"}},e.threats.join(", ")),
+                            React.createElement("td",null,e.maxRating?React.createElement(Badge,{rating:RATING_NAMES[e.maxRating]}):"\u2014"),
+                            React.createElement("td",{style:{fontSize:11,whiteSpace:"nowrap"}},e.cost?COST_LABELS[e.cost]:"\u2014"),
+                            React.createElement("td",{style:{fontSize:11}},e.effort?EFFORT_LABELS[e.effort]:"\u2014")
+                          );
+                        })
+                      )
+                    )
+                  );
+                })
+              );
+            })(),
 
             // Empty state
             assetKeys.length===0&&poiKeys.length===0&&React.createElement("div",{style:{textAlign:"center",padding:40,color:"#94a3b8"}},
