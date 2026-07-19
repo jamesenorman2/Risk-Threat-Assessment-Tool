@@ -45,8 +45,10 @@
     Treatments & Residual Risk, and Treatment Summary tabs.
     Possible follow-ups: extend status control to remaining tabs, surface a
     sidebar badge for sections still in draft, allow per-comment edit.
- 6. Assessment compare/diff — load two saved JSON files and show risk deltas
-    (pre/post design change, year-on-year review).
+ 6. [DONE v2.062] Assessment compare/diff — toolbar ⋯ menu "Compare
+    assessments": two slots (file or current assessment), per-threat pre and
+    residual rating deltas matched by name, new/removed flags, summary
+    chips, Copy-to-Word export.
  7. [DONE v2.060] Treatment prioritisation — indicative cost (£/££/£££) and
     effort (Low/Med/High) per measure on the Treatment Summary rows;
     auto-built Quick Wins / Planned / Long-Term roadmap tables (sorted by

@@ -524,6 +524,42 @@ function migrateLinkedAssets(db,assetPresets){assetPresets=assetPresets||{};retu
 function avg(a){const v=a.filter(x=>x!=null&&x>0);return v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):null}
 function getRR(l,i){return(l&&i)?RM[5-l][i-1]:null}
 
+// Assessment compare/diff (backlog #6) — compute risk ratings from a saved
+// assessment object using the same maths as the live cRisks memo, then pair
+// two assessments' risks by threat name to expose the deltas.
+function computeRisksFromSave(p){
+  var threats=Array.isArray(p&&p.threats)?p.threats:[];
+  var vs=(p&&p.vs)||{},is_=(p&&p.is_)||{},tx=(p&&p.tx)||{},rs=(p&&p.rs)||{},acc=(p&&p.acc)||{};
+  return threats.filter(function(t){return t&&t.n}).map(function(t){
+    var sc=t.cap&&t.int?Math.round((t.cap+t.int)/2):null;
+    var v=vs[t.id]||{},im=is_[t.id]||{};
+    var ta=avg(TAC.map(function(c){return v[c]||null}));
+    var vu=v.vuln||null;
+    var tot=(sc&&ta&&vu)?sc+ta+vu:null;
+    var lik=tot?Math.round(tot/3):null;
+    var rawImp=avg(IC.map(function(c){return im[c]||null}));
+    var fat=im["fatalities"]||null;
+    var imp=(fat>=4&&rawImp&&rawImp<4)?4:rawImp; // Life Safety Override floor
+    var r=rs[t.id]||{};
+    return{n:t.n,cat:t.cat||"",lik:lik,imp:imp,rat:getRR(lik,imp),treat:tx[t.id]||null,resL:r.l||null,resI:r.i||null,resRat:getRR(r.l||null,r.i||null),acc:acc[t.id]||null};
+  });
+}
+function buildCompareRows(aRisks,bRisks){
+  var mapA={},mapB={},keys=[];
+  aRisks.forEach(function(r){var k=r.n.trim().toLowerCase();mapA[k]=r;if(keys.indexOf(k)<0)keys.push(k)});
+  bRisks.forEach(function(r){var k=r.n.trim().toLowerCase();mapB[k]=r;if(keys.indexOf(k)<0)keys.push(k)});
+  return keys.map(function(k){
+    var a=mapA[k]||null,b=mapB[k]||null;
+    var preDelta=(a&&a.rat&&b&&b.rat)?(RATING_ORDER[b.rat]-RATING_ORDER[a.rat]):null;
+    var resDelta=(a&&a.resRat&&b&&b.resRat)?(RATING_ORDER[b.resRat]-RATING_ORDER[a.resRat]):null;
+    return{n:(b||a).n,cat:(b||a).cat,a:a,b:b,preDelta:preDelta,resDelta:resDelta,status:!a?"added":!b?"removed":null};
+  }).sort(function(x,y){
+    var dx=x.status?98:(x.preDelta==null?-1:Math.abs(x.preDelta));
+    var dy=y.status?98:(y.preDelta==null?-1:Math.abs(y.preDelta));
+    return dy-dx||x.n.localeCompare(y.n);
+  });
+}
+
 // ============================================================
 // COMPONENTS
 // ============================================================
@@ -761,7 +797,7 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 // ============================================================
 
 // ── SentinelToolbar ──────────────────────────────────────────────────
-function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials}){
+function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onCompare,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials}){
   const[exportOpen,setExportOpen]=React.useState(false);
   const[moreOpen,setMoreOpen]=React.useState(false);
   const exportRef=React.useRef(null);
@@ -814,6 +850,7 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
         sIcon("more")),
       moreOpen&&React.createElement("div",{style:dropStyle},
         React.createElement("button",{style:dropItem,onClick:function(){onSetup();setMoreOpen(false);}},sIcon("sparkle")," Setup wizard"),
+        React.createElement("button",{style:dropItem,onClick:function(){onCompare();setMoreOpen(false);}},sIcon("grid")," Compare assessments"),
         React.createElement("div",{style:{height:1,background:"#f1f5f9",margin:"4px 0"}}),
         React.createElement("button",{style:dropItemDanger,onClick:function(){onClear();setMoreOpen(false);}},sIcon("trash")," New assessment")
       )
@@ -830,7 +867,7 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
 }
 
 // ── AppHeader ────────────────────────────────────────────────────────
-function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,onMenuToggle,lastFileSave}){
+function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onCompare,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,onMenuToggle,lastFileSave}){
   const initials=(ctx.assessor||"JN").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()||"JN";
   const stageShort=(ctx.stage||"").toUpperCase().replace(/[^A-Z0-9·\s]/g,"").slice(0,20);
   return React.createElement("header",{className:"sentinel-header"},
@@ -858,7 +895,7 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
     ),
     // Toolbar
     React.createElement(SentinelToolbar,{
-      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials
+      onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onCompare,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials
     })
   );
 }
@@ -1378,7 +1415,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.061";
+const VERSION="2.062";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1467,6 +1504,23 @@ function App(){
   const[lastLocalSave,setLastLocalSave]=useState(null);
   const[lastFileSave,setLastFileSave]=useState(null);
   const[confirmState,setConfirmState]=useState({open:false,title:"",body:"",confirmLabel:"Confirm",danger:false,onConfirm:null});
+  // Assessment compare/diff modal state (backlog #6)
+  const[compareState,setCompareState]=useState({open:false,a:null,b:null});
+  const loadCompareSlot=(slot)=>{
+    const input=document.createElement("input");input.type="file";input.accept=".json";
+    input.onchange=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+      r.onload=(ev)=>{try{
+        const p=JSON.parse(ev.target.result);
+        if(!p||typeof p!=="object"||Array.isArray(p)||!Array.isArray(p.threats))throw new Error("Not an assessment file");
+        setCompareState(function(s){return{...s,[slot]:{label:(p.ctx&&p.ctx.project)||f.name,sub:f.name+(p._date?" · saved "+new Date(p._date).toLocaleDateString():""),risks:computeRisksFromSave(p)}}});
+      }catch(err){showToast("Not a valid assessment JSON file")}};
+      r.onerror=()=>showToast("Error reading file");r.readAsText(f)};
+    input.click();
+  };
+  const useCurrentForCompare=(slot)=>{
+    setCompareState(function(s){return{...s,[slot]:{label:(ctx.project||"Untitled")+" (current)",sub:"Live working data",risks:computeRisksFromSave(buildSnapshot())}}});
+  };
+
   const askConfirm=function(opts){return new Promise(function(resolve){setConfirmState({open:true,title:opts.title||"",body:opts.body||"",confirmLabel:opts.confirmLabel||"Confirm",danger:!!opts.danger,onConfirm:function(){setConfirmState(function(s){return{...s,open:false}});resolve(true);},onCancel:function(){setConfirmState(function(s){return{...s,open:false}});resolve(false);}});});}
   const[crimeData,setCrimeData]=useState(null);
   const[crimeRaw,setCrimeRaw]=useState(null);
@@ -4432,6 +4486,121 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       )
     ),
 
+    // Assessment compare/diff modal (backlog #6)
+    compareState.open&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Compare assessments",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16},onClick:()=>setCompareState({open:false,a:null,b:null})},
+      React.createElement("div",{style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:900,maxWidth:"100%",maxHeight:"85vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
+        React.createElement("div",{style:{padding:"16px 20px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:14,fontWeight:700,color:"#1e293b"}},"Compare Assessments"),
+            React.createElement("div",{style:{fontSize:11,color:"#94a3b8"}},"Load two saved assessments (or use the current one) to see risk rating deltas — pre/post design change or year-on-year review")
+          ),
+          React.createElement("button",{"aria-label":"Close",title:"Close",onClick:()=>setCompareState({open:false,a:null,b:null}),style:{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#94a3b8"}},"✕")
+        ),
+        React.createElement("div",{style:{padding:"12px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,borderBottom:"1px solid #e2e8f0"}},
+          [["a","Baseline (A)"],["b","Comparison (B)"]].map(function(pair){
+            var slot=pair[0],title=pair[1];var loaded=compareState[slot];
+            return React.createElement("div",{key:slot,style:{border:"1px solid "+(loaded?"#bbf7d0":"#e2e8f0"),background:loaded?"#f0fdf4":"#f8fafc",borderRadius:8,padding:"10px 14px"}},
+              React.createElement("div",{style:{fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:4}},title),
+              loaded
+                ?React.createElement("div",null,
+                    React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#14532d",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},loaded.label),
+                    React.createElement("div",{style:{fontSize:10,color:"#64748b"}},loaded.sub+" · "+loaded.risks.length+" threats"),
+                    React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginTop:6,fontSize:11},onClick:function(){setCompareState(function(s){var n={...s};n[slot]=null;return n})}},"Change")
+                  )
+                :React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
+                    React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){loadCompareSlot(slot)}},"📂 Load file"),
+                    React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){useCurrentForCompare(slot)}},"Use current assessment")
+                  )
+            );
+          })
+        ),
+        React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"12px 20px"}},
+          (!compareState.a||!compareState.b)
+            ?React.createElement("div",{style:{textAlign:"center",padding:32,color:"#94a3b8",fontSize:12}},"Select both assessments above to see the comparison. Typical uses: the same site before and after a design change, or this year's review against last year's issued assessment.")
+            :(function(){
+              var rows=buildCompareRows(compareState.a.risks,compareState.b.risks);
+              if(rows.length===0)return React.createElement("div",{style:{textAlign:"center",padding:32,color:"#94a3b8",fontSize:12}},"Neither assessment contains any named threats.");
+              var up=rows.filter(function(r){return r.preDelta>0}).length;
+              var down=rows.filter(function(r){return r.preDelta<0}).length;
+              var same=rows.filter(function(r){return r.preDelta===0}).length;
+              var added=rows.filter(function(r){return r.status==="added"}).length;
+              var removed=rows.filter(function(r){return r.status==="removed"}).length;
+              var chip=function(label,count,color,bg){return React.createElement("span",{style:{fontSize:11,fontWeight:700,color:color,background:bg,borderRadius:12,padding:"3px 10px"}},count+" "+label)};
+              var deltaEl=function(d){
+                if(d==null)return React.createElement("span",{style:{color:"#cbd5e1"}},"—");
+                if(d===0)return React.createElement("span",{style:{color:"#94a3b8",fontWeight:700}},"=");
+                return d>0
+                  ?React.createElement("span",{style:{color:"#dc2626",fontWeight:700}},"▲ +"+d)
+                  :React.createElement("span",{style:{color:"#16a34a",fontWeight:700}},"▼ "+d);
+              };
+              var cellPair=function(r2){return r2?React.createElement("div",null,React.createElement(Badge,{rating:r2.rat}),r2.lik&&r2.imp?React.createElement("div",{style:{fontSize:9,color:"#94a3b8",marginTop:2}},"L"+r2.lik+" × I"+r2.imp):null):React.createElement("span",{style:{color:"#cbd5e1"}},"—")};
+              var resCell=function(r2){return r2&&r2.resRat?React.createElement(Badge,{rating:r2.resRat}):React.createElement("span",{style:{color:"#cbd5e1"}},"—")};
+              return React.createElement("div",null,
+                React.createElement("div",{style:{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}},
+                  chip("risen",up,"#dc2626","#fef2f2"),chip("fallen",down,"#16a34a","#f0fdf4"),chip("unchanged",same,"#475569","#f1f5f9"),
+                  added>0?chip("new in B",added,"#1e40af","#eff6ff"):null,removed>0?chip("removed in B",removed,"#92400e","#fffbeb"):null
+                ),
+                React.createElement("table",null,
+                  React.createElement("thead",null,React.createElement("tr",null,
+                    React.createElement("th",{className:"left"},"Threat"),React.createElement("th",null,"Type"),
+                    React.createElement("th",null,"A: Pre"),React.createElement("th",null,"B: Pre"),React.createElement("th",null,"Δ Pre"),
+                    React.createElement("th",null,"A: Residual"),React.createElement("th",null,"B: Residual"),React.createElement("th",null,"Δ Residual"),
+                    React.createElement("th",null,"Status")
+                  )),
+                  React.createElement("tbody",null,
+                    rows.map(function(row){
+                      return React.createElement("tr",{key:row.n},
+                        React.createElement("td",{className:"text-left font-medium",style:{fontSize:12}},row.n),
+                        React.createElement("td",{style:{fontSize:10,color:"#64748b"}},row.cat),
+                        React.createElement("td",null,cellPair(row.a)),
+                        React.createElement("td",null,cellPair(row.b)),
+                        React.createElement("td",null,deltaEl(row.preDelta)),
+                        React.createElement("td",null,resCell(row.a)),
+                        React.createElement("td",null,resCell(row.b)),
+                        React.createElement("td",null,deltaEl(row.resDelta)),
+                        React.createElement("td",null,
+                          row.status==="added"?React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#1e40af",background:"#eff6ff",borderRadius:8,padding:"2px 7px"}},"NEW IN B")
+                          :row.status==="removed"?React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#92400e",background:"#fffbeb",borderRadius:8,padding:"2px 7px"}},"REMOVED")
+                          :React.createElement("span",{style:{color:"#cbd5e1",fontSize:10}},"—")
+                        )
+                      );
+                    })
+                  )
+                )
+              );
+            })()
+        ),
+        compareState.a&&compareState.b&&React.createElement("div",{style:{padding:"10px 20px",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"flex-end",gap:8}},
+          React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){
+            var rows=buildCompareRows(compareState.a.risks,compareState.b.risks);
+            var ratBgC=function(r2){return!r2?"":{"Very Low":"background:#4a5568;color:#fff;font-weight:bold;text-align:center","Low":"background:#16803c;color:#fff;font-weight:bold;text-align:center","Medium":"background:#b45309;color:#000;font-weight:bold;text-align:center","High":"background:#c2570a;color:#fff;font-weight:bold;text-align:center","Very High":"background:#b91c1c;color:#fff;font-weight:bold;text-align:center"}[r2]||""};
+            var dTxt=function(d){return d==null?"—":d===0?"=":d>0?"▲ +"+d:"▼ "+d};
+            var h="<style>body{font-family:Arial,sans-serif;font-size:9pt;color:#333}h1{color:#1B2A4A;font-size:16pt;border-bottom:2pt solid #1B2A4A;padding-bottom:6pt}table{border-collapse:collapse;width:100%;margin:8pt 0}th{background:#1B2A4A;color:#fff;padding:5pt 8pt;font-size:8pt}td{border:1pt solid #D6DCE4;padding:4pt 8pt;font-size:9pt;text-align:center}p{margin:4pt 0;line-height:1.5}</style>";
+            h+="<h1>Assessment Comparison</h1>";
+            h+="<p><b>Baseline (A):</b> "+escHtml(compareState.a.label)+" — "+escHtml(compareState.a.sub)+"</p>";
+            h+="<p><b>Comparison (B):</b> "+escHtml(compareState.b.label)+" — "+escHtml(compareState.b.sub)+"</p>";
+            h+="<table><tr><th style='text-align:left'>Threat</th><th>Type</th><th>A: Pre</th><th>B: Pre</th><th>Δ Pre</th><th>A: Residual</th><th>B: Residual</th><th>Δ Residual</th><th>Status</th></tr>";
+            rows.forEach(function(row){
+              h+="<tr><td style='text-align:left'><b>"+escHtml(row.n)+"</b></td><td>"+escHtml(row.cat)+"</td>";
+              h+="<td style='"+ratBgC(row.a&&row.a.rat)+"'>"+((row.a&&row.a.rat)||"—")+"</td>";
+              h+="<td style='"+ratBgC(row.b&&row.b.rat)+"'>"+((row.b&&row.b.rat)||"—")+"</td>";
+              h+="<td>"+dTxt(row.preDelta)+"</td>";
+              h+="<td style='"+ratBgC(row.a&&row.a.resRat)+"'>"+((row.a&&row.a.resRat)||"—")+"</td>";
+              h+="<td style='"+ratBgC(row.b&&row.b.resRat)+"'>"+((row.b&&row.b.resRat)||"—")+"</td>";
+              h+="<td>"+dTxt(row.resDelta)+"</td>";
+              h+="<td>"+(row.status==="added"?"New in B":row.status==="removed"?"Removed in B":"—")+"</td></tr>";
+            });
+            h+="</table>";
+            h+="<p style='font-size:8pt;color:#94a3b8'>Generated by Security Risk &amp; Threat Assessment Tool v"+VERSION+" on "+new Date().toLocaleDateString()+"</p>";
+            var blob=new Blob([h],{type:"text/html"});
+            navigator.clipboard.write([new ClipboardItem({"text/html":blob})]).then(function(){
+              showToast("Comparison copied — paste into Word with Ctrl+V");
+            }).catch(function(){showToast("Copy failed — check browser permissions")});
+          }},"📋 Copy to Word")
+        )
+      )
+    ),
+
     // GitHub file browser modal
     ghBrowser.open&&React.createElement("div",{role:"dialog","aria-modal":"true","aria-label":"Load from Back-ups",style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center"},onClick:()=>setGhBrowser({open:false,files:[],loading:false,path:"projects"})},
       React.createElement("div",{ref:ghModalRef,style:{background:"#fff",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,0.3)",width:560,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"},onClick:e=>e.stopPropagation()},
@@ -4485,7 +4654,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onExportWord:exportWord, onExportExcel:exportExcel,
       onPrint:printReport,
       onSetup:function(){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setWizardTreatScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setShowSetupWizard(true);},
-      onClear:clearAll, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
+      onClear:clearAll, onCompare:function(){setCompareState({open:true,a:null,b:null});}, onNext:function(){setTab(_nextItem.id);}, nextLabel:_nextItem.label,
       ghConfig:ghConfig, onGhLoad:loadFromGitHubBrowse,
       onAssessments:openAsmManager,
       onUndo:undo, onRedo:redo, canUndo:historyCounts.undo>0, canRedo:historyCounts.redo>0,

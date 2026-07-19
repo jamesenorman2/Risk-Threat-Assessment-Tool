@@ -4,6 +4,19 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.062 — 2026-07-19
+**Assessment compare/diff (backlog #6)**
+- New "Compare assessments" tool in the toolbar ⋯ menu: load two saved
+  assessment JSON files (or use the current working assessment for either
+  slot) and see per-threat risk deltas — pre/post design change or
+  year-on-year review
+- Risks are matched by threat name and scored with the same maths as the
+  live app (`computeRisksFromSave`), covering pre-mitigation and residual
+  ratings; the table shows A/B ratings with L×I, ▲/▼ deltas, and flags
+  threats that are new in or removed from the comparison assessment
+- Summary chips count risen / fallen / unchanged / new / removed risks;
+  "Copy to Word" exports the comparison as a colour-coded table
+
 ## v2.061 — 2026-07-19
 **Offline crime-data snapshot (backlog #12)**
 - Fetched Police.uk crime analysis is now stored inside the saved assessment
