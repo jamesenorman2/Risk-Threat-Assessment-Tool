@@ -4,6 +4,21 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.061 — 2026-07-19
+**Offline crime-data snapshot (backlog #12)**
+- Fetched Police.uk crime analysis is now stored inside the saved assessment
+  (`crimeSnapshot`: processed data with map points capped at 2000, plus
+  postcode/lat/lng/period and a capture date), so reports are reproducible
+  after Police.uk's monthly data changes
+- Restored automatically on file load, GitHub back-up load, and assessment
+  switching; loading an assessment without a snapshot clears any displayed
+  crime data from the previous assessment
+- An amber banner marks restored snapshots with the capture date and offers
+  one-click "Refetch live data"; period re-slicing buttons are hidden for
+  snapshots (they need the raw fetch) with an explanatory toast
+- Autosave falls back to writing without the snapshot if browser storage is
+  full, so a large crime dataset can never block saving assessment work
+
 ## v2.060 — 2026-07-19
 **Treatment prioritisation & roadmap (backlog #7)**
 - Each recorded treatment measure can now carry an indicative cost (£/££/£££)

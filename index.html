@@ -1378,7 +1378,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.060";
+const VERSION="2.061";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1476,6 +1476,26 @@ function App(){
   const[crimeLng,setCrimeLng]=useState("");
   const[crimePostcode,setCrimePostcode]=useState("");
   const[crimePeriod,setCrimePeriod]=useState("6");
+  // Offline crime snapshot (backlog #12): non-null when the displayed crime
+  // data was restored from a saved assessment rather than fetched live
+  const[crimeSnapshotMeta,setCrimeSnapshotMeta]=useState(null);
+  // Processed crime data stored inside the saved assessment so reports are
+  // reproducible after Police.uk data changes (map points capped to bound size)
+  const buildCrimeSnapshot=()=>crimeData?{
+    data:{...crimeData,locations:(crimeData.locations||[]).slice(0,2000)},
+    postcode:crimePostcode,lat:crimeLat,lng:crimeLng,period:crimePeriod,
+    capturedAt:(crimeSnapshotMeta&&crimeSnapshotMeta.capturedAt)||new Date().toISOString()
+  }:null;
+  const applyCrimeSnapshot=(snap)=>{
+    if(snap&&snap.data){
+      setCrimeData(snap.data);setCrimeRaw(null);setCrimeError(null);
+      setCrimePostcode(snap.postcode||"");setCrimeLat(snap.lat||"");setCrimeLng(snap.lng||"");
+      if(snap.period)setCrimePeriod(snap.period);
+      setCrimeSnapshotMeta({capturedAt:snap.capturedAt||null});
+    }else{
+      setCrimeData(null);setCrimeRaw(null);setCrimeError(null);setCrimeSnapshotMeta(null);
+    }
+  };
 
   // Area analysis
   const defaultAreaCriteria=[
@@ -1694,7 +1714,7 @@ function App(){
       var fresh="a"+Date.now();localStorage.setItem("sra-rta-active",fresh);return fresh;
     }catch(e){return "a"+Date.now()}
   });
-  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview});
+  const buildSnapshot=()=>({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview,crimeSnapshot:buildCrimeSnapshot()});
 
   // ── Undo/redo (Ctrl+Z / Ctrl+Y) ────────────────────────────────────
   // Tracks the working-assessment fields a stray click can wipe out (the
@@ -1791,16 +1811,25 @@ function App(){
       if(p.threatPresetsDB&&typeof p.threatPresetsDB==="object"&&!Array.isArray(p.threatPresetsDB)&&Object.keys(p.threatPresetsDB).length>0)setThreatPresetsDB(p.threatPresetsDB);else setThreatPresetsDB(defs.THREAT_PRESETS);
       if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
       if(p.treatCategoryScope&&typeof p.treatCategoryScope==="object")setTreatCategoryScope(p.treatCategoryScope);
-      if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}}
+      if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);
+      if(p.crimeSnapshot)applyCrimeSnapshot(p.crimeSnapshot);}catch(e){setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}}
       else{setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));setThreats(defs.DEF_THREATS.map(function(t){return{...t}}));setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB,defs.ASSET_PRESETS));setTreatmentDB(defs.DEFAULT_TREATMENT_DB);setAssetPresetsDB(defs.ASSET_PRESETS);setThreatPresetsDB(defs.THREAT_PRESETS);}
       setDataLoaded(true);
     }).catch(function(){setDataLoaded(true)});
   },[]);
   useEffect(()=>{if(dataLoaded&&!localStorage.getItem("sra-rta-data:"+activeAsmId)&&Object.keys(assetPresetsDB).length>0){setWizardStep(1);setWizardDevType(null);setWizardAssets([]);setWizardThreats([]);setWizardAnswers({});setWizardThreatsBase([]);setShowSetupWizard(true);}},[dataLoaded]);
   useEffect(()=>{
-    const timer=setTimeout(()=>{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(buildSnapshot()));touchAsmIndex();setLastLocalSave(new Date());},500);
+    const timer=setTimeout(()=>{
+      var snap=buildSnapshot();
+      try{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify(snap));}
+      catch(e){
+        // Storage quota exceeded — retry without the bulky crime snapshot
+        try{localStorage.setItem("sra-rta-data:"+activeAsmId,JSON.stringify({...snap,crimeSnapshot:null}));}catch(e2){}
+      }
+      touchAsmIndex();setLastLocalSave(new Date());
+    },500);
     return()=>clearTimeout(timer);
-  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview]);
+  },[activeAsmId,ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,ghConfig,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,treatCategoryScope,riskComments,sectionReview,crimeData,crimeSnapshotMeta]);
 
   // Close the setup wizard on Escape (same action as the "Skip Setup" button)
   const wizardModalRef=useRef(null);
@@ -1957,8 +1986,8 @@ function App(){
   const isMobile=typeof navigator!=="undefined"&&/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const buildSaveData=useCallback(()=>{
-    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,riskComments,sectionReview,_v:VERSION,_date:new Date().toISOString()},null,2);
-  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,riskComments,sectionReview]);
+    return JSON.stringify({ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,assetPresetsDB,threatPresetsDB,sbdCompliance,riskComments,sectionReview,crimeSnapshot:buildCrimeSnapshot(),_v:VERSION,_date:new Date().toISOString()},null,2);
+  },[ctx,assets,threats,vs,is_,cd,tx,rs,acc,meetings,pois,activeAssetPreset,activeThreatPreset,assetsLocked,threatsLocked,critDescs,scales,areaCriteria,areaAnalysis,chargeWeights,treatmentMeasures,measureMeta,residualJustifications,treatOptional,threatDB,treatmentDB,sbdCompliance,riskComments,sectionReview,crimeData,crimePostcode,crimeLat,crimeLng,crimePeriod,crimeSnapshotMeta]);
 
   const buildFilename=useCallback(()=>{
     var n=new Date(),yy=String(n.getFullYear()).slice(2),mm=String(n.getMonth()+1).padStart(2,"0"),dd=String(n.getDate()).padStart(2,"0"),hh=String(n.getHours()).padStart(2,"0"),mi=String(n.getMinutes()).padStart(2,"0");
@@ -2053,6 +2082,7 @@ function App(){
     if(p.vs)setVs(p.vs);if(p.is_)setIs(p.is_);if(p.cd)setCd(p.cd);if(p.tx)setTx(p.tx);if(p.rs)setRs(p.rs);if(p.acc)setAcc(p.acc);
     if(Array.isArray(p.meetings))setMeetings(p.meetings);if(Array.isArray(p.pois))setPois(p.pois);if(p.activeAssetPreset)setActiveAssetPreset(p.activeAssetPreset);if(p.activeThreatPreset)setActiveThreatPreset(p.activeThreatPreset);if(p.assetsLocked)setAssetsLocked(p.assetsLocked);if(p.threatsLocked)setThreatsLocked(p.threatsLocked);if(p.critDescs)setCritDescs(p.critDescs);if(p.scales)setScales(function(){var merged={...defaultScales};Object.keys(p.scales).forEach(function(k){if(p.scales[k])merged[k]=p.scales[k]});return merged}());if(p.areaCriteria)setAreaCriteria(p.areaCriteria);if(p.areaAnalysis)setAreaAnalysis(p.areaAnalysis);if(p.chargeWeights)setChargeWeights(p.chargeWeights);if(p.treatmentMeasures)setTreatmentMeasures(p.treatmentMeasures);if(p.measureMeta)setMeasureMeta(p.measureMeta);if(p.residualJustifications)setResidualJustifications(p.residualJustifications);if(p.treatOptional)setTreatOptional(p.treatOptional);if(p.threatDB&&Array.isArray(p.threatDB))setThreatDB(migrateLinkedAssets(p.threatDB));if(p.treatmentDB&&Array.isArray(p.treatmentDB))setTreatmentDB(p.treatmentDB);if(p.sbdCompliance)setSbdCompliance(p.sbdCompliance);
     if(p.riskComments)setRiskComments(p.riskComments);if(p.sectionReview)setSectionReview(p.sectionReview);
+    applyCrimeSnapshot(p.crimeSnapshot||null);
   };
 
 
@@ -2189,7 +2219,7 @@ function App(){
   // clearAll, the assessment manager and delete flows)
   const resetAssessmentState=()=>{
     setCtx({project:"",projectNum:"",ref:"",date:"",stage:"",assessor:"",client:"",scope:"",assumptions:"",notes:"",address:"",postcode:"",country:"United Kingdom",devType:""});
-    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setMeasureMeta({});setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setRiskComments({});setSectionReview({});
+    var defs=defaultsRef.current||{};setAssets([]);setThreats([]);setVs({});setIs({});setCd({});setTx({});setRs({});setAcc({});setMeetings([]);setPois([]);setActiveAssetPreset(null);setActiveThreatPreset(null);setAssetsLocked(false);setThreatsLocked(false);setResidualJustifications({});setTreatOptional({});setTreatmentMeasures({});setMeasureMeta({});applyCrimeSnapshot(null);setCrimeLat("");setCrimeLng("");setCrimePostcode("");setThreatDB(migrateLinkedAssets(defs.DEFAULT_THREAT_DB||[],defs.ASSET_PRESETS||{}));setTreatmentDB(defs.DEFAULT_TREATMENT_DB||[]);setSbdCompliance({});setTreatCategoryScope({ext_physical:true,ext_electronic:true,int_physical:true,int_electronic:true,procedures:true});setRiskComments({});setSectionReview({});
   };
 
   const clearAll=()=>{askConfirm({title:"Start a new assessment",body:"This will clear all current data. Any unsaved changes will be lost. Make sure you have saved your work before continuing.",confirmLabel:"Clear & start new",danger:true}).then(function(ok){if(!ok)return;
@@ -2502,7 +2532,7 @@ function App(){
   };
 
   const fetchCrimeByCoords=async(lat,lng)=>{
-    setCrimeLoading(true);setCrimeError(null);setCrimeData(null);setCrimeRaw(null);
+    setCrimeLoading(true);setCrimeError(null);setCrimeData(null);setCrimeRaw(null);setCrimeSnapshotMeta(null);
     try{
       const now=new Date();const months=[];
       // Start from 3 months ago — police.uk typically has a 2-3 month publishing delay
@@ -2586,8 +2616,8 @@ function App(){
 
   // Reprocess when period changes
   const changeCrimePeriod=(period)=>{
+    if(!crimeRaw){showToast("Showing a stored snapshot — refetch live data to change the period");return}
     setCrimePeriod(period);
-    if(!crimeRaw)return;
     var count=parseInt(period)||6;
     var recent=crimeRaw.results.slice(-count);
     setCrimeData(processCrimeData(recent,count,crimeRaw.lat,crimeRaw.lng));
@@ -4618,6 +4648,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             ),
             React.createElement("div",{style:{display:"flex",gap:4,alignItems:"center"}},
               ...(function(){
+                if(!crimeRaw)return[]; // stored snapshot — period re-slicing needs the raw fetch
                 var total=crimeRaw?crimeRaw.results.length:0;
                 var ms=crimeRaw?crimeRaw.results:[];
                 var mn=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -4639,6 +4670,17 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 onClick:function(){captureForWord("crime-report-section","Crime analysis captured \u2014 paste into Word")}
               },"📷 Capture")
             )
+          ),
+
+          // ── STORED SNAPSHOT BANNER (backlog #12) ──
+          crimeSnapshotMeta&&React.createElement("div",{"data-capture-hide":"1",style:{background:"#fffbeb",borderLeft:"1px solid #fde68a",borderRight:"1px solid #fde68a",borderBottom:"1px solid #fde68a",padding:"8px 14px",fontSize:12,color:"#92400e",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},
+            React.createElement("span",null,"📸 Stored crime-data snapshot"+(crimeSnapshotMeta.capturedAt?" captured "+new Date(crimeSnapshotMeta.capturedAt).toLocaleDateString():"")+" — saved with the assessment so the report stays reproducible after Police.uk updates."),
+            React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:"auto",fontSize:11},
+              onClick:function(){
+                if(crimePostcode)fetchCrimeByPostcode(crimePostcode);
+                else if(crimeLat&&crimeLng)fetchCrimeByCoords(parseFloat(crimeLat),parseFloat(crimeLng));
+                else showToast("No stored location — enter a postcode above to fetch live data");
+              }},"↻ Refetch live data")
           ),
 
           // ── KEY METRICS ROW ──

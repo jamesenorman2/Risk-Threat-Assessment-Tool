@@ -62,8 +62,10 @@
     evidence), included in Word/PDF export.
 11. Tablet/mobile site-survey mode — POI capture optimised for touch on a
     walkaround; the desktop layout is dense on small screens.
-12. Offline crime-data snapshot — store fetched Police.uk data inside the
-    saved assessment so reports are reproducible later (data changes monthly).
+12. [DONE v2.061] Offline crime-data snapshot — processed Police.uk data
+    (map points capped at 2000) + capture date saved inside the assessment;
+    restored on load/switch with an amber "stored snapshot" banner and a
+    one-click refetch; autosave degrades gracefully if storage is full.
 13. [DONE v2.057] Non-UK mode — manual crime context entry for non-UK
     countries flows into Word/Excel/Print exports (v2.056); the UK-specific
     MI5/JTAC terrorism panel is now gated to country==="United Kingdom" with
