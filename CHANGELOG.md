@@ -4,6 +4,23 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.063 — 2026-08-02
+**Fix stale UK terrorism threat level (JTAC/MI5)**
+- The live threat-level fetch on the Crime & Terrorism tab ran entirely in
+  the browser, straight to mi5.gov.uk (blocked by CORS) then a chain of
+  public CORS proxies that are frequently rate-limited or down — in
+  practice it silently fell through every attempt and always displayed the
+  hardcoded "SUBSTANTIAL" cached fallback, regardless of the real current
+  level
+- Added `/api/threat-level`, a Vercel serverless function that scrapes
+  MI5's threat-levels page server-side (no browser CORS involved) with a
+  short edge cache; the client now calls this same-origin endpoint first
+  and only falls back to the old client-side chain if it's unreachable
+- The level now auto-refreshes every 5 minutes in the background so it
+  updates live without a manual refresh click
+- Updated the last-resort cached fallback from SUBSTANTIAL to SEVERE to
+  reflect the current published level
+
 ## v2.062 — 2026-07-19
 **Assessment compare/diff (backlog #6)**
 - New "Compare assessments" tool in the toolbar ⋯ menu: load two saved

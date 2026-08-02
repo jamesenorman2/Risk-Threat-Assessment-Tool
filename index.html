@@ -1415,7 +1415,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.062";
+const VERSION="2.063";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1618,6 +1618,19 @@ function App(){
   const levelDescs={"LOW":"an attack is unlikely","MODERATE":"an attack is possible but not likely","SUBSTANTIAL":"an attack is likely","SEVERE":"an attack is highly likely","CRITICAL":"an attack is expected imminently"};
   const levels=["LOW","MODERATE","SUBSTANTIAL","SEVERE","CRITICAL"];
   const fetchThreatLevel=async()=>{
+    // Same-origin API first — runs server-side on Vercel so it isn't subject
+    // to the browser CORS restrictions that block a direct mi5.gov.uk fetch.
+    try{
+      const r=await fetch("/api/threat-level",{credentials:"same-origin",signal:AbortSignal.timeout(8000)});
+      if(r.ok){
+        const d=await r.json();
+        if(d&&levels.includes(d.level)){
+          setThreatLevel({level:d.level,color:levelColors[d.level],desc:levelDescs[d.level],fetched:new Date(d.fetched).toLocaleString(),source:d.source,live:!!d.live});
+          return;
+        }
+      }
+    }catch(e){/* fall through to client-side attempts */}
+
     const urls=[
       "https://www.mi5.gov.uk/faq/what-is-the-current-national-threat-level",
       "https://www.mi5.gov.uk/threat-levels",
@@ -1639,9 +1652,14 @@ function App(){
         }
       }catch(e){continue}
     }
-    setThreatLevel({level:"SUBSTANTIAL",color:levelColors["SUBSTANTIAL"],desc:levelDescs["SUBSTANTIAL"],fetched:new Date().toLocaleDateString(),source:"Cached — verify at MI5.gov.uk",live:false});
+    setThreatLevel(prev=>prev||{level:"SEVERE",color:levelColors["SEVERE"],desc:levelDescs["SEVERE"],fetched:new Date().toLocaleDateString(),source:"Cached — verify at MI5.gov.uk",live:false});
   };
-  useEffect(()=>{fetchThreatLevel()},[]);
+  useEffect(()=>{
+    fetchThreatLevel();
+    // Auto re-check periodically so the level updates live, with no manual refresh needed.
+    const iv=setInterval(fetchThreatLevel,5*60*1000);
+    return()=>clearInterval(iv);
+  },[]);
 
   // Keyboard scoring: 1–5 sets value on the focused score cell, arrows roam,
   // 0/Backspace clears, end-of-row wraps to first cell of next threat/criterion.
