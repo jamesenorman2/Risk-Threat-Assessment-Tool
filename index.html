@@ -901,7 +901,10 @@ function SentinelHeader({ctx,VERSION,onSave,onLoad,onDuplicate,onExportWord,onEx
 }
 
 // ── SentinelSidebar ─────────────────────────────────────────────────
-function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,lastLocalSave,progress}){
+function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,lastLocalSave,progress,sectionReview}){
+  // Sections that carry a review/sign-off status (backlog #5). A muted "Draft"
+  // badge is surfaced in the sidebar for any still awaiting review/sign-off.
+  const REVIEWABLE_SECTIONS={register:1,residual:1,summary:1};
   const num=ctx.projectNum||"SRA-XXXX-XXXX";
   const stage=(ctx.stage||"Stage 1").replace(/^Stage\s+(\d)/i,"Stage $1");
   const pct=Math.round(progress||0);
@@ -937,6 +940,7 @@ function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,las
         React.createElement("div",{className:"sidebar-group-lbl"},section.group),
         visibleItems.map(function(item){
           const active=activeTab===item.id;
+          const inDraft=REVIEWABLE_SECTIONS[item.id]&&(((sectionReview&&sectionReview[item.id]&&sectionReview[item.id].status)||"draft")==="draft");
           return React.createElement("button",{
             key:item.id,
             className:"sni"+(active?" sni-active":""),
@@ -944,7 +948,8 @@ function SentinelSidebar({ctx,activeTab,onTabChange,mobileOpen,onMobileClose,las
           },
             React.createElement("span",{className:"sni-icon"},sIcon(item.icon)),
             React.createElement("span",{className:"sni-lbl"},item.label),
-            item.badge&&React.createElement("span",{className:"sni-badge"+(item.pulse?" sni-badge-pulse":"")},item.badge)
+            item.badge&&React.createElement("span",{className:"sni-badge"+(item.pulse?" sni-badge-pulse":"")},item.badge),
+            inDraft&&React.createElement("span",{className:"sni-badge",title:"This section is still marked Draft — review and sign off before issue."},"Draft")
           );
         })
       );
@@ -1415,7 +1420,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.063";
+const VERSION="2.064";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -4688,6 +4693,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       onMobileClose:function(){setMobileNavOpen(false);},
       lastLocalSave:lastLocalSave,
       progress:_progress,
+      sectionReview:sectionReview,
     }),
 
     // ── Main area ──

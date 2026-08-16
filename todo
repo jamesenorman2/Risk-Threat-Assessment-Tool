@@ -43,8 +43,11 @@
     (Risk Register "Notes" column, expandable thread) and a review/sign-off
     status per section (draft → reviewed → issued) on the Risk Register,
     Treatments & Residual Risk, and Treatment Summary tabs.
-    Possible follow-ups: extend status control to remaining tabs, surface a
-    sidebar badge for sections still in draft, allow per-comment edit.
+    [DONE v2.064] Sidebar badge for sections still in draft — the reviewable
+    sections (Risk Register, Treatments & Residual Risk, Summary) show a muted
+    "Draft" badge in the left nav until their status is moved to reviewed/issued.
+    Possible follow-ups: extend status control to remaining tabs, allow
+    per-comment edit.
  6. [DONE v2.062] Assessment compare/diff — toolbar ⋯ menu "Compare
     assessments": two slots (file or current assessment), per-threat pre and
     residual rating deltas matched by name, new/removed flags, summary
