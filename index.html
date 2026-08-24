@@ -1415,7 +1415,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.063";
+const VERSION="2.064";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -2024,6 +2024,7 @@ function App(){
     var p=activeAssetPreset.toLowerCase();
     if(p.includes("resid")||p.includes("home")){setSbdType("residential")}
     else if(p.includes("school")||p.includes("educ")||p.includes("univers")){setSbdType("schools")}
+    else if(p.includes("hospital")||p.includes("health")||p.includes("clinic")||p.includes("medical")){setSbdType("healthcare")}
     else{setSbdType("commercial")}
   },[activeAssetPreset]);
 
@@ -7438,7 +7439,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         React.createElement("div",{"data-capture-hide":"1",className:"flex justify-between items-center mb-4"},
           React.createElement("div",null,
             React.createElement("h2",{className:"section-title"},"Secured by Design (SBD) Requirements"),
-            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Physical and electronic security requirements by development type. Select type below. Based on SBD Design Guides (Residential 2025, Commercial 2026, New Schools 2014).")
+            React.createElement("p",{className:"section-sub",style:{marginBottom:0}},"Physical and electronic security requirements by development type. Select type below. Current SBD Design Guides: Homes 2023 (residential \u2014 applies to SBD applications made after 1 March 2023), Commercial 2023 (all non-residential, including hospitals and healthcare) and New Schools 2014. Guide editions checked August 2026 \u2014 confirm the current issue at securedbydesign.com and agree the target award with the local Designing Out Crime Officer (DOCO).")
           ),
           React.createElement("button",{className:"btn btn-outline btn-sm",onClick:function(){captureForWord("section-sbd","SBD requirements captured \u2014 paste into Word")}},"📷 Capture")
         ),
@@ -7447,7 +7448,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           var SBD_DATA={
             residential:{
               title:"Residential Development",
-              guide:"SBD Homes Guide 2024/25",
+              guide:"SBD Homes 2023",
+              note:"SBD Homes 2023 is the current residential guide and applies to all SBD applications made after 1 March 2023 (it replaced Homes 2019). Specialist accommodation \u2014 supported and extra-care housing, refuges and homes for vulnerable residents \u2014 is covered by the companion SBD Specialist & Supported Housing guide, which sits alongside Homes 2023. The SBD Homes award is a single award: the Gold / Silver / Bronze gradations belong to SBD Commercial 2023, not to the residential guide. PAS 24:2022+A1:2024 is the current issue of PAS 24; products certified to the unamended PAS 24:2022 stay acceptable through the transition period running to January 2027.",
               sections:[
                 {cat:"Doorsets \u2014 External",items:[
                   "All external doorsets (including communal entrance doors) certified to PAS 24:2022 +A1:2024, or equivalent: LPS 1175 Issue 8.2 (min. Security Rating A1), STS 201 Issue 5, STS 202 (min. BR2), or LPS 2081 (min. SRB)",
@@ -7477,7 +7479,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "All easily accessible windows certified to PAS 24:2022 +A1:2024 or equivalent (LPS 1175 Issue 8.2, STS 204, STS 202)",
                   "Easily accessible defined as: ground floor, basement, and any window reachable from a flat roof, balcony, accessible drain pipe or similar feature within 2m",
                   "Windows above ground floor also to PAS 24 where accessible by flat roof, balcony, drain pipe or adjacent structure",
-                  "Laminated glass (minimum BS EN 356 class P1A) to all easily accessible windows for SBD Gold award",
+                  "Laminated glass (minimum BS EN 356 class P1A) to easily accessible windows and door side panels \u2014 enhanced specification where the risk assessment supports it",
                   "Internal beading \u2014 glass fitted from inside so glazing beads cannot be removed externally",
                   "Window locks operable by key, key removable when locked",
                   "Window opening restrictors fitted where windows are accessible from public areas",
@@ -7513,7 +7515,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   "CCTV images recorded and retained for minimum 31 days",
                   "Audio/visual door entry or video intercom at communal entrance doors",
                   "Access control to communal areas using fob, card or digital credential with audit trail",
-                  "Intruder alarm system (min. Grade 2 per BS EN 50131-1) recommended for individual dwellings (SBD Gold requirement)",
+                  "Intruder alarm system (min. Grade 2 per BS EN 50131-1) recommended for individual dwellings where the risk assessment supports it \u2014 Grade 2 is the domestic/low-risk grade, specify Grade 3 for higher-risk dwellings",
                   "Where monitored remotely, alarm receiving centre compliant with BS EN 50518 and BS 8591",
                   "CCTV management and operation in accordance with BS 7958 (CCTV management and operation)"
                 ]},
@@ -7528,7 +7530,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             },
             commercial:{
               title:"Commercial (Non-Residential) Development",
-              guide:"SBD Commercial Guide 2024/26",
+              guide:"SBD Commercial 2023",
+              note:"SBD Commercial 2023 is the current non-residential guide. It covers premises with no formal public access (offices, factories, warehouses) and premises where public access is integral to the use (retail, leisure and public service buildings \u2014 which is where hospitals, clinics and health centres sit; see the Healthcare / Hospitals tab for the sector overlay). It is the first SBD guide split into Gold, Silver and Bronze award gradations, so agree the target gradation with the Designing Out Crime Officer at design stage \u2014 it determines which requirements apply. PAS 24:2022+A1:2024 is the current issue of PAS 24; certification to the unamended PAS 24:2022 stays acceptable through the transition running to January 2027.",
               sections:[
                 {cat:"External Doorsets",items:[
                   "All external doorsets certified to PAS 24:2022 +A1:2024, or LPS 1175 Issue 8.2 (min. A1), or STS 202 (min. BR2)",
@@ -7623,7 +7626,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             },
             schools:{
               title:"Schools & Educational Facilities",
-              guide:"SBD New Schools Guide 2014",
+              guide:"SBD New Schools 2014",
+              note:"New Schools 2014 remains the current SBD education guide and has not been superseded. For post-16, further and higher education, and for non-teaching buildings on a campus, read it together with SBD Commercial 2023.",
               sections:[
                 {cat:"Perimeter Fencing & Gates",items:[
                   "Secure perimeter fence minimum 2.0m tall around the entire school boundary",
@@ -7705,6 +7709,42 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               ]
             }
           };
+          // Healthcare / hospitals: SBD publishes no separate hospital guide — healthcare is assessed
+          // under SBD Commercial 2023 as a public service building, plus a sector overlay.
+          SBD_DATA.healthcare={
+            title:"Healthcare \u2014 Hospitals, Clinics & Health Centres",
+            guide:"SBD Commercial 2023 + healthcare sector overlay",
+            note:"SBD does not publish a separate hospitals or healthcare design guide. Healthcare schemes are assessed against SBD Commercial 2023, in which hospitals, clinics and health centres fall within 'public service buildings' \u2014 so every Commercial requirement below applies in full, and the Gold / Silver / Bronze gradation is agreed with the Designing Out Crime Officer. The two headings marked 'Healthcare overlay' are sector good practice drawn from NHS security practice and UK legislation, not verbatim SBD clauses \u2014 use them alongside the Commercial requirements and confirm trust-specific standards (local security management, violence prevention and reduction) with the client.",
+            sections:SBD_DATA.commercial.sections.concat([
+              {cat:"Healthcare Overlay \u2014 Site, Entrances & Public Interface",items:[
+                "Main entrance reception staffed for the building's operating hours, with clear sightlines over all public approaches and a duress alarm at every reception position",
+                "Emergency Department / urgent care entrance separated from the main entrance, with its own access-controlled route into clinical areas and CCTV coverage of the waiting area",
+                "Ambulance arrivals and patient transfer areas segregated from public parking and access-controlled",
+                "Clear front-of-house / back-of-house zoning \u2014 access control at every transition from public space into staff or clinical space",
+                "Wayfinding designed to keep visitors on defined public routes, removing any need to pass through clinical or back-of-house corridors",
+                "Visitor and contractor management with time-limited passes, photo ID and escort rules for non-public areas",
+                "Patient and visitor car parks to Park Mark (Safer Parking Scheme) standard; staff parking separated with barrier or ANPR control",
+                "Hostile vehicle mitigation (PAS 68 / IWA 14-1) to crowded entrances, ED canopies and drop-off areas where the terrorism risk assessment requires it",
+                "Terrorism (Protection of Premises) Act 2025 (\u2018Martyn\u2019s Law\u2019, Royal Assent 3 April 2025) \u2014 healthcare premises are qualifying premises once capacity thresholds are met (standard tier 200\u2013799, enhanced tier 800+); duties are expected to commence in spring 2027, regulated by the SIA",
+                "Lone worker and personal alarm provision for staff in consulting rooms, community clinics and out-of-hours areas",
+                "Medical gas stores, clinical waste compounds, plant and helipad access fenced, locked and covered by CCTV \u2014 arson and theft risk",
+                "External seating, smoking shelters and landscaping positioned so they do not create concealment next to ground floor clinical glazing"
+              ]},
+              {cat:"Healthcare Overlay \u2014 Clinical & High-Risk Areas",items:[
+                "Maternity and neonatal units: single access-controlled entry with audio/video intercom, infant electronic tagging integrated with door release and lift control, and CCTV to all entrances and exits",
+                "Paediatric wards: controlled entry and alarmed final exit doors to prevent unsupervised egress or abduction",
+                "Mental health inpatient and s.136 suites: anti-ligature and anti-barricade doorsets, tamper-resistant fixings, designed-in observation and a staff safe room",
+                "Emergency Department: access control between waiting and clinical areas, laminated or anti-bandit glazing to reception, and a lockable staff refuge",
+                "Controlled drugs held in a cabinet meeting the Misuse of Drugs (Safe Custody) Regulations 1973, in a room with its own intruder detection and access control",
+                "Pharmacy and drug stores: doorset to LPS 1175 Issue 8.2 (min. B3), dedicated intruder alarm zone and CCTV",
+                "Server, comms and PACS rooms: doorsets to LPS 1175 Issue 8.2 (min. B3) with access control and full audit trail",
+                "Medical records, information-governance offices and mortuary areas access-controlled with restricted permission groups",
+                "Radioactive sources and nuclear medicine stores secured in line with the Ionising Radiations Regulations 2017 and CTSA/NaCTSO security advice",
+                "Cash handling, patient property stores and retail concessions: anti-bandit glazing (BS EN 356 P6B minimum), time-delay safes and CCTV",
+                "Out-of-hours lockdown supported by zoned access control \u2014 departments securable independently without compromising means of escape (BS EN 179 / BS EN 1125)"
+              ]}
+            ])
+          };
           var data=SBD_DATA[sbdType];
           // Compliance summary counts
           var allItems=[];data.sections.forEach(function(sec){sec.items.forEach(function(item,ii){allItems.push(sbdType+"|"+sec.cat+"|"+ii)})});
@@ -7715,14 +7755,15 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             // Type selector
             React.createElement("div",{"data-capture-hide":"1",style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
               React.createElement("span",{style:{fontSize:11,fontWeight:600,color:"#64748b"}},"Development Type:"),
-              ["residential","commercial","schools"].map(function(t){
-                var labels={residential:"Residential",commercial:"Commercial (Non-Residential)",schools:"Schools"};
+              ["residential","commercial","healthcare","schools"].map(function(t){
+                var labels={residential:"Residential",commercial:"Commercial (Non-Residential)",healthcare:"Healthcare / Hospitals",schools:"Schools"};
                 return React.createElement("button",{key:t,className:"preset-btn"+(sbdType===t?" active":""),onClick:function(){setSbdType(t)}},labels[t]);
               }),
               React.createElement("button",{className:"btn btn-outline btn-sm",style:{marginLeft:"auto"},onClick:function(){
                 var chunks=[];
                 chunks.push("<h2>Secured by Design Requirements \u2014 "+data.title+"</h2>");
                 chunks.push("<p style='font-family:Arial;font-size:9pt;color:#333'>Project: <b>"+(ctx.project||"\u2014")+"</b> | Guide: <b>"+data.guide+"</b></p>");
+                if(data.note)chunks.push("<p style='font-family:Arial;font-size:8.5pt;color:#555'><i>"+data.note+"</i></p>");
                 // Compliance summary
                 var tot=allItems.length;var comp=sbdStatusCounts.Compliant;var part=sbdStatusCounts.Partial;var gap=sbdStatusCounts.Gap;var na=sbdStatusCounts["N/A"];
                 chunks.push("<p style='font-family:Arial;font-size:9pt'><b>Compliance Summary:</b> "+comp+" Compliant | "+part+" Partial | "+gap+" Gap | "+na+" N/A | "+sbdStatusCounts.Unset+" Not assessed ("+tot+" total requirements)</p>");
@@ -7761,7 +7802,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   }),
                   React.createElement("span",{style:{fontSize:10,color:"#94a3b8",marginLeft:2}},"("+sbdStatusCounts.Unset+" unset)")
                 )
-              )
+              ),
+              data.note&&React.createElement("div",{style:{marginTop:12,fontSize:11,lineHeight:1.55,color:"#334155",background:"#fff",border:"1px solid #e2e8f0",borderLeft:"3px solid #1B2A4A",borderRadius:6,padding:"9px 11px"}},
+                React.createElement("span",{style:{fontWeight:700,color:"#1B2A4A"}},"Which guide applies: "),data.note)
             ),
 
             data.sections.map(function(sec,si){

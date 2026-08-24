@@ -4,6 +4,38 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.064 — 2026-08-24
+
+**Secured by Design content verified and corrected (residential / commercial / hospitals)**
+- The SBD tab cited guide editions that do not exist: "Residential 2025",
+  "Commercial 2026", "SBD Homes Guide 2024/25" and "SBD Commercial Guide
+  2024/26". The current published guides are **Homes 2023** (applies to SBD
+  applications made after 1 March 2023, replacing Homes 2019) and
+  **Commercial 2023**; **New Schools 2014** is still current and unchanged.
+  All guide labels and the section intro now name the real editions
+- Added a "Which guide applies" note to each development type covering scope,
+  award structure and companion guides — including that specialist, supported
+  and extra-care housing is covered by the SBD Specialist & Supported Housing
+  guide alongside Homes 2023, and that Commercial 2023 is the first SBD guide
+  split into Gold / Silver / Bronze award gradations (agreed with the DOCO at
+  design stage). The note is included in the Copy to Word export
+- New **Healthcare / Hospitals** development type. SBD publishes no separate
+  hospital guide — healthcare is assessed under Commercial 2023 as a "public
+  service building" — so this type carries the full Commercial requirement set
+  plus two clearly-labelled healthcare overlay sections (site/entrance/public
+  interface, and clinical & high-risk areas: maternity infant tagging, ED,
+  mental health, controlled drugs, pharmacy, radioactive sources, lockdown).
+  The overlay is flagged as sector good practice, not verbatim SBD clauses
+- The SBD type now auto-selects Healthcare when the development type preset is
+  a hospital, clinic or other healthcare asset (previously fell through to
+  Commercial with no healthcare content)
+- Removed two incorrect "SBD Gold award" claims from the residential
+  checklist: the SBD Homes award has no Gold/Silver/Bronze gradations. Both
+  items are now framed as risk-assessment-led enhancements
+- Clarified the PAS 24 position: PAS 24:2022+A1:2024 is the current issue and
+  certification to the unamended PAS 24:2022 stays acceptable through the
+  transition running to January 2027
+
 ## v2.063 — 2026-08-02
 **Fix stale UK terrorism threat level (JTAC/MI5)**
 - The live threat-level fetch on the Crime & Terrorism tab ran entirely in
