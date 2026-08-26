@@ -19,6 +19,40 @@
 <title>Security Risk &amp; Threat Assessment Tool</title>
 <meta name="description" content="Security Risk & Threat Assessment Tool — structured risk evaluation, threat analysis and treatment planning for security professionals.">
 <meta name="theme-color" content="#1B2A4A">
+<!-- Installable app (PWA) -->
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="application-name" content="RTA">
+<meta name="apple-mobile-web-app-title" content="RTA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+// PWA bootstrap: register the service worker and hold on to the install
+// prompt so the toolbar can offer an Install button. Skipped when the page
+// is opened from disk (the standalone versioned HTML build).
+(function(){
+  window.__rtaInstall={prompt:null,installed:window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches};
+  if(location.protocol!=="http:"&&location.protocol!=="https:")return;
+  window.addEventListener("beforeinstallprompt",function(e){
+    e.preventDefault();
+    window.__rtaInstall.prompt=e;
+    window.dispatchEvent(new CustomEvent("rta-installable"));
+  });
+  window.addEventListener("appinstalled",function(){
+    window.__rtaInstall.prompt=null;window.__rtaInstall.installed=true;
+    window.dispatchEvent(new CustomEvent("rta-installable"));
+  });
+  if(!("serviceWorker" in navigator))return;
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("/sw.js").catch(function(err){
+      console.warn("Service worker registration failed:",err);
+    });
+  });
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -800,6 +834,24 @@ const TABS=[{id:"context",l:"Context",n:"1"},{id:"crime",l:"Crime & Terrorism",n
 function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,onPrint,onSetup,onClear,onCompare,onNext,nextLabel,ghConfig,onGhLoad,onAssessments,onUndo,onRedo,canUndo,canRedo,initials}){
   const[exportOpen,setExportOpen]=React.useState(false);
   const[moreOpen,setMoreOpen]=React.useState(false);
+  // Install button — only shown while the browser is offering an install prompt
+  const[canInstall,setCanInstall]=React.useState(false);
+  React.useEffect(function(){
+    function sync(){var i=window.__rtaInstall||{};setCanInstall(!!i.prompt&&!i.installed)}
+    window.addEventListener("rta-installable",sync);
+    sync();
+    return function(){window.removeEventListener("rta-installable",sync)};
+  },[]);
+  const installApp=function(){
+    var i=window.__rtaInstall||{};
+    if(!i.prompt)return;
+    i.prompt.prompt();
+    i.prompt.userChoice.then(function(choice){
+      if(choice&&choice.outcome==="accepted")i.installed=true;
+      i.prompt=null;
+      setCanInstall(false);
+    }).catch(function(){setCanInstall(false)});
+  };
   const exportRef=React.useRef(null);
   const moreRef=React.useRef(null);
   React.useEffect(function(){
@@ -835,6 +887,10 @@ function SentinelToolbar({onSave,onLoad,onDuplicate,onExportWord,onExportExcel,o
     ghConfig&&ghConfig.enabled&&ghConfig.repo&&ghConfig.owner&&React.createElement("div",{className:"stb-group stb-hide-md"},
       React.createElement("button",{className:"stb-btn",onClick:onGhLoad,title:"Cloud back-ups"},
         sIcon("db")," Back-ups")
+    ),
+    canInstall&&React.createElement("div",{className:"stb-group"},
+      React.createElement("button",{className:"stb-btn",onClick:installApp,title:"Install this tool as an app on this device"},
+        sIcon("download"),React.createElement("span",{className:"stb-lbl"}," Install"))
     ),
     React.createElement("div",{className:"stb-group stb-hide-md",style:{position:"relative"},ref:exportRef},
       React.createElement("button",{className:"stb-btn",onClick:function(){setExportOpen(function(v){return !v});setMoreOpen(false);},title:"Export report"},
@@ -1415,7 +1471,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.064";
+const VERSION="2.065";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);

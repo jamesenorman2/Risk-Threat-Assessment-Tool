@@ -92,3 +92,49 @@ test("can add an asset on the Assets tab", async ({ page }) => {
   expect(rowsAfter).toBe(rowsBefore + 1);
   expect(errors).toEqual([]);
 });
+
+test("is installable as a PWA: manifest, icons and service worker", async ({
+  page,
+  request,
+}) => {
+  const errors = trackPageErrors(page);
+  await mockThreatLevel(page);
+  await page.goto("/");
+
+  // The document points at the manifest with credentials, so the manifest
+  // fetch still works once the app sits behind Basic Auth in production.
+  const link = page.locator('link[rel="manifest"]');
+  await expect(link).toHaveAttribute("href", "/manifest.webmanifest");
+  await expect(link).toHaveAttribute("crossorigin", "use-credentials");
+
+  const manifestRes = await request.get("/manifest.webmanifest");
+  expect(manifestRes.ok()).toBeTruthy();
+  const manifest = await manifestRes.json();
+  expect(manifest.start_url).toBe("/");
+  expect(manifest.display).toBe("standalone");
+  expect(manifest.name).toBeTruthy();
+  expect(manifest.short_name).toBeTruthy();
+
+  // Chrome's install criteria: a 192px icon, a 512px icon and a maskable one.
+  const sizes = manifest.icons.map((i) => `${i.sizes}:${i.purpose}`);
+  expect(sizes).toContain("192x192:any");
+  expect(sizes).toContain("512x512:any");
+  expect(sizes).toContain("512x512:maskable");
+
+  for (const icon of manifest.icons) {
+    const iconRes = await request.get(icon.src);
+    expect(iconRes.ok(), `${icon.src} should be served`).toBeTruthy();
+  }
+
+  const swRes = await request.get("/sw.js");
+  expect(swRes.ok()).toBeTruthy();
+  expect(swRes.headers()["content-type"]).toContain("javascript");
+
+  // And it actually registers and takes control of the page.
+  await page.waitForFunction(
+    () => navigator.serviceWorker && navigator.serviceWorker.controller !== null,
+    null,
+    { timeout: 15000 }
+  );
+  expect(errors).toEqual([]);
+});

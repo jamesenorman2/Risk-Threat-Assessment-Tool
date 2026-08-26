@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Security Risk & Threat Assessment Tool",
+  "short_name": "RTA",
+  "description": "Structured risk evaluation, threat analysis and treatment planning for security professionals.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1B2A4A",
+  "theme_color": "#1B2A4A",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

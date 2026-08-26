@@ -4,6 +4,39 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.065 — 2026-08-26
+
+**Installable as an app (PWA)**
+- Added `manifest.webmanifest` (standalone display, navy theme, start_url `/`)
+  and an icon set generated from the RTA mark — 192px, 512px, a maskable
+  512px for Android adaptive icons, an Apple touch icon and an SVG favicon
+  (the app had no favicon at all before)
+- Added `sw.js`, a service worker registered at the site root. Page loads are
+  network-first so a new release is picked up immediately, with the cached
+  shell served when there's no connection; the CDN libraries the app depends
+  on (React, Leaflet, web fonts) are cached separately so an installed copy
+  starts up offline. `/api/*` is never cached
+- The service worker cache name is stamped with the app version at build time,
+  so every release lands in a fresh cache and the previous one is deleted on
+  activate
+- `build.js` now copies the manifest, service worker and icons into `dist/` —
+  Vercel serves that directory, so they would otherwise 404 in production
+- `middleware.js` lets `/manifest.webmanifest`, `/sw.js` and `/icons/*` through
+  without Basic Auth. The browser fetches these outside the page's credential
+  context, and they hold no assessment data; the app itself stays gated. The
+  manifest link also carries `crossorigin="use-credentials"` so it resolves
+  correctly behind the password
+- Added an **Install** button to the toolbar, shown only while the browser is
+  offering an install prompt and hidden once installed
+- iOS/Android meta tags added (apple-touch-icon, standalone capability, status
+  bar style, app title "RTA")
+- Service worker registration is skipped when the page is opened from disk, so
+  the standalone versioned HTML build is unaffected
+- The smoke-test static server now serves the real files from the repo root
+  instead of index.html for every request, and a new smoke test covers the
+  manifest, the icon set against Chrome's install criteria, and that the
+  service worker registers and takes control of the page
+
 ## v2.064 — 2026-08-24
 
 **Secured by Design content verified and corrected (residential / commercial / hospitals)**

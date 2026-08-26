@@ -41,4 +41,18 @@ const result = html.replace(/<script(?!\s+src=)([^>]*)>([\s\S]*?)<\/script>/g, f
 
 fs.mkdirSync('dist', { recursive: true });
 fs.writeFileSync(path.join('dist', 'index.html'), result);
-console.log('Build complete — obfuscated output written to dist/index.html');
+
+// PWA assets — Vercel serves dist/, so the manifest, service worker and icons
+// have to be copied across or they 404 in production. The service worker is
+// stamped with the app version so each release gets a fresh cache.
+const version = (html.match(/const VERSION="([\d.]+)"/) || [])[1] || 'dev';
+fs.copyFileSync('manifest.webmanifest', path.join('dist', 'manifest.webmanifest'));
+fs.writeFileSync(
+  path.join('dist', 'sw.js'),
+  fs.readFileSync('sw.js', 'utf8').replaceAll('__APP_VERSION__', version)
+);
+fs.mkdirSync(path.join('dist', 'icons'), { recursive: true });
+for (const icon of fs.readdirSync('icons')) {
+  fs.copyFileSync(path.join('icons', icon), path.join('dist', 'icons', icon));
+}
+console.log(`Build complete — obfuscated output written to dist/index.html (PWA v${version})`);

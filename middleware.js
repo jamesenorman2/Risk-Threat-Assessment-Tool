@@ -3,6 +3,12 @@ export default async function middleware(req) {
   const path = new URL(req.url).pathname;
   if (path === '/api/db' || path === '/api/report') return;
 
+  // PWA plumbing must be reachable without auth: the manifest and its icons
+  // are fetched by the browser outside the page's credential context, and the
+  // service worker script is public boilerplate holding no assessment data.
+  // The app itself (/) stays behind the password below.
+  if (path === '/manifest.webmanifest' || path === '/sw.js' || path.startsWith('/icons/')) return;
+
   // Check session cookie first — set after successful Basic Auth login
   const cookieStr = req.headers.get("cookie") || "";
   const sessionCookie = cookieStr.split(";").map(c => c.trim()).find(c => c.startsWith("__sra_session="));
