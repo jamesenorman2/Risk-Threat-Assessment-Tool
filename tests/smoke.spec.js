@@ -101,11 +101,8 @@ test("is installable as a PWA: manifest, icons and service worker", async ({
   await mockThreatLevel(page);
   await page.goto("/");
 
-  // The document points at the manifest with credentials, so the manifest
-  // fetch still works once the app sits behind Basic Auth in production.
   const link = page.locator('link[rel="manifest"]');
   await expect(link).toHaveAttribute("href", "/manifest.webmanifest");
-  await expect(link).toHaveAttribute("crossorigin", "use-credentials");
 
   const manifestRes = await request.get("/manifest.webmanifest");
   expect(manifestRes.ok()).toBeTruthy();

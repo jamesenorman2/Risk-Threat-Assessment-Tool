@@ -4,6 +4,18 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.066 — 2026-08-26
+
+**Removed the login prompt**
+- Deleted `middleware.js`. The app no longer sits behind Basic Auth /
+  `APP_PASSWORD` — it's reachable without a login prompt or session cookie
+- Dropped the now-pointless `crossorigin="use-credentials"` from the manifest
+  `<link>` in `index.html`, and the matching assertion/comment in the PWA
+  smoke test
+- `/api/db` and `/api/report` are unaffected — they still self-gate on
+  `x-api-key` only when `APP_PASSWORD` is set as a Vercel env var; unset it
+  there too if you want those fully open as well
+
 ## v2.065 — 2026-08-26
 
 **Installable as an app (PWA)**

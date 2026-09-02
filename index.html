@@ -20,7 +20,7 @@
 <meta name="description" content="Security Risk & Threat Assessment Tool — structured risk evaluation, threat analysis and treatment planning for security professionals.">
 <meta name="theme-color" content="#1B2A4A">
 <!-- Installable app (PWA) -->
-<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -1471,7 +1471,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.065";
+const VERSION="2.066";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
