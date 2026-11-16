@@ -1471,7 +1471,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.066";
+const VERSION="2.067";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -1621,6 +1621,7 @@ function App(){
   const[areaLoading,setAreaLoading]=useState(false);
   const[areaError,setAreaError]=useState(null);
   const[threatLevel,setThreatLevel]=useState(null);
+  const[mlInfo,setMlInfo]=useState(null); // Martyn's Law status from /api/martyns-law
   const[autoSaveEnabled,setAutoSaveEnabled]=useState(false);
   const[ghConfig,setGhConfig]=useState({token:"",repo:"",owner:"",enabled:true});
   const[ghBrowser,setGhBrowser]=useState({open:false,files:[],loading:false,path:"projects"});
@@ -1716,6 +1717,103 @@ function App(){
     const iv=setInterval(fetchThreatLevel,5*60*1000);
     return()=>clearInterval(iv);
   },[]);
+
+  // ── Martyn's Law (Terrorism (Protection of Premises) Act 2025) ─────────
+  // /api/martyns-law checks legislation.gov.uk and GOV.UK server-side and
+  // reports anything that has changed since the content was last reviewed.
+  // It is public information only — nothing from the assessment is sent. The
+  // last good response is kept in localStorage so an installed/offline copy
+  // still shows something.
+  const fetchMartynsLaw=async()=>{
+    try{
+      const r=await fetch("/api/martyns-law",{credentials:"same-origin",signal:AbortSignal.timeout(12000)});
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      const d=await r.json();
+      if(!d||!d.baseline||!d.baseline.status)throw new Error("unexpected response");
+      setMlInfo({...d,offline:false});
+      try{localStorage.setItem("sra-ml-cache",JSON.stringify(d))}catch(e){}
+    }catch(e){
+      try{
+        const c=JSON.parse(localStorage.getItem("sra-ml-cache")||"null");
+        if(c&&c.baseline&&c.baseline.status){setMlInfo({...c,offline:true});return}
+      }catch(e2){}
+      setMlInfo(function(prev){return prev&&!prev.failed?prev:{failed:true}});
+    }
+  };
+  useEffect(()=>{
+    fetchMartynsLaw();
+    const iv=setInterval(fetchMartynsLaw,6*60*60*1000);
+    return()=>clearInterval(iv);
+  },[]);
+  const mlDay=function(s){try{return new Date(s).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}catch(e){return String(s)}};
+  const martynsLawCard=function(){
+    if(ctx.country&&ctx.country!=="United Kingdom")return null;
+    var E=React.createElement;
+    var box={border:"1px solid #e2e8f0",borderTop:"none",padding:16,background:"#fff"};
+    var title=E("div",{style:{fontSize:13,fontWeight:700,color:"#7f1d1d",marginBottom:8}},"MARTYN\u2019S LAW \u2014 TERRORISM (PROTECTION OF PREMISES) ACT 2025");
+    var link=function(href,label){return E("a",{href:href,target:"_blank",rel:"noopener noreferrer",style:{color:"#4a5568",textDecoration:"underline"}},label)};
+    if(!mlInfo)return E("div",{id:"martyns-law-section",style:box},title,E("div",{style:{padding:8,color:"#94a3b8",fontSize:12}},"Checking official sources..."));
+    if(mlInfo.failed)return E("div",{id:"martyns-law-section",style:box},title,
+      E("div",{style:{fontSize:12,color:"#64748b"}},"Live status unavailable. Check ",link("https://www.legislation.gov.uk/ukpga/2025/10","legislation.gov.uk")," and the Home Office guidance on GOV.UK at the time of assessment."));
+    var b=mlInfo.baseline,live=mlInfo.live||{},drift=mlInfo.drift||[];
+    var inForce=b.status.premisesDutiesInForce;
+    var pill=inForce?{c:"#16803c",bg:"#f0fdf4"}:{c:"#b45309",bg:"#fffbeb"};
+    var small={fontSize:12,color:"#64748b"};
+    var when=mlInfo.checked?new Date(mlInfo.checked).toLocaleString():"";
+    var checkedTxt=mlInfo.offline?"\u26a0 Offline \u2014 showing the last check ("+when+")":
+      live.reachable?"\u2713 Live \u2014 checked "+when:"\u26a0 Official sources unreachable \u2014 showing content reviewed "+mlDay(b.reviewed);
+    var health=/hospital|health|clinic|medical/i.test(activeAssetPreset||"")?b.healthcare:null;
+    var heading=function(t){return E("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A",marginBottom:4}},t)};
+    var line={fontSize:12,color:"#334155",lineHeight:1.5};
+    return E("div",{id:"martyns-law-section",style:box},
+      E("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12}},
+        title,
+        E("button",{"data-capture-hide":"1",className:"btn btn-outline btn-sm",style:{flexShrink:0},
+          onClick:function(){setMlInfo(null);fetchMartynsLaw();showToast("Checking Martyn\u2019s Law sources...")}},"\u21bb Check now")
+      ),
+      E("div",{style:{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}},
+        E("div",{style:{fontSize:13,fontWeight:800,color:pill.c,padding:"6px 12px",background:pill.bg,border:"2px solid "+pill.c,borderRadius:6}},b.status.headline),
+        E("div",null,
+          E("div",{style:{fontSize:13,fontWeight:600,color:"#1e293b"}},"Premises duties expected to start: "+b.status.expected),
+          E("div",{style:{fontSize:12,color:"#94a3b8"}},checkedTxt)
+        )
+      ),
+      E("div",{style:{...small,marginTop:6}},b.status.detail),
+      drift.length>0&&E("div",{role:"alert",style:{margin:"12px 0 0",padding:"10px 12px",background:"#fef2f2",border:"1px solid #fecaca",borderLeft:"3px solid #b91c1c",borderRadius:6,fontSize:12,color:"#7f1d1d",lineHeight:1.5}},
+        E("div",{style:{fontWeight:700,marginBottom:4}},"Official sources have changed since this content was reviewed ("+mlDay(b.reviewed)+") \u2014 verify before relying on it"),
+        drift.map(function(d,i){return E("div",{key:i,style:{marginTop:2}},"\u2022 ",d.message," ",link(d.url,"View"))})
+      ),
+      E("div",{style:{display:"flex",gap:10,flexWrap:"wrap",marginTop:12}},
+        b.tiers.map(function(t){return E("div",{key:t.id,style:{flex:"1 1 260px",border:"1px solid #e2e8f0",borderRadius:8,padding:"10px 12px",background:"#fafbfc"}},
+          E("div",{style:{fontSize:12,fontWeight:700,color:"#1B2A4A"}},t.name+" \u2014 "+t.capacity),
+          E("div",{style:{...line,marginTop:4}},t.requires),
+          E("div",{style:{fontSize:11,color:"#64748b",marginTop:6}},"Maximum penalty: "+t.maxPenalty)
+        )})
+      ),
+      E("div",{style:{...small,marginTop:6}},b.tierBasis),
+      E("div",{style:{marginTop:12}},
+        heading("In force so far"),
+        b.status.inForce.map(function(f,i){return E("div",{key:i,style:line},"\u2022 "+f.provision+" \u2014 "+mlDay(f.date)+" ("+f.instrument+")")})
+      ),
+      b.pending&&b.pending.length>0&&E("div",{style:{marginTop:10}},
+        heading("Still to come"),
+        b.pending.map(function(t,i){return E("div",{key:i,style:line},"\u2022 "+t)})
+      ),
+      health&&E("div",{style:{marginTop:12,padding:"10px 12px",background:"#f0f4f8",border:"1px solid #e2e8f0",borderLeft:"3px solid #1B2A4A",borderRadius:6,fontSize:12,color:"#334155",lineHeight:1.55}},
+        E("div",{style:{fontWeight:700,color:"#1B2A4A",marginBottom:4}},"Hospitals & health care"),
+        E("div",null,health.summary),
+        E("div",{style:{marginTop:4}},E("b",null,"Responsible person: "),health.responsiblePerson),
+        E("div",{style:{marginTop:4}},E("b",null,"Hospital campuses: "),health.campus),
+        E("div",{style:{marginTop:4}},E("b",null,"Mixed-use premises: "),health.principalUse),
+        health.nhs&&E("div",{style:{marginTop:4}},link(health.nhs.url,health.nhs.title)," (reported \u2014 verify)")
+      ),
+      E("div",{style:{...small,marginTop:12,lineHeight:1.55}},
+        "Sources: ",
+        b.sources.map(function(s,i){return E(React.Fragment,{key:i},i>0?" \u00b7 ":"",link(s.url,s.label))}),
+        ". Content reviewed "+mlDay(b.reviewed)+" and re-checked against the official sources automatically. Not legal advice \u2014 confirm against the Act, the Home Office statutory guidance and the SIA."
+      )
+    );
+  };
 
   // Keyboard scoring: 1–5 sets value on the focused score cell, arrows roam,
   // 0/Backspace clears, end-of-row wraps to first cell of next threat/criterion.
@@ -5253,6 +5351,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             )
           ),
 
+          // Martyn's Law
+          martynsLawCard(),
+
           // Incidents table
           React.createElement("div",{style:{border:"1px solid #e2e8f0",borderTop:"none",borderRadius:"0 0 10px 10px",overflow:"hidden"}},
             React.createElement("div",{style:{padding:"10px 16px",background:"#fafafa",borderBottom:"1px solid #e2e8f0"}},
@@ -7781,7 +7882,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 "Visitor and contractor management with time-limited passes, photo ID and escort rules for non-public areas",
                 "Patient and visitor car parks to Park Mark (Safer Parking Scheme) standard; staff parking separated with barrier or ANPR control",
                 "Hostile vehicle mitigation (PAS 68 / IWA 14-1) to crowded entrances, ED canopies and drop-off areas where the terrorism risk assessment requires it",
-                "Terrorism (Protection of Premises) Act 2025 (\u2018Martyn\u2019s Law\u2019, Royal Assent 3 April 2025) \u2014 healthcare premises are qualifying premises once capacity thresholds are met (standard tier 200\u2013799, enhanced tier 800+); duties are expected to commence in spring 2027, regulated by the SIA",
+                "Terrorism (Protection of Premises) Act 2025 (\u2018Martyn\u2019s Law\u2019) \u2014 hospitals and health care are a specified use (Schedule 1, para 10); the duty tier follows expected capacity (standard 200\u2013799, enhanced 800+) and the responsible person is the operating NHS trust / foundation trust / Health and Social Care trust, Health Board or hospital governing body. Check the live commencement status on the Crime & Terrorism tab",
                 "Lone worker and personal alarm provision for staff in consulting rooms, community clinics and out-of-hours areas",
                 "Medical gas stores, clinical waste compounds, plant and helipad access fenced, locked and covered by CCTV \u2014 arson and theft risk",
                 "External seating, smoking shelters and landscaping positioned so they do not create concealment next to ground floor clinical glazing"

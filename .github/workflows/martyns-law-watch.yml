@@ -1,0 +1,38 @@
+name: Martyn's Law watch
+
+# Checks legislation.gov.uk and GOV.UK once a day and opens (or updates) an
+# issue when the official position differs from api/_martyns-law-data.js.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - id: check
+        run: node scripts/martyns-law-watch.js
+      - name: Open or update the issue
+        if: steps.check.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create martyns-law --color B8381F --description "Martyn's Law content needs review" 2>/dev/null || true
+          existing=$(gh issue list --label martyns-law --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file martyns-law-drift.md
+          else
+            gh issue create --label martyns-law \
+              --title "Martyn's Law: official sources have changed - review app content" \
+              --body-file martyns-law-drift.md
+          fi

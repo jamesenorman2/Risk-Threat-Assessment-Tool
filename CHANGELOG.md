@@ -4,6 +4,42 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.067 — 2026-11-16
+
+**Martyn's Law: live status that keeps itself current**
+- New card on the Crime & Terrorism tab (UK assessments) showing where the
+  Terrorism (Protection of Premises) Act 2025 stands: status, in-force
+  provisions with dates, the standard (200–799) and enhanced (800+) duties
+  and penalties, what is still to come, and sources. Hospital and health
+  care assessments also get a healthcare box (Schedule 1 para 10, who the
+  responsible person is, campuses, mixed-use premises)
+- Content was verified against the Act and its statutory instruments on
+  legislation.gov.uk rather than commentary. Key finding: the Act is only
+  **partly in force** — section 27 (guidance, 10 April 2026) and the SIA
+  guidance powers (15 June 2026). The premises duties have **no
+  commencement date yet**; spring 2027 is a reported expectation and is
+  labelled as such. Four statutory instruments exist, including the
+  Principal Use of Premises Regulations (in force 15 October 2026)
+- New `/api/martyns-law` endpoint checks legislation.gov.uk (new
+  commencement regulations) and the GOV.UK Content API (updates to the Home
+  Office guidance) and compares them with the reviewed content in
+  `api/_martyns-law-data.js`. When they differ the card shows a red warning
+  naming exactly what changed. Re-checked every 6 hours while the app is
+  open, edge-cached for an hour. The request carries no assessment data
+- A source being down never raises a false alarm, and the last good check is
+  kept so an offline or installed copy still shows the card (labelled Offline)
+- New daily GitHub Action (`martyns-law-watch.yml`) runs the same check and
+  opens or updates an issue when the official position changes, so the
+  reviewed content gets updated rather than silently going stale
+- The healthcare SBD item no longer hard-codes a commencement date; it points
+  to the live card
+- GOV.UK could not be reached from the development sandbox, so the GOV.UK half
+  of the check was tested against mocked responses; the legislation.gov.uk
+  half was tested live. The Action's first run in CI will exercise GOV.UK
+  for real — check it opens no spurious issue
+- Tests: 9 new (live-check logic and the card, including drift, failure and
+  offline states)
+
 ## v2.066 — 2026-08-26
 
 **Removed the login prompt**
