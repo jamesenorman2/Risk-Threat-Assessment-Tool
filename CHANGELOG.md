@@ -4,6 +4,33 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.069 — 2026-11-17
+
+**Security hardening, new risk matrix look, new icons**
+- Back-ups to GitHub are now refused unless the repository is confirmed
+  **private**. Public, not found, offline or rate-limited all block the upload
+  (fail closed), and the Settings page says so
+- The print/HTML report window can no longer run script, and untrusted values
+  from a loaded assessment file are escaped before being written into it
+- No shared password is shipped to the browser any more: `build.js` no longer
+  embeds an environment variable into the client bundle, and `/api/db` and
+  `/api/report` no longer depend on one
+- `/api/report` caps the request size, returns only a generic error, and no
+  longer discloses the runtime version. It remains stateless: the report is
+  built in memory and nothing is stored or logged
+- Report generation dependency Pillow upgraded 10.4.0 -> 13.0.0 (clears the
+  published advisories); verified to produce an identical report
+- Risk matrix restyled: black panel, rounded tiles in the new green / olive /
+  amber / orange / red scheme, black-circle white-outline threat markers and a
+  colour legend. The same palette now drives the rating badges and the Excel
+  export. Rating logic is unchanged
+- Threat numbers are now **T1, T2 …** everywhere (the matrix and risk register
+  previously used R1, R2 for the same items) and shown in purple
+- New app icons and favicon: white bar graphs on a pure black background with a
+  white outline (maskable variant keeps everything inside the safe zone)
+- Tests: new security spec (print-window injection, private-only back-ups,
+  fail-closed behaviour, no secrets in the bundle)
+
 ## v2.067 — 2026-11-16
 
 **Martyn's Law: live status that keeps itself current**

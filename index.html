@@ -130,6 +130,15 @@ select.input{padding:4px 8px;font-size:12.5px}
 .matrix-label{font-size:10px;font-weight:700;text-align:center;padding:4px}
 .matrix-label-side{writing-mode:vertical-lr;transform:rotate(180deg);font-size:10px;font-weight:700;letter-spacing:2px;color:var(--s-muted);display:flex;align-items:center;justify-content:center}
 .matrix-empty{opacity:0.3;font-size:10px;font-weight:500}
+.mx-panel{background:#000;border-radius:12px;padding:16px 16px 12px;color:#9ca3af}
+.mx-grid{display:grid;grid-template-columns:64px repeat(5,1fr);gap:8px}
+.mx-tile{border-radius:6px;aspect-ratio:1;min-height:52px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;align-content:center;gap:4px;padding:4px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.mx-dot{width:34px;height:34px;border-radius:50%;background:#000;border:2px solid #fff;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;line-height:1;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.mx-dot.sm{width:26px;height:26px;font-size:9px;border-width:1.5px}
+.mx-axis{font-size:10px;font-weight:700;color:#9ca3af;text-align:center}
+.mx-legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:10px;color:#9ca3af}
+.mx-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media (max-width:640px){.mx-grid{grid-template-columns:44px repeat(5,1fr);gap:5px}.mx-dot{width:26px;height:26px;font-size:9px;border-width:1.5px}}
 /* Findings */
 .findings p{margin-bottom:8px}
 .findings strong{color:var(--ink-1)}
@@ -530,11 +539,11 @@ const IL={1:"Negligible",2:"Minor",3:"Moderate",4:"Severe",5:"Catastrophic"};
 const LL={1:"Very Unlikely",2:"Unlikely",3:"Possible",4:"Likely",5:"Very Likely"};
 const RM=[["Medium","High","High","Very High","Very High"],["Low","Medium","High","High","Very High"],["Low","Medium","Medium","High","High"],["Very Low","Low","Medium","Medium","High"],["Very Low","Very Low","Low","Low","Medium"]];
 const RC={
-  "Very Low": {bg:"#4a5568",t:"#fff",icon:"▪"},
-  "Low":      {bg:"#16803c",t:"#fff",icon:"▸"},
-  "Medium":   {bg:"#b45309",t:"#fff",icon:"◆"},
-  "High":     {bg:"#c2570a",t:"#fff",icon:"▲"},
-  "Very High":{bg:"#b91c1c",t:"#fff",icon:"⬆"},
+  "Very Low": {bg:"#25a45a",t:"#04140a",icon:"▪"},
+  "Low":      {bg:"#6b9a3a",t:"#0a1404",icon:"▸"},
+  "Medium":   {bg:"#c19a0b",t:"#140f00",icon:"◆"},
+  "High":     {bg:"#b8651b",t:"#fff",icon:"▲"},
+  "Very High":{bg:"#9b2c22",t:"#fff",icon:"⬆"},
 };
 const TREATS=["Reduce","Transfer","Avoid","Accept"];
 // Treatment roadmap (backlog #7): indicative cost/effort per measure
@@ -1471,7 +1480,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.067";
+const VERSION="2.069";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -2024,7 +2033,7 @@ function App(){
 
   // Load database defaults, then restore from localStorage
   useEffect(()=>{
-    fetch("/api/db",{credentials:"same-origin",headers:{"x-api-key":"__API_SECRET__"}}).then(function(r){return r.json()}).then(function(defs){
+    fetch("/api/db",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(defs){
       defaultsRef.current=defs;
       var d=localStorage.getItem("sra-rta-data:"+activeAsmId);
       if(d){try{var p=JSON.parse(d);if(p.ctx)setCtx(p.ctx);if(p.assets&&p.assets.length>0)setAssets(p.assets);else setAssets(defs.DEF_ASSETS.map(function(a){return{...a}}));
@@ -2184,8 +2193,25 @@ function App(){
 
   // ── SAVE SYSTEM ──
 
+  // Client data must never be pushed to a public repository. Before any upload the
+  // repository's visibility is confirmed with GitHub; anything other than a verified
+  // private repo (public, not found, offline, rate-limited) blocks the upload.
+  const ghPrivateCheck=useRef({});
+  const ghRepoIsPrivate=async()=>{
+    const key=ghConfig.owner+"/"+ghConfig.repo;
+    const hit=ghPrivateCheck.current[key];
+    if(hit&&Date.now()-hit<5*60*1000)return true;
+    try{
+      const r=await fetch("https://api.github.com/repos/"+encodeURIComponent(ghConfig.owner)+"/"+encodeURIComponent(ghConfig.repo),{headers:{"Authorization":"Bearer "+ghConfig.token,"Accept":"application/vnd.github.v3+json"}});
+      if(!r.ok)return false;
+      const d=await r.json();
+      if(d&&d.private===true){ghPrivateCheck.current[key]=Date.now();return true}
+    }catch(e){}
+    return false;
+  };
   const saveToGitHub=async(jsonData,filename)=>{
     if(!ghConfig.enabled||!ghConfig.token||!ghConfig.repo||!ghConfig.owner)return;
+    if(!(await ghRepoIsPrivate())){showToast("Back-up blocked \u2014 the GitHub repository must be private. Client data is never sent to a public repository.");return}
     try{
       const path="projects/"+(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")+"/"+filename;
       const content=btoa(unescape(encodeURIComponent(jsonData)));
@@ -3283,9 +3309,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
   }),[cThreats,vs,is_,tx,rs,acc]);
 
   const preM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
-    cRisks.forEach((r,i)=>{if(r.lik&&r.imp)m[5-r.lik][r.imp-1].push("R"+(i+1))});return m},[cRisks]);
+    cRisks.forEach((r,i)=>{if(r.lik&&r.imp)m[5-r.lik][r.imp-1].push("T"+(i+1))});return m},[cRisks]);
   const postM=useMemo(()=>{const m=Array.from({length:5},()=>Array.from({length:5},()=>[]));
-    cRisks.forEach((r,i)=>{if(r.resL&&r.resI)m[5-r.resL][r.resI-1].push("R"+(i+1))});return m},[cRisks]);
+    cRisks.forEach((r,i)=>{if(r.resL&&r.resI)m[5-r.resL][r.resI-1].push("T"+(i+1))});return m},[cRisks]);
 
   // QA / completeness gate — flag obvious gaps before export, don't block them
   const getCompletenessIssues=()=>{
@@ -3489,7 +3515,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       const res=await fetch("/api/report",{
         method:"POST",
         credentials:"same-origin",
-        headers:{"Content-Type":"application/json","x-api-key":"__API_SECRET__"},
+        headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload)
       });
       if(!res.ok){
@@ -3628,7 +3654,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     // Risk Register
     html+=`<h2>Risk Register</h2><table><tr><th>R#</th><th>Type</th><th class="tl">Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>Rating</th><th>Treatment</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      html+=`<tr><td>R${i+1}</td><td style="font-size:8pt">${E(r.cat)}</td><td class="tl">${E(r.n)}</td><td class="${rc(r.sc)}">${r.sc||""}</td><td class="${rc(r.ta)}">${r.ta||""}</td><td class="${rc(r.vu)}">${r.vu||""}</td><td class="${rc(r.lik)}">${r.lik||""}</td><td class="${rc(r.imp)}">${r.imp||""}</td><td class="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td></tr>`;
+      html+=`<tr><td>T${i+1}</td><td style="font-size:8pt">${E(r.cat)}</td><td class="tl">${E(r.n)}</td><td class="${rc(r.sc)}">${r.sc||""}</td><td class="${rc(r.ta)}">${r.ta||""}</td><td class="${rc(r.vu)}">${r.vu||""}</td><td class="${rc(r.lik)}">${r.lik||""}</td><td class="${rc(r.imp)}">${r.imp||""}</td><td class="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td></tr>`;
     });
     html+=`</table>`;
 
@@ -3639,7 +3665,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     // Residual Risk
     html+=`<h2>Residual Risk</h2><table><tr><th>R#</th><th class="tl">Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      html+=`<tr><td>R${i+1}</td><td class="tl">${E(r.n)}</td><td class="${rc(r.lik)}">${r.lik||""}</td><td class="${rc(r.imp)}">${r.imp||""}</td><td class="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td><td class="${rc(r.resL)}">${r.resL||""}</td><td class="${rc(r.resI)}">${r.resI||""}</td><td class="${ratc(r.resRat)}">${r.resRat||""}</td><td>${E(r.acc)}</td></tr>`;
+      html+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td><td class="${rc(r.lik)}">${r.lik||""}</td><td class="${rc(r.imp)}">${r.imp||""}</td><td class="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td><td class="${rc(r.resL)}">${r.resL||""}</td><td class="${rc(r.resI)}">${r.resI||""}</td><td class="${ratc(r.resRat)}">${r.resRat||""}</td><td>${E(r.acc)}</td></tr>`;
     });
     html+=`</table>`;
 
@@ -3726,7 +3752,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       h+=`<tr><td style="font-weight:bold;text-align:right;padding-right:8px">${l}</td><td style="font-size:8pt;text-align:right;padding-right:6px">${LL[l]}</td>`;
       for(let j=0;j<5;j++){
         const rat=RM[i][j];const c=RC[rat];const refs=matrix[i][j];
-        h+=`<td class="${{"Very Low":"vl","Low":"lo","Medium":"me","High":"hi","Very High":"vh"}[rat]}" style="text-align:center;padding:8px;min-width:60px;font-size:12pt">${refs.length?refs.join(", "):""}</td>`;
+        h+=`<td style="background:${c.bg};text-align:center;padding:8px;min-width:60px;font-size:10pt;font-weight:bold">${refs.map(x=>`<span style="background:#000;color:#fff;border:1pt solid #fff;border-radius:50%;padding:2pt 5pt">${x}</span>`).join(" ")}</td>`;
       }
       h+=`</tr>`;
     }
@@ -3744,7 +3770,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     const gapc=g=>!g?"":({Adequate:"background:#E2EFDA;color:#16a34a;font-weight:bold",Partial:"background:#FFF2CC;color:#d97706;font-weight:bold",Insufficient:"background:#FFC7CE;color:#dc2626;font-weight:bold"})[g]||"";
     const E=escHtml;
 
-    let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>SRA — ${E(ctx.project)||"Report"}</title>
+    let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:"><title>SRA — ${E(ctx.project)||"Report"}</title>
     <style>
     @page{size:A4 portrait;margin:1.5cm}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -3790,8 +3816,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     assets.filter(a=>a.cat).forEach((a,i)=>{
       const sc=avg(AC.map(c=>a.sc[c]||null));const rk=sc>=4.5?"Critical":sc>=3.5?"High":sc>=2.5?"Medium":sc>=1.5?"Low":sc?"Negligible":"";
       h+=`<tr><td>${i+1}</td><td class="tl">${E(a.cat)}</td><td class="tl">${E(a.desc)}</td>`;
-      AC.forEach(c=>{h+=`<td style="${rc(a.sc[c])}">${a.sc[c]||""}</td>`});
-      h+=`<td>${sc||""}</td><td style="${ratc(rk)}">${rk}</td></tr>`;
+      AC.forEach(c=>{h+=`<td style="${rc(a.sc[c])}">${E(a.sc[c]||"")}</td>`});
+      h+=`<td>${E(sc||"")}</td><td style="${ratc(rk)}">${rk}</td></tr>`;
     });h+=`</table>`;
 
     // Threats
@@ -3799,8 +3825,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<table><tr><th>T#</th><th>Type</th><th class="tl">Threat</th><th class="tl">Description</th><th>Cap</th><th>Int</th><th>Score</th><th>Level</th><th>DBT</th></tr>`;
     cThreats.filter(t=>t.n).forEach((t,i)=>{
       h+=`<tr><td>T${i+1}</td><td><span class="${t.cat==="Terrorism"?"bt":"bc"}">${E(t.cat)}</span></td><td class="tl">${E(t.n)}</td><td class="tl">${E(t.d)}</td>`;
-      h+=`<td style="${rc(t.cap)}">${t.cap||""}</td><td style="${rc(t.int)}">${t.int||""}</td>`;
-      h+=`<td style="${rc(t.sc)}">${t.sc||""}</td><td style="${ratc(t.lv)}">${t.lv||""}</td>`;
+      h+=`<td style="${rc(t.cap)}">${E(t.cap||"")}</td><td style="${rc(t.int)}">${E(t.int||"")}</td>`;
+      h+=`<td style="${rc(t.sc)}">${E(t.sc||"")}</td><td style="${ratc(t.lv)}">${E(t.lv||"")}</td>`;
       h+=`<td class="${t.sc!=null?(t.dbt?"dy":"dn"):""}">${t.sc!=null?(t.dbt?"YES":"No"):""}</td></tr>`;
     });h+=`</table>`;
 
@@ -3819,9 +3845,9 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<table><tr><th>T#</th><th class="tl">Threat</th><th>T</th><th>Vis</th><th>Stat</th><th>Acc</th><th>Coll</th><th>Crime</th><th>Hist</th><th>TA</th><th>Vuln</th><th>L</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
       const v=vs[r.id]||{};
-      h+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td><td style="${rc(r.sc)}">${r.sc||""}</td>`;
-      TAC.forEach(c=>{h+=`<td style="${rc(v[c])}">${v[c]||""}</td>`});
-      h+=`<td style="${rc(r.ta)}">${r.ta||""}</td><td style="${rc(r.vu)}">${r.vu||""}</td><td style="${rc(r.lik)}">${r.lik||""}</td></tr>`;
+      h+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td><td style="${rc(r.sc)}">${E(r.sc||"")}</td>`;
+      TAC.forEach(c=>{h+=`<td style="${rc(v[c])}">${E(v[c]||"")}</td>`});
+      h+=`<td style="${rc(r.ta)}">${E(r.ta||"")}</td><td style="${rc(r.vu)}">${E(r.vu||"")}</td><td style="${rc(r.lik)}">${E(r.lik||"")}</td></tr>`;
     });h+=`</table>`;
 
     // Impact
@@ -3830,8 +3856,8 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     cRisks.filter(r=>r.n).forEach((r,i)=>{
       const im=is_[r.id]||{};
       h+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td>`;
-      IC.forEach(c=>{h+=`<td style="${rc(im[c])}">${im[c]||""}</td>`});
-      h+=`<td style="${rc(r.imp)}">${r.imp||""}</td></tr>`;
+      IC.forEach(c=>{h+=`<td style="${rc(im[c])}">${E(im[c]||"")}</td>`});
+      h+=`<td style="${rc(r.imp)}">${E(r.imp||"")}</td></tr>`;
     });h+=`</table>`;
 
     // Controls
@@ -3841,17 +3867,17 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       const c=cd[r.id]||{};const s2=c.eff&&c.conf?Math.round((c.eff+c.conf)/2*10)/10:null;
       const gap=s2>=4?"Adequate":s2>=3?"Partial":s2>=1?"Insufficient":"";
       h+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td><td class="tl">${E(c.desc)}</td>`;
-      h+=`<td style="${rc(c.eff)}">${c.eff||""}</td><td style="${rc(c.conf)}">${c.conf||""}</td><td style="${gapc(gap)}">${gap}</td></tr>`;
+      h+=`<td style="${rc(c.eff)}">${E(c.eff||"")}</td><td style="${rc(c.conf)}">${E(c.conf||"")}</td><td style="${gapc(gap)}">${gap}</td></tr>`;
     });h+=`</table>`;
 
     // Risk Register
     h+=`<h2>Risk Register</h2>`;
     h+=`<table><tr><th>R#</th><th>Type</th><th class="tl">Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>Rating</th><th>Treatment</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      h+=`<tr><td>R${i+1}</td><td style="font-size:7pt">${E(r.cat)}</td><td class="tl">${E(r.n)}</td>`;
-      h+=`<td style="${rc(r.sc)}">${r.sc||""}</td><td style="${rc(r.ta)}">${r.ta||""}</td><td style="${rc(r.vu)}">${r.vu||""}</td>`;
-      h+=`<td style="${rc(r.lik)}">${r.lik||""}</td><td style="${rc(r.imp)}">${r.imp||""}</td>`;
-      h+=`<td style="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td></tr>`;
+      h+=`<tr><td>T${i+1}</td><td style="font-size:7pt">${E(r.cat)}</td><td class="tl">${E(r.n)}</td>`;
+      h+=`<td style="${rc(r.sc)}">${E(r.sc||"")}</td><td style="${rc(r.ta)}">${E(r.ta||"")}</td><td style="${rc(r.vu)}">${E(r.vu||"")}</td>`;
+      h+=`<td style="${rc(r.lik)}">${E(r.lik||"")}</td><td style="${rc(r.imp)}">${E(r.imp||"")}</td>`;
+      h+=`<td style="${ratc(r.rat)}">${E(r.rat||"")}</td><td>${E(r.treat)}</td></tr>`;
     });h+=`</table>`;
 
     // Pre matrix
@@ -3861,7 +3887,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<h2>Residual Risk</h2>`;
     h+=`<table><tr><th>R#</th><th class="tl">Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre</th><th>Treat</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      h+=`<tr><td>R${i+1}</td><td class="tl">${E(r.n)}</td><td style="${rc(r.lik)}">${r.lik||""}</td><td style="${rc(r.imp)}">${r.imp||""}</td><td style="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td><td style="${rc(r.resL)}">${r.resL||""}</td><td style="${rc(r.resI)}">${r.resI||""}</td><td style="${ratc(r.resRat)}">${r.resRat||""}</td><td>${E(r.acc)}</td></tr>`;
+      h+=`<tr><td>T${i+1}</td><td class="tl">${E(r.n)}</td><td style="${rc(r.lik)}">${E(r.lik||"")}</td><td style="${rc(r.imp)}">${E(r.imp||"")}</td><td style="${ratc(r.rat)}">${E(r.rat||"")}</td><td>${E(r.treat)}</td><td style="${rc(r.resL)}">${E(r.resL||"")}</td><td style="${rc(r.resI)}">${E(r.resI||"")}</td><td style="${ratc(r.resRat)}">${E(r.resRat||"")}</td><td>${E(r.acc)}</td></tr>`;
     });h+=`</table>`;
 
     // Post matrix
@@ -3986,7 +4012,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<h2>Risk Register</h2>`;
     h+=`<table><tr><th>R#</th><th class="left">Threat</th><th>T</th><th>TA</th><th>V</th><th>L</th><th>I</th><th>L×I</th><th>Rating</th><th>Treatment</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      h+=`<tr><td>R${i+1}</td><td class="left">${E(r.n)}</td>`;
+      h+=`<tr><td>T${i+1}</td><td class="left">${E(r.n)}</td>`;
       h+=`<td style="${rc(r.sc)}">${r.sc||""}</td><td style="${rc(r.ta)}">${r.ta||""}</td><td style="${rc(r.vu)}">${r.vu||""}</td>`;
       h+=`<td style="${rc(r.lik)}">${r.lik||""}</td><td style="${rc(r.imp)}">${r.imp||""}</td>`;
       h+=`<td>${r.lik&&r.imp?r.lik*r.imp:""}</td><td style="${ratc(r.rat)}">${r.rat||""}</td><td>${E(r.treat)}</td></tr>`;
@@ -4001,7 +4027,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     h+=`<h2>Residual Risk</h2>`;
     h+=`<table><tr><th>R#</th><th class="left">Threat</th><th>Pre-L</th><th>Pre-I</th><th>Pre-Rating</th><th>Treatment</th><th>Post-L</th><th>Post-I</th><th>Residual</th><th>Accept?</th></tr>`;
     cRisks.filter(r=>r.n).forEach((r,i)=>{
-      h+=`<tr><td>R${i+1}</td><td class="left">${E(r.n)}</td>`;
+      h+=`<tr><td>T${i+1}</td><td class="left">${E(r.n)}</td>`;
       h+=`<td style="${rc(r.lik)}">${r.lik||""}</td><td style="${rc(r.imp)}">${r.imp||""}</td><td style="${ratc(r.rat)}">${r.rat||""}</td>`;
       h+=`<td>${E(r.treat)}</td>`;
       h+=`<td style="${rc(r.resL)}">${r.resL||""}</td><td style="${rc(r.resI)}">${r.resI||""}</td><td style="${ratc(r.resRat)}">${r.resRat||""}</td>`;
@@ -4039,7 +4065,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
       h+=`<tr><td class="lbl">${l}</td><td class="lbl" style="font-size:8pt">${LL[l]}</td>`;
       for(let j=0;j<5;j++){
         const rat=RM[i][j];const c=RC[rat];const refs=matrix[i][j];
-        h+=`<td style="background:${c.bg};color:#000;font-weight:bold;text-align:center;font-size:12pt">${refs.length?refs.join(", "):""}</td>`;
+        h+=`<td style="background:${c.bg};font-weight:bold;text-align:center;font-size:10pt">${refs.map(x=>`<span style="background:#000;color:#fff;border:1pt solid #fff;border-radius:50%;padding:2pt 5pt">${x}</span>`).join(" ")}</td>`;
       }
       h+=`</tr>`;
     }
@@ -4215,37 +4241,37 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     setRs(p=>({...p,[tid]:{...p[tid],[f]:v}}));
   };
 
-  // Matrix render
-  const MatrixView=({data,title})=>React.createElement("div",null,
-    React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:"2px"}},title),
+  // Matrix render — black panel, rounded colour tiles, black-circle threat markers (T1, T2 …)
+  const MatrixView=({data,title})=>React.createElement("div",{className:"mx-panel"},
+    React.createElement("h3",{style:{fontSize:12,fontWeight:700,letterSpacing:"2px",color:"#e5e7eb",marginBottom:12}},title),
     React.createElement("div",{className:"flex gap-2"},
-      React.createElement("div",{className:"matrix-label-side",style:{minWidth:20,minHeight:200}},"LIKELIHOOD"),
+      React.createElement("div",{className:"matrix-label-side",style:{minWidth:20,minHeight:200,color:"#9ca3af"}},"LIKELIHOOD"),
       React.createElement("div",{style:{flex:1}},
-        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"60px repeat(5,1fr)",gap:4}},
-          // Header row spacer
+        React.createElement("div",{className:"mx-grid"},
           React.createElement("div"),
-          ...[1,2,3,4,5].map(v=>React.createElement("div",{key:v,className:"matrix-label"},
-            React.createElement("div",{className:"font-bold text-slate"},v),
-            React.createElement("div",{style:{fontSize:9,color:"#94a3b8"}},IL[v])
+          ...[1,2,3,4,5].map(v=>React.createElement("div",{key:v,className:"mx-axis"},
+            React.createElement("div",{style:{color:"#e5e7eb",fontSize:12}},v),
+            React.createElement("div",{style:{fontSize:9,fontWeight:500}},IL[v])
           )),
-          // Data rows
-          ...[5,4,3,2,1].flatMap((l,i)=>[
-            React.createElement("div",{key:`l${l}`,style:{display:"flex",flexDirection:"column",justifyContent:"center",textAlign:"right",paddingRight:8}},
-              React.createElement("div",{className:"font-bold text-xs text-slate"},l),
-              React.createElement("div",{style:{fontSize:9,color:"#94a3b8"}},LL[l])
+          ...[5,4,3,2,1].flatMap(l=>[
+            React.createElement("div",{key:`l${l}`,style:{display:"flex",flexDirection:"column",justifyContent:"center",textAlign:"right",paddingRight:4}},
+              React.createElement("div",{style:{fontWeight:700,fontSize:12,color:"#e5e7eb"}},l),
+              React.createElement("div",{style:{fontSize:9,color:"#9ca3af"}},LL[l])
             ),
-            ...[1,2,3,4,5].map((imp,j)=>{
-              const rat=RM[5-l][imp-1];const c=RC[rat];const refs=data[5-l][imp-1];
-              return React.createElement("div",{key:`${l}-${imp}`,className:"matrix-cell",
-                style:{backgroundColor:c.bg,color:c.t}},
-                refs.length>0?React.createElement("div",{style:{fontSize:16,fontWeight:800,lineHeight:1.4,color:"#000"}},refs.join("\n")):
-                React.createElement("div",{className:"matrix-empty"},rat)
+            ...[1,2,3,4,5].map(imp=>{
+              const rat=RM[5-l][imp-1];const refs=data[5-l][imp-1];
+              const desc=rat+(refs.length?" \u2014 "+refs.join(", "):"");
+              return React.createElement("div",{key:`${l}-${imp}`,className:"mx-tile",style:{backgroundColor:RC[rat].bg},title:desc,"aria-label":"Likelihood "+l+", impact "+imp+": "+desc},
+                refs.map(r=>React.createElement("span",{key:r,className:"mx-dot"+(refs.length>2?" sm":"")},r))
               );
             })
           ])
         ),
         React.createElement("div",{className:"text-center mt-2"},
-          React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#475569",letterSpacing:2}},"IMPACT")
+          React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#9ca3af",letterSpacing:2}},"IMPACT \u2192")
+        ),
+        React.createElement("div",{className:"mx-legend"},
+          ["Very Low","Low","Medium","High","Very High"].map(n=>React.createElement("span",{key:n},React.createElement("i",{style:{background:RC[n].bg}}),n))
         )
       )
     )
@@ -5346,7 +5372,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             !threatLevel&&React.createElement("div",{style:{padding:8,color:"#94a3b8",fontSize:12}},"Loading threat level..."),
             React.createElement("div",{style:{fontSize:12,color:"#64748b",marginTop:8}},
               "Set by the Joint Terrorism Analysis Centre (JTAC) and MI5. Verify at ",
-              React.createElement("a",{href:"https://www.mi5.gov.uk/threat-levels",target:"_blank",style:{color:"#4a5568",textDecoration:"underline"}},"MI5.gov.uk"),
+              React.createElement("a",{href:"https://www.mi5.gov.uk/threat-levels",target:"_blank",rel:"noopener noreferrer",style:{color:"#4a5568",textDecoration:"underline"}},"MI5.gov.uk"),
               " at time of assessment."
             )
           ),
@@ -5767,7 +5793,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             var hasTargets=targetIds.length>0;
             return React.createElement("div",{key:t.id,style:{display:"flex",alignItems:"flex-start",gap:12,padding:"8px 0",borderBottom:i<cThreats.length-1?"1px solid #f1f5f9":"none"}},
               React.createElement("div",{style:{width:36,flexShrink:0}},
-                React.createElement("span",{style:{fontSize:10,fontWeight:600,color:"#94a3b8"}},"T"+(i+1))
+                React.createElement("span",{style:{fontSize:10,fontWeight:700,color:"#7c3aed"}},"T"+(i+1))
               ),
               React.createElement("div",{style:{width:120,flexShrink:0}},
                 React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},t.n),
@@ -6004,7 +6030,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                   showToast("Scores copied to "+sameCat.length+" "+t.cat+" threat"+(sameCat.length!==1?"s":""));
                 };
                 return React.createElement("tr",{key:t.id},
-                  React.createElement("td",{style:{color:"#94a3b8",fontWeight:600}},"T"+(i+1)),
+                  React.createElement("td",{style:{color:"#7c3aed",fontWeight:700}},"T"+(i+1)),
                   React.createElement("td",{className:"threat-name"},
                     t.n,
                     t.dbt&&React.createElement("span",{style:{fontSize:9,fontWeight:700,color:"#dc2626",background:"#fef2f2",padding:"0 4px",borderRadius:3,marginLeft:4,border:"1px solid #fecaca"}},"DBT")
@@ -6088,7 +6114,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           return React.createElement("div",{key:t.id,className:"card","data-capture-hide":"1"},
             React.createElement("div",{className:"card-header"},
               React.createElement("div",null,
-                React.createElement("span",{className:"text-xs font-mono text-muted mr-2"},"T"+(i+1)),
+                React.createElement("span",{className:"text-xs font-mono mr-2",style:{color:"#7c3aed",fontWeight:700}},"T"+(i+1)),
                 React.createElement("span",{className:"font-bold"},t.n)
               ),
               React.createElement("div",{className:"flex gap-2 items-center"},
@@ -6178,7 +6204,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
           return React.createElement("div",{key:t.id,className:"card"},
             React.createElement("div",{className:"card-header"},
               React.createElement("div",null,
-                React.createElement("span",{className:"text-xs font-mono text-muted mr-2"},"T"+(i+1)),
+                React.createElement("span",{className:"text-xs font-mono mr-2",style:{color:"#7c3aed",fontWeight:700}},"T"+(i+1)),
                 React.createElement("span",{className:"font-bold"},t.n)
               ),
               gap&&React.createElement("span",{className:"badge",style:{backgroundColor:gc,color:gtc}},gap)
@@ -6326,7 +6352,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
             React.createElement("tbody",null,
               cRisks.map((r,i)=>({r,i})).filter(x=>x.r.n&&(!registerSeverityFilter||x.r.rat===registerSeverityFilter)).map(x=>{const r=x.r,i=x.i;const comments=riskComments[r.id]||[];const expanded=expandedRiskComments===r.id;return React.createElement(React.Fragment,{key:r.id},
                 React.createElement("tr",null,
-                React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
+                React.createElement("td",{className:"font-mono text-xs",style:{color:"#7c3aed",fontWeight:700}},"T"+(i+1)),
                 React.createElement("td",{className:"text-left font-medium"},r.n),
                 React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
                 React.createElement("td",null,React.createElement(SBadge,{value:r.ta})),
@@ -6482,7 +6508,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               )),
               React.createElement("tbody",null,
                 React.createElement("tr",{style:{background:isHigh?"#fef2f2":""}},
-                  React.createElement("td",{className:"font-mono text-xs text-muted"},"R"+(i+1)),
+                  React.createElement("td",{className:"font-mono text-xs",style:{color:"#7c3aed",fontWeight:700}},"T"+(i+1)),
                   React.createElement("td",{className:"text-left"},
                     React.createElement("span",{className:"font-medium"},r.n),
                     isHigh&&React.createElement("span",{style:{fontSize:9,color:"#dc2626",marginLeft:6,fontWeight:700}},"\u26a0 "+r.rat)
@@ -7367,7 +7393,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               });
               return React.createElement("div",{key:r.id,style:{marginBottom:10,border:"1px solid "+(r.rat==="Very High"?"#fecaca":"#fed7aa"),borderRadius:8,overflow:"hidden"}},
                 React.createElement("div",{style:{display:"flex",gap:12,alignItems:"center",padding:"10px 14px",background:r.rat==="Very High"?"#fef2f2":"#fff7ed"}},
-                  React.createElement("span",{style:{fontWeight:700,fontSize:13}},"R"+idx),
+                  React.createElement("span",{style:{fontWeight:700,fontSize:13,color:"#7c3aed"}},"T"+idx),
                   React.createElement("span",{style:{fontWeight:700,fontSize:13,flex:1}},r.n),
                   React.createElement("span",{style:{fontSize:10,fontWeight:600,background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4a5568",padding:"2px 8px",borderRadius:4}},r.cat),
                   React.createElement(Badge,{rating:r.rat}),
@@ -7443,7 +7469,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               React.createElement("tbody",null,
                 scored.map(function(r){
                   return React.createElement("tr",{key:r.id},
-                    React.createElement("td",{style:{fontWeight:700}},"R"+(cRisks.indexOf(r)+1)),
+                    React.createElement("td",{style:{fontWeight:700,color:"#7c3aed"}},"T"+(cRisks.indexOf(r)+1)),
                     React.createElement("td",{className:"text-left",style:{fontWeight:600}},r.n),
                     React.createElement("td",null,React.createElement(Badge,{rating:r.rat})),
                     React.createElement("td",{style:{fontSize:11}},r.treat||"\u2014"),
@@ -7527,7 +7553,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
               cRisks.filter(function(r){return r.n}).map(function(r,i){
                 var rsc=rs[r.id]||{};
                 return React.createElement("tr",{key:r.id},
-                  React.createElement("td",{style:{fontWeight:600,fontSize:11}},"R"+(i+1)),
+                  React.createElement("td",{style:{fontWeight:700,fontSize:11,color:"#7c3aed"}},"T"+(i+1)),
                   React.createElement("td",{className:"text-left",style:{fontWeight:600,fontSize:11}},r.n),
                   React.createElement("td",{style:{fontSize:10}},React.createElement("span",{style:{background:r.cat==="Terrorism"?"#fef2f2":"#EBF1F8",color:r.cat==="Terrorism"?"#dc2626":"#4a5568",padding:"1px 4px",borderRadius:3,fontWeight:600,fontSize:9}},r.cat)),
                   React.createElement("td",null,React.createElement(SBadge,{value:r.sc})),
@@ -9081,7 +9107,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
         // Back-ups
         React.createElement("div",{className:"card",style:{padding:24,marginBottom:16}},
           React.createElement("h3",{className:"text-sm font-bold text-slate mb-3",style:{letterSpacing:1}},"BACK-UPS"),
-          React.createElement("p",{style:{fontSize:12,color:"#94a3b8",marginBottom:12}},"Back-up saves are stored under /projects/[ProjectName]/ in a GitHub repository. Loading/browsing back-ups from a public repository works for all users without a token. A token is only required to save/write back-ups."),
+          React.createElement("p",{style:{fontSize:12,color:"#94a3b8",marginBottom:12}},"Back-up saves are stored under /projects/[ProjectName]/ in a GitHub repository. Saving is only allowed to a PRIVATE repository \u2014 it is refused if the repository is public or its visibility cannot be confirmed. Loading/browsing back-ups from a public repository works for all users without a token. A token is only required to save/write back-ups."),
           React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12}},
             React.createElement("label",{style:{fontSize:12,fontWeight:600,color:"#1e293b"}},"Enable"),
             React.createElement("input",{type:"checkbox",checked:ghConfig.enabled,onChange:function(e){setGhConfig(function(p){return{...p,enabled:e.target.checked}})}})
@@ -9108,7 +9134,7 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
                 var headers={"Accept":"application/vnd.github.v3+json"};
                 if(ghConfig.token)headers["Authorization"]="Bearer "+ghConfig.token;
                 var res=await fetch("https://api.github.com/repos/"+ghConfig.owner+"/"+ghConfig.repo,{headers:headers});
-                if(res.ok){var d=await res.json();showToast("✓ Connected to "+d.full_name+(d.private?" (private)":(" (public)")))}
+                if(res.ok){var d=await res.json();if(d.private)showToast("✓ Connected to "+d.full_name+" (private)");else showToast("⚠ "+d.full_name+" is PUBLIC — saving back-ups there is blocked. Use a private repository.")}
                 else{showToast("✗ Repository not found or not accessible")}
               }catch(e){showToast("✗ Could not reach GitHub")}
             }},"Test Connection"),

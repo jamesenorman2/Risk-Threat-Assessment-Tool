@@ -1146,30 +1146,24 @@ def _safe_filename(name):
 
 # --- Vercel handler ---
 
-def _unauthorized(self):
-    msg = json.dumps({"error": "unauthorized"}).encode("utf-8")
-    self.send_response(401)
-    self.send_header("Content-Type", "application/json")
-    self.send_header("Content-Length", str(len(msg)))
-    self.end_headers()
-    self.wfile.write(msg)
+MAX_BODY_BYTES = 4 * 1024 * 1024  # Vercel's own request limit is 4.5 MB
 
 
 class handler(BaseHTTPRequestHandler):
-    def _authorized(self):
-        expected = os.environ.get("APP_PASSWORD") or ""
-        if not expected:
-            # No password configured on the server — fail closed.
-            return False
-        provided = self.headers.get("x-api-key") or ""
-        return provided == expected
-
+    # The report is built in memory from the request body and streamed straight
+    # back: nothing is written to disk, logged or kept. No shared secret is used -
+    # one embedded in browser code would be readable by every visitor.
     def do_POST(self):
-        if not self._authorized():
-            _unauthorized(self)
-            return
         try:
             length = int(self.headers.get("content-length", 0))
+            if length > MAX_BODY_BYTES:
+                msg = json.dumps({"error": "request too large"}).encode("utf-8")
+                self.send_response(413)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(msg)))
+                self.end_headers()
+                self.wfile.write(msg)
+                return
             body = self.rfile.read(length) if length else b"{}"
             state = json.loads(body.decode("utf-8"))
             docx_bytes = build_docx(state)
@@ -1181,8 +1175,9 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(docx_bytes)))
             self.end_headers()
             self.wfile.write(docx_bytes)
-        except Exception as e:
-            msg = json.dumps({"error": str(e)}).encode("utf-8")
+        except Exception:
+            # Generic message only - never echo internals (or request content) back.
+            msg = json.dumps({"error": "report generation failed"}).encode("utf-8")
             self.send_response(500)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(msg)))
@@ -1194,7 +1189,6 @@ class handler(BaseHTTPRequestHandler):
             "ok": True,
             "endpoint": "/api/report",
             "method": "POST",
-            "python": os.sys.version.split()[0],
         }).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json")

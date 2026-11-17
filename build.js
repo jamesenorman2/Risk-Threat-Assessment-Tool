@@ -4,9 +4,8 @@ const JavaScriptObfuscator = require('javascript-obfuscator');
 
 let html = fs.readFileSync('index.html', 'utf8');
 
-// Inject build-time API secret into fetch call before obfuscation
-const apiSecret = process.env.APP_PASSWORD || '';
-html = html.replaceAll('"__API_SECRET__"', JSON.stringify(apiSecret));
+// NOTE: no secret is ever injected into the client bundle. Anything placed in
+// browser JavaScript is readable by every visitor, so the app ships no credentials.
 
 // Match inline <script> blocks only (not those with src=)
 const result = html.replace(/<script(?!\s+src=)([^>]*)>([\s\S]*?)<\/script>/g, function(match, attrs, code) {
