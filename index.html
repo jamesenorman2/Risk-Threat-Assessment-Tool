@@ -1480,7 +1480,7 @@ function RiskCommentsPanel({riskId,comments,onAdd,onRemove,colSpan}){
   );
 }
 
-const VERSION="2.069";
+const VERSION="2.070";
 function App(){
   const[tab,setTab]=useState("context");
   const[registerSeverityFilter,setRegisterSeverityFilter]=useState(null);
@@ -3735,9 +3735,12 @@ IMPORTANT: Respond ONLY with a JSON object (no markdown, no backticks, no explan
     html+=`<div style="mso-element:footer" id="f1"><p class="MsoFooter">${E(ctx.client)||""}${ctx.client?" \u00b7 ":""}Page <span style="mso-field-code:PAGE">1</span> of <span style="mso-field-code:NUMPAGES">1</span> \u00b7 Generated ${new Date().toLocaleDateString()} \u00b7 v${VERSION}</p></div>`;
     html+=`</div></body></html>`;
 
+    const wordBase=`${(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")}_SRA_Tables`;
+    // Offline build only: pack the report into a real .docx (see offline-shim.js)
+    if(window.__rtaSaveWord&&window.__rtaSaveWord(html,wordBase)){showToast("Word document exported (.docx)");return}
     const blob=new Blob([html],{type:"application/msword"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download=`${(ctx.project||"Assessment").replace(/[^a-zA-Z0-9_-]/g,"_")}_SRA_Tables.doc`;
+    a.download=wordBase+".doc";
     a.style.display="none";document.body.appendChild(a);a.click();
     setTimeout(function(){document.body.removeChild(a)},200);
     showToast("Word document exported");

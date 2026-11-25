@@ -5,3 +5,4 @@ shared/
 todo
 CLAUDE.md
 .claude/
+dist-offline/

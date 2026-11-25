@@ -4,6 +4,19 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.070 — 2026-11-25
+
+**Standalone offline build**
+- `npm run build` now also writes `dist-offline/Risk-Threat-Assessment-Tool-vX.XXX-offline.html`:
+  one self-contained file with React, Leaflet, html2canvas, JSZip and fonts inlined
+- `/api/db` and `/api/martyns-law` are answered from bundled data (`offline-shim.js`);
+  live threat level, postcode, crime data and map tiles need a connection and fall back gracefully
+- Word export in the offline build produces a native `.docx` (headings, tables, header,
+  page-numbered footer) instead of Word-flavoured HTML. The online build is unchanged
+- The offline file is kept out of `dist/` so it is never deployed
+
+---
+
 ## v2.069 — 2026-11-17
 
 **Security hardening, new risk matrix look, new icons**
