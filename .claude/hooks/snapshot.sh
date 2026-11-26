@@ -13,8 +13,12 @@ VERSION=$(grep -o 'VERSION="[^"]*"' index.html 2>/dev/null | head -1 | cut -d'"'
 DEST="Risk-Threat-Assessment-Tool-v${VERSION}.html"
 cp index.html "$DEST" && git add "$DEST" 2>/dev/null || true
 
-# Offline build. A failure here must never block the normal snapshot above.
-if [ -d node_modules ] && node build.js >/dev/null 2>&1; then
+# Offline build. The obfuscator is randomised, so rebuilding an existing version
+# would dirty the tree on every commit: build each version once, never overwrite.
+# A failure here must never block the normal snapshot above.
+if [ -f "offline-releases/Risk-Threat-Assessment-Tool-v${VERSION}-offline.html" ]; then
+  exit 0
+elif [ -d node_modules ] && node build.js >/dev/null 2>&1; then
   OUT="dist-offline/Risk-Threat-Assessment-Tool-v${VERSION}-offline.html"
   if [ -f "$OUT" ]; then
     mkdir -p offline-releases
