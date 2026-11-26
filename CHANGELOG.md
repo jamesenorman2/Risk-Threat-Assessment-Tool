@@ -4,6 +4,16 @@ All notable changes to the Risk & Threat Assessment Tool are recorded here.
 
 ---
 
+## v2.071 — 2026-11-26
+
+**Offline build now versioned automatically**
+- The post-commit hook (`.claude/hooks/snapshot.sh`) now also runs the build and saves
+  `offline-releases/Risk-Threat-Assessment-Tool-vX.XXX-offline.html` for every version;
+  earlier versions are kept, never overwritten
+- `dist-offline/` is now a git-ignored scratch folder
+
+---
+
 ## v2.070 — 2026-11-25
 
 **Standalone offline build**
